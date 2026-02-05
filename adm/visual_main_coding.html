@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Visual Manager Redesign</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root {
+            --primary-color: #4F46E5; /* 인디고 블루 */
+            --primary-hover: #4338ca;
+            --bg-color: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #111827;
+            --text-sub: #6B7280;
+            --border-color: #E5E7EB;
+            --input-bg: #F9FAFB;
+            --radius: 8px;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 40px 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 헤더 영역 */
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .page-desc {
+            color: var(--text-sub);
+            font-size: 14px;
+        }
+
+        /* 리스트 헤더 (라벨) */
+        .list-header {
+            display: grid;
+            grid-template-columns: 60px 1fr 120px;
+            padding: 0 24px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
+
+        /* 카드 아이템 스타일 */
+        .slide-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: 60px 1fr auto; /* 드래그핸들 | 컨텐츠 | 삭제/액션 */
+            align-items: stretch;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .slide-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-color: #C7D2FE;
+        }
+
+        /* 좌측: 드래그 핸들 & 체크박스 */
+        .card-handle {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #F9FAFB;
+            border-right: 1px solid var(--border-color);
+            border-top-left-radius: var(--radius);
+            border-bottom-left-radius: var(--radius);
+            gap: 12px;
+            cursor: grab;
+        }
+
+        .drag-icon {
+            width: 20px;
+            height: 20px;
+            color: #9CA3AF;
+        }
+
+        .seq-num {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-sub);
+        }
+
+        /* 중앙: 메인 컨텐츠 영역 */
+        .card-content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 상단 옵션 줄 (타입, 노출, 시간) */
+        .options-row {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .option-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .option-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
+
+        /* 입력 폼 스타일 */
+        select, input[type="text"], input[type="number"] {
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary-color);
+            background-color: #fff;
+        }
+
+        /* 토글 스위치 (노출 여부) */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* 미디어 & 링크 그리드 */
+        .media-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .input-block {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-block label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
+
+        .input-with-btn {
+            display: flex;
+            gap: 8px;
+        }
+        .input-with-btn input { flex: 1; }
+
+        .btn-upload {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 12px;
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-sub);
+        }
+        .btn-upload:hover { border-color: var(--text-sub); color: var(--text-main); }
+
+        /* 미리보기 썸네일 */
+        .preview-area {
+            margin-top: 8px;
+            height: 60px;
+            background-color: #f1f1f1;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding: 4px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        
+        .preview-thumb {
+            height: 100%;
+            width: auto;
+            border-radius: 4px;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+        
+        .preview-placeholder {
+            font-size: 12px;
+            color: #999;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* 하단 링크 영역 */
+        .link-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 링크 | 버튼명 */
+            gap: 20px;
+        }
+
+        /* 우측 액션 버튼 */
+        .card-actions {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 16px;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: var(--text-sub);
+            border-radius: 4px;
+        }
+        .btn-icon:hover { background-color: #FEE2E2; color: #DC2626; } /* 삭제 버튼 색상 */
+
+        /* 플로팅 저장 버튼 */
+        .fab-save {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-weight: 700;
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .fab-save:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .media-grid, .link-area { grid-template-columns: 1fr; }
+            .list-header { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="page-header">
+        <h1 class="page-title">메인 비주얼 슬라이드 관리</h1>
+        <p class="page-desc">홈페이지 메인 상단에 노출되는 슬라이드의 순서, 노출 여부, 미디어 및 링크를 설정합니다.</p>
+    </header>
+
+    <div class="list-header">
+        <span></span> <span>슬라이드 정보 설정</span>
+        <span>관리</span>
+    </div>
+
+    <div class="slide-card">
+        <div class="card-handle">
+            <svg class="drag-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+            <span class="seq-num">1</span>
+            <input type="checkbox">
+        </div>
+
+        <div class="card-content">
+            <div class="options-row">
+                <div class="option-group">
+                    <span class="option-label">노출 상태</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="option-group">
+                    <span class="option-label">미디어 타입</span>
+                    <select>
+                        <option value="video">Video (MP4)</option>
+                        <option value="image">Image</option>
+                    </select>
+                </div>
+                <div class="option-group">
+                    <span class="option-label">노출 시간(초)</span>
+                    <input type="number" value="12" style="width: 80px;">
+                </div>
+            </div>
+
+            <div class="media-grid">
+                <div class="input-block">
+                    <label>배경 미디어 (Cloudflare R2)</label>
+                    <div class="input-with-btn">
+                        <input type="text" value="https://unrealsummit16.cafe24.com/2025/ue57/ue57bh.mp4">
+                        <button class="btn-upload" title="파일 업로드">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-block">
+                    <label>타이틀 이미지 (Overlay)</label>
+                    <div class="input-with-btn">
+                        <input type="text" value="https://unrealsummit16.cafe24.com/.../main_visual_new1.svg">
+                        <button class="btn-upload" title="파일 업로드">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                        </button>
+                    </div>
+                    <div class="preview-area">
+                        <img src="https://via.placeholder.com/100x50?text=Title+SVG" class="preview-thumb">
+                        <span class="preview-placeholder">main_visual_new1.svg</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="link-area">
+                <div class="input-block">
+                    <label>링크 URL</label>
+                    <input type="text" value="https://epiclounge.co.kr/ue57.php">
+                </div>
+                <div class="input-block">
+                    <label>버튼 텍스트</label>
+                    <input type="text" value="다시보기">
+                </div>
+            </div>
+        </div>
+
+        <div class="card-actions">
+            <button class="btn-icon" title="삭제">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="slide-card">
+        <div class="card-handle">
+            <svg class="drag-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+            <span class="seq-num">2</span>
+            <input type="checkbox">
+        </div>
+
+        <div class="card-content">
+            <div class="options-row">
+                <div class="option-group">
+                    <span class="option-label">노출 상태</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="option-group">
+                    <span class="option-label">미디어 타입</span>
+                    <select>
+                        <option value="video">Video (MP4)</option>
+                        <option value="image" selected>Image</option>
+                    </select>
+                </div>
+                <div class="option-group">
+                    <span class="option-label">노출 시간(초)</span>
+                    <input type="number" value="7" style="width: 80px;">
+                </div>
+            </div>
+
+            <div class="media-grid">
+                <div class="input-block">
+                    <label>배경 미디어 (Cloudflare R2)</label>
+                    <div class="input-with-btn">
+                        <input type="text" placeholder="URL을 입력하거나 파일을 업로드하세요">
+                        <button class="btn-upload">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-block">
+                    <label>타이틀 이미지 (Overlay)</label>
+                    <div class="input-with-btn">
+                        <input type="text" placeholder="URL을 입력하세요">
+                        <button class="btn-upload">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="link-area">
+                <div class="input-block">
+                    <label>링크 URL</label>
+                    <input type="text" value="http://epiclounge.co.kr/start_lsu2025.php">
+                </div>
+                <div class="input-block">
+                    <label>버튼 텍스트</label>
+                    <input type="text" value="자세히 보기">
+                </div>
+            </div>
+        </div>
+
+        <div class="card-actions">
+            <button class="btn-icon">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<button class="fab-save">
+    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    변경사항 저장
+</button>
+
+</body>
+</html>

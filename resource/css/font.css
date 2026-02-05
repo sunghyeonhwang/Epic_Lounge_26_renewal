@@ -1,0 +1,138 @@
+@charset "UTF-8";
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+/* font */
+
+@font-face {
+    font-family: 'Gmarket';
+	font-style: normal;
+	font-weight:200;
+    src: url('fonts/GmarketSansLight.woff2') format('woff2'),
+		 url('fonts/GmarketSansLight.woff') format('woff');
+}
+@font-face {
+    font-family: 'Gmarket';
+	font-style: normal;
+	font-weight:normal;
+    src: url('fonts/GmarketSansMedium.woff2') format('woff2'),
+		 url('fonts/GmarketSansMedium.woff') format('woff');
+}
+@font-face {
+    font-family: 'Gmarket';
+	font-style: normal;
+	font-weight:bold;
+    src: url('fonts/GmarketSansTTFBold.woff2') format('woff2'),
+		 url('fonts/GmarketSansTTFBold.woff') format('woff');
+}
+@font-face {
+	font-family: 'SpoqaHanSansNeo-Bold';
+	src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SpoqaHanSansNeo-Bold.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'LINESeedKR-Bd';
+	src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_11-01@1.0/LINESeedKR-Bd.woff2') format('woff2');
+
+	font-style: normal;
+}
+@font-face {
+	font-family: 'LINESeedKR-Th';
+	src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_11-01@1.0/LINESeedKR-Th.woff2') format('woff2');
+	font-style: normal;
+}
+@font-face {
+	font-family: 'LINESeedKR-Rg';
+	src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_11-01@1.0/LINESeedKR-Rg.woff2') format('woff2');
+	font-style: normal;
+}
+/*
+@font-face {
+    font-family: 'nbg';
+	font-weight:normal;
+	font-style: normal;
+    src: url('fonts/NanumBarunGothic.woff2') format('woff2'),
+		 url('fonts/NanumBarunGothic.woff') format('woff');
+}
+
+
+@font-face {
+    font-family: 'kg_title';
+	font-style: normal;
+	font-weight:200;
+    src: url('fonts/Title_Light.woff2') format('woff2'),
+		 url('fonts/Title_Light.woff') format('woff');
+}
+@font-face {
+    font-family: 'kg_title';
+	font-style: normal;
+	font-weight:normal;
+    src: url('fonts/Title_Medium.woff2') format('woff2'),
+		 url('fonts/Title_Medium.woff') format('woff');
+}
+@font-face {
+    font-family: 'kg_title';
+	font-style: normal;
+	font-weight:bold;
+    src: url('fonts/Title_Bold.woff2') format('woff2'),
+		 url('fonts/Title_Bold.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'kg_title_v';
+	font-style: normal;
+	font-weight:bold;
+    src: url('fonts/TitleV.woff2') format('woff2'),
+		 url('fonts/TitleV.woff') format('woff');
+}
+
+*/
+
+@font-face {
+    font-family: 'Montserrat';
+	font-style: normal;
+	font-weight:200;
+    src: url('fonts/Montserrat Light.woff2') format('woff2'),
+		 url('fonts/Montserrat Light.woff') format('woff');
+}
+@font-face {
+    font-family: 'Montserrat';
+	font-style: normal;
+	font-weight:normal;
+    src: url('fonts/Montserrat Regular.woff2') format('woff2'),
+		 url('fonts/Montserrat Regular.woff') format('woff');
+}
+@font-face {
+    font-family: 'Montserrat';
+	font-style: normal;
+	font-weight:bold;
+    src: url('fonts/Montserrat Bold.woff2') format('woff2'),
+		 url('fonts/Montserrat Bold.woff') format('woff');
+}
+@font-face {
+    font-family: 'Noto Sans KR';
+	font-style: normal;
+	font-weight:200;
+    src: url('fonts/NotoSans-Thin.woff2') format('woff2'),
+		 url('fonts/NotoSans-Thin.woff') format('woff');
+}
+@font-face {
+    font-family: 'Noto Sans KR';
+	font-style: normal;
+	font-weight:400;
+    src: url('fonts/NotoSansKR-Regular.woff2') format('woff2'),
+		 url('fonts/NotoSansKR-Regular.woff') format('woff');
+}
+@font-face {
+    font-family: 'Noto Sans KR';
+	font-style: normal;
+	font-weight:600;
+    src: url('fonts/NotoSansKR-Medium.woff2') format('woff2'),
+		 url('fonts/NotoSansKR-Medium.woff') format('woff');
+}
+@font-face {
+    font-family: 'Noto Sans KR';
+	font-style: normal;
+	font-weight:700;
+    src: url('fonts/NotoSansKR-Bold.woff2') format('woff2'),
+		 url('fonts/NotoSansKR-Bold.woff') format('woff');
+}

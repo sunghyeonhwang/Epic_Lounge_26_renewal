@@ -1,0 +1,302 @@
+/* v26 Modern Header Styles */
+#header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 1000;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+#header .wrap {
+    width: 1240px;
+    height: 100%;
+    margin: 0 auto;
+}
+
+.header_inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    position: relative;
+}
+
+#header .logo {
+    position: static; /* Reset from existing styles */
+    margin: 0;
+    z-index: 1001;
+}
+
+#header .logo a.logo_img img {
+    width: 160px; /* Slimmer logo */
+    transition: all 0.3s ease;
+}
+
+/* Centered GNB */
+#lnb {
+    position: static;
+    height: 100%;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+#lnb .top1menu {
+    display: flex;
+    padding: 0;
+    margin: 0;
+    width: auto;
+    height: 100%;
+}
+
+#lnb .top1menu > li {
+    position: relative;
+    padding: 0 10px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+#lnb .top1menu .depth1_ti {
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    color: #111;
+    font-size: 17px;
+    font-weight: 700;
+    border-radius: 8px;
+    transition: color 0.2s ease, background-color 0.2s ease;
+    font-family: 'Pretendard', sans-serif;
+    height: 48px;
+    line-height: normal;
+    letter-spacing: -0.02em;
+}
+
+#lnb .top1menu .depth1_ti span {
+    line-height: normal; /* Reset */
+    height: auto;
+    font-weight: inherit;
+    border-bottom: none !important; /* Remove the old line */
+}
+
+#lnb .top1menu > li:hover .depth1_ti {
+    background: #F2F4F7;
+    color: #111;
+}
+
+/* Dropdown (Submenu) */
+#lnb .top2m {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px; /* 심플한 드롭다운 너비 */
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    padding: 12px;
+    display: none;
+    z-index: 1002;
+    overflow: hidden;
+    margin-top: 8px; /* 헤더와의 간격 */
+}
+
+#lnb .top2m .menu_bg {
+    display: flex;
+    width: 100%;
+    padding: 0;
+    gap: 30px;
+}
+
+#lnb .menu_bg:before {
+    display: none; /* Remove old separator */
+}
+
+#lnb .lnb_title_box {
+    width: 200px;
+    float: none;
+    padding: 0;
+}
+
+#lnb .lnb_title_box .title {
+    font-size: 20px;
+    padding: 0 0 12px;
+    color: #000;
+    font-weight: 700;
+}
+
+#lnb .lnb_title_box .text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #888;
+}
+
+#lnb .lnb_menu_box {
+    width: 100%;
+    padding: 0;
+}
+
+#lnb .depth2 {
+    display: grid;
+    grid-template-columns: 1fr; /* 1열로 변경 */
+    gap: 4px;
+}
+
+#lnb .depth2 > li {
+    padding: 0;
+}
+
+#lnb .depth2 > li > a {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+    text-align: left;
+    color: #333;
+}
+
+#lnb .depth2 > li > a:hover {
+    background: #F9FAFB;
+}
+
+#lnb .depth2 > li .tit02 {
+    font-size: 16px;
+    font-weight: 500;
+    color: inherit;
+    display: block;
+    margin: 0;
+}
+
+/* Subtext or description style */
+#lnb .depth2 > li > a span.sub_txt {
+    font-size: 13px;
+    color: #666;
+    font-weight: 400;
+}
+
+#lnb .depth2 > li > a:hover .tit02 {
+    color: #00D3C3;
+}
+
+#lnb .lnb_banner {
+    width: 380px;
+    flex-shrink: 0;
+}
+
+#lnb .lnb_banner img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+/* Right Section */
+.header_right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    z-index: 1001;
+}
+
+/* Search Bar Styling */
+.header_right .top_search_btn_box {
+    margin: 0;
+}
+
+.header_right .top_search_box {
+    display: flex;
+    align-items: center;
+    background: #fff; /* 흰색 배경 */
+    border-radius: 24px; /* 높이의 반 */
+    padding: 0 20px;
+    width: 260px;
+    height: 48px; /* 메뉴 높이와 동일 */
+    transition: all 0.2s ease;
+    border: 1px solid #e5e5e5;
+}
+
+.header_right .top_search_box:focus-within {
+    border-color: #00D3C3;
+    box-shadow: 0 0 0 4px rgba(0, 211, 195, 0.1);
+}
+
+.header_right .top_search_box input {
+    border: none;
+    background: transparent;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 15px;
+    color: #111;
+    outline: none;
+}
+
+.header_right .top_search_box button {
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin-left: 10px;
+    cursor: pointer;
+    height: 100%;
+}
+
+.header_right .top_search_box button img {
+    width: 20px;
+    height: 20px;
+    opacity: 0.6;
+}
+
+.top_btn2 {
+    width: auto !important;
+    height: 42px !important;
+    line-height: 42px !important;
+    padding: 0 20px !important;
+    border-radius: 21px !important;
+    background: #00D3C3 !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease !important;
+}
+
+.top_btn2:hover {
+    background: #00bfae !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 211, 195, 0.3) !important;
+}
+
+/* Scroll variant */
+.scroll #header {
+    height: 80px; /* 높이 유지 */
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.08); /* 하단 라인 대신 그림자 */
+}
+
+.scroll #header .logo a.logo_img img {
+    width: 140px;
+}
+
+/* Mobile Responsive */
+@media all and (max-width: 1200px) {
+    #header .wrap {
+        width: 100%;
+        padding: 0 20px;
+    }
+    #lnb {
+        display: none; /* Keep mobile menu handling in common.js */
+    }
+}

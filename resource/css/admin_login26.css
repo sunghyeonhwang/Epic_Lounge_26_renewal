@@ -1,0 +1,132 @@
+/* Admin Login Clean & Large Version - Fixed Overlap */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* 전체 배경 및 정렬 - 전체 화면 고정으로 다른 요소 간섭 차단 */
+#mb_login.is_admin_login {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: #f8fafc !important;
+    font-family: 'Inter', sans-serif !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    z-index: 10000 !important;
+    overflow-y: auto !important;
+}
+
+/* 로그인 박스 - 크기를 더 시원하게 키움 */
+#mb_login.is_admin_login .mbskin_box {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 520px !important; /* 더 넓게 */
+    background: #ffffff !important;
+    border-radius: 24px !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1) !important;
+    padding: 70px 60px !important; /* 상하좌우 여백 확대 */
+    border: 1px solid #f1f5f9 !important;
+    float: none !important;
+}
+
+/* 로고 영역 - 상단 중앙 고정 */
+#mb_login.is_admin_login .mbskin_box h1 {
+    position: relative !important;
+    height: auto !important;
+    margin: 0 0 50px 0 !important;
+    padding: 0 !important;
+    text-align: center !important;
+    float: none !important;
+}
+
+#mb_login.is_admin_login .mbskin_box h1 img {
+    width: 280px !important; /* 로고 크게 */
+    height: auto !important;
+    display: inline-block !important;
+}
+
+/* 불필요한 요소 제거 */
+#mb_login.is_admin_login .mb_log_cate,
+#mb_login.is_admin_login .sound_only,
+#mb_login.is_admin_login legend {
+    display: none !important;
+}
+
+/* 입력창 필드셋 */
+#mb_login.is_admin_login fieldset {
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+}
+
+/* 입력창 스타일 - 높이와 폰트 확대 */
+#mb_login.is_admin_login .frm_input {
+    display: block !important;
+    width: 100% !important;
+    height: 64px !important; /* 높이 확대 */
+    padding: 0 24px !important;
+    margin-bottom: 16px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    font-size: 17px !important;
+    background: #f8fafc !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease !important;
+}
+
+#mb_login.is_admin_login .frm_input:focus {
+    border-color: #0f172a !important;
+    background: #fff !important;
+    box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.05) !important;
+    outline: none !important;
+}
+
+/* 로그인 버튼 */
+#mb_login.is_admin_login .btn_submit {
+    display: block !important;
+    width: 100% !important;
+    height: 64px !important;
+    background: #0f172a !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 14px !important;
+    font-size: 19px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    margin-top: 24px !important;
+    transition: all 0.2s !important;
+}
+
+#mb_login.is_admin_login .btn_submit:hover {
+    background: #1e293b !important;
+    transform: translateY(-1px) !important;
+}
+
+/* 하단 정보창 */
+#mb_login.is_admin_login #login_info {
+    margin-top: 30px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: 15px !important;
+    color: #64748b !important;
+}
+
+#mb_login.is_admin_login .login_if_auto label {
+    display: flex !important;
+    align-items: center !important;
+    cursor: pointer !important;
+}
+
+#mb_login.is_admin_login #login_info a {
+    color: #64748b !important;
+    text-decoration: none !important;
+}
+
+#mb_login.is_admin_login #login_info a:hover {
+    text-decoration: underline !important;
+}

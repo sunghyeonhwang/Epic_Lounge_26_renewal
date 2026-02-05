@@ -1,0 +1,40 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# PHP
+vendor/
+composer.phar
+composer.lock
+
+# Logs
+*.log
+logs/
+
+# Cache
+cache/
+tmp/
+temp/
+
+# Database
+*.sql.gz
+*.sqlite
+*.db
+
+# Environment
+.env
+.env.local
+
+# Uploaded files
+uploads/
+files/
+
+# Session files
+data/session/

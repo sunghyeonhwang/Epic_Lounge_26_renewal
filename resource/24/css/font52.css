@@ -1,0 +1,118 @@
+@charset "UTF-8";
+/* font */
+
+
+@font-face {
+	font-family: 'SpoqaHanSansNeo-Bold';
+	src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SpoqaHanSansNeo-Bold.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+    font-family: 'nbg';
+	font-weight:normal;
+	font-style: normal;
+    src: url('fonts/NanumBarunGothic.woff2') format('woff2'),
+		 url('fonts/NanumBarunGothic.woff') format('woff');
+}
+@font-face {
+	font-family: 'TheJamsil5Bold';
+	src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil5Bold.woff2') format('woff2');
+	font-weight: 700;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'TheJamsil3Regular';
+	src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil3Regular.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'TheJamsil1Thin';
+	src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302_01@1.0/TheJamsil1Thin.woff2') format('woff2');
+	font-weight: 100;
+	font-style: normal;
+}
+/*
+@font-face {
+    font-family: 'kg_title';
+	font-style: normal;
+	font-weight:200;
+    src: url('fonts/Title_Light.woff2') format('woff2'),
+		 url('fonts/Title_Light.woff') format('woff');
+}
+@font-face {
+    font-family: 'kg_title';
+	font-style: normal;
+	font-weight:normal;
+    src: url('fonts/Title_Medium.woff2') format('woff2'),
+		 url('fonts/Title_Medium.woff') format('woff');
+}
+@font-face {
+    font-family: 'kg_title';
+	font-style: normal;
+	font-weight:bold;
+    src: url('fonts/Title_Bold.woff2') format('woff2'),
+		 url('fonts/Title_Bold.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'kg_title_v';
+	font-style: normal;
+	font-weight:bold;
+    src: url('fonts/TitleV.woff2') format('woff2'),
+		 url('fonts/TitleV.woff') format('woff');
+}
+
+*/
+
+@font-face {
+    font-family: 'Montserrat';
+	font-style: normal;
+	font-weight:200;
+    src: url('fonts/Montserrat Light.woff2') format('woff2'),
+		 url('fonts/Montserrat Light.woff') format('woff');
+}
+@font-face {
+    font-family: 'Montserrat';
+	font-style: normal;
+	font-weight:normal;
+    src: url('fonts/Montserrat Regular.woff2') format('woff2'),
+		 url('fonts/Montserrat Regular.woff') format('woff');
+}
+@font-face {
+    font-family: 'Montserrat';
+	font-style: normal;
+	font-weight:bold;
+    src: url('fonts/Montserrat Bold.woff2') format('woff2'),
+		 url('fonts/Montserrat Bold.woff') format('woff');
+}
+@font-face {
+    font-family: 'Noto Sans KR';
+	font-style: normal;
+	font-weight:200;
+    src: url('fonts/NotoSans-Thin.woff2') format('woff2'),
+		 url('fonts/NotoSans-Thin.woff') format('woff');
+}
+@font-face {
+    font-family: 'Noto Sans KR';
+	font-style: normal;
+	font-weight:400;
+    src: url('fonts/NotoSansKR-Regular.woff2') format('woff2'),
+		 url('fonts/NotoSansKR-Regular.woff') format('woff');
+}
+@font-face {
+    font-family: 'Noto Sans KR';
+	font-style: normal;
+	font-weight:600;
+    src: url('fonts/NotoSansKR-Medium.woff2') format('woff2'),
+		 url('fonts/NotoSansKR-Medium.woff') format('woff');
+}
+@font-face {
+    font-family: 'Noto Sans KR';
+	font-style: normal;
+	font-weight:700;
+    src: url('fonts/NotoSansKR-Bold.woff2') format('woff2'),
+		 url('fonts/NotoSansKR-Bold.woff') format('woff');
+}

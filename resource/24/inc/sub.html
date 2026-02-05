@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="한국치산기술협회">
+    <meta property="og:description" content="한국치산기술협회">
+    <meta property="og:image" content="">
+    <meta property="og:url" content="http://kafet.or.kr">
+    <title>한국치산기술협회</title>
+    <link rel="stylesheet" href="/css/sub.css">
+    <link rel="shortcut icon" href="/images/common/favi.ico" type="image/x-icon">
+    <link rel="icon" href="/images/common/favi.ico" type="image/x-icon">
+    <script src="/js/jquery-3.4.1.min.js"></script>
+    <script src="/js/slick.min.js"></script>
+    <script src="/js/ScrollTrigger.min.js"></script>
+    <script src="/js/jquery.menu.min.js"></script>
+    <script src="/js/jquery.responsive.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/sub.js"></script>
+    <script>
+        $(function(){
+            var url = new URL(window.location.href);
+            var urlParams = url.searchParams;
+            var urlKey = urlParams.get('key');
+            $.ajax({
+                url : '/contents/' + urlKey + '.html',
+                success : function(data){
+                    $('.container .wrap').html(data);
+                    $.getScript('/js/sub.js');
+                    // 로드시 리스트 노출
+                    setTimeout(function(){
+                        $('.summary_btn_wrap .summary_btn.list').click();
+                    },100);
+
+                }
+            })
+        })
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="wrap">
+    </div>
+</div>
+</body>
+</html>

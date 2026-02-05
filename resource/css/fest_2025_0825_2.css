@@ -1,0 +1,1290 @@
+@import url('reset.css');
+/*
+@import url('slick.css');
+@import url('slick-theme.css');
+*/
+
+@font-face {
+	font-family: 'Noto Sans KR';
+	font-style: normal;
+	font-weight: 200;
+	src: url('fonts/NotoSans-Thin.woff2') format('woff2'),
+		url('fonts/NotoSans-Thin.woff') format('woff');
+}
+
+@font-face {
+	font-family: 'Noto Sans KR';
+	font-style: normal;
+	font-weight: 400;
+	src: url('fonts/NotoSansKR-Regular.woff2') format('woff2'),
+		url('fonts/NotoSansKR-Regular.woff') format('woff');
+}
+
+@font-face {
+	font-family: 'Noto Sans KR';
+	font-style: normal;
+	font-weight: 600;
+	src: url('fonts/NotoSansKR-Medium.woff2') format('woff2'),
+		url('fonts/NotoSansKR-Medium.woff') format('woff');
+}
+
+@font-face {
+	font-family: 'Noto Sans KR';
+	font-style: normal;
+	font-weight: 700;
+	src: url('fonts/NotoSansKR-Bold.woff2') format('woff2'),
+		url('fonts/NotoSansKR-Bold.woff') format('woff');
+}
+
+
+@font-face {
+	font-family: 'Freesentation';
+	font-style: normal;
+	font-weight: 200;
+	src: url('fonts/Freesentation-2ExtraLight.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Freesentation';
+	font-style: normal;
+	font-weight: normal;
+	src: url('fonts/Freesentation-5Medium.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Freesentation';
+	font-style: normal;
+	font-weight: bold;
+	src: url('fonts/Freesentation-7Bold.woff2') format('woff2');
+}
+
+body {
+	background: #101014;
+}
+
+.wrap {
+	width: 1140px
+}
+
+#event_wrap {
+	font-family: 'Freesentation';
+	font-weight: 400;
+	margin-top: 0
+}
+
+#event_main_sec_1 {
+	position: relative;
+	width: 100%;
+	height: 100vh;
+	overflow: hidden;
+	margin: 0px auto;
+}
+
+#event_main_sec_1 .visual_mp4 {
+	width: 100%;
+	display: inline-block;
+}
+
+#event_main_sec_1 .visual_mp4 video {
+	-webkit-transform: translateX(-50%) translateY(-50%);
+	-moz-transform: translateX(-50%) translateY(-50%);
+	-ms-transform: translateX(-50%) translateY(-50%);
+	-o-transform: translateX(-50%) translateY(-50%);
+	transform: translateX(-50%) translateY(-50%);
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	min-width: 100%;
+	min-height: 100%;
+	width: auto;
+	height: auto;
+}
+
+#event_main_sec_1 .visual_mp4:after {
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+	width: 100%;
+	height: 300px;
+	background: rgb(16, 16, 20);
+	content: "";
+	display: block;
+	background: linear-gradient(180deg, rgba(16, 16, 20, 0) 0%, rgba(16, 16, 20, 1) 100%);
+}
+
+
+
+
+#event_main_sec_1 .visual_text_box {
+	position: absolute;
+	top: 50%;
+	left: 0px;
+	width: 100%;
+	opacity: 0;
+	display: inline-block;
+	text-align: center;
+	transform: translate(00px, -50%);
+}
+
+#event_main_sec_1 .visual_text_box .text_1 img {
+	width: 670px
+}
+
+.body_active #event_main_sec_1 .visual_text_box {
+	opacity: 1;
+	transition: all 1.2s ease 0.25s;
+	transform: translate(0, -50%);
+	-webkit-mask: url(../images/event/building-sprite.png);
+	mask: url(../images/event/building-sprite.png);
+	-webkit-mask-size: 7500% 100%;
+	mask-size: 7500% 100%;
+	-webkit-animation: mask-play 1.2s steps(74) forwards;
+	animation: mask-play 1.2s steps(74) forwards;
+	animation-delay: 0.25s;
+}
+
+@-webkit-keyframes AnimationName {
+	0% {
+		background-position: 0% 50%
+	}
+
+	50% {
+		background-position: 100% 50%
+	}
+
+	100% {
+		background-position: 0% 50%
+	}
+}
+
+@-moz-keyframes AnimationName {
+	0% {
+		background-position: 0% 50%
+	}
+
+	50% {
+		background-position: 100% 50%
+	}
+
+	100% {
+		background-position: 0% 50%
+	}
+}
+
+@-o-keyframes AnimationName {
+	0% {
+		background-position: 0% 50%
+	}
+
+	50% {
+		background-position: 100% 50%
+	}
+
+	100% {
+		background-position: 0% 50%
+	}
+}
+
+@keyframes AnimationName {
+	0% {
+		background-position: 0% 50%
+	}
+
+	50% {
+		background-position: 100% 50%
+	}
+
+	100% {
+		background-position: 0% 50%
+	}
+}
+
+
+#event_main_sec_2 {
+	padding: 50px 0 120px
+}
+
+#event_main_sec_2 .text_1 {
+	font-size: 46px;
+	color: #fff;
+	font-weight: bold;
+	text-align: left;
+}
+
+#event_main_sec_2 .text_2 {
+	font-size: 24px;
+	color: #D4D4D4;
+	text-align: left;
+	margin-top: 30px;
+	letter-spacing: -0.025em;
+	line-height: 1.35em
+}
+
+#event_main_sec_2 .list {
+	width: 100%;
+	display: inline-block;
+	margin: 10px 0 40px
+}
+
+#event_main_sec_2 .list li {
+	position: relative;
+	font-size: 22px;
+	color: #D4D4D4;
+	padding: 0 0 0 30px
+}
+
+#event_main_sec_2 .list li:before {
+	position: absolute;
+	top: 15px;
+	left: 15px;
+	width: 3px;
+	height: 3px;
+	border-radius: 50%;
+	background: #D4D4D4;
+	display: block;
+	content: "";
+}
+
+#event_main_sec_2 .btn_box {
+	width: 100%;
+	display: inline-block;
+	text-align: center;
+}
+
+#event_main_sec_2 .btn_box a {
+	width: 220px;
+	height: 50px;
+	text-align: center;
+	box-sizing: border-box;
+	border-radius: 5px;
+	line-height: 48px;
+	font-size: 20px
+}
+
+#event_main_sec_2 .btn_box .btn_type1 {
+	background: #26BBFF;
+	border: 1px solid #26BBFF;
+	color: #000;
+}
+
+#event_main_sec_2 .btn_box .btn_type2 {
+	border: 1px solid #D9D9D9;
+	color: #fff;
+	margin-left: 10px;
+}
+
+
+#event_main_sec_3 {}
+
+#event_main_sec_3 h3.h3 {
+	font-size: 28px;
+	color: #fff;
+	margin: 0 0 15px 0
+}
+
+#event_main_sec_3 ul {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+#event_main_sec_3 ul li {
+	position: relative;
+	width: calc(33.33% - 15px);
+	margin-bottom: 15px
+}
+
+#event_main_sec_3 ul li .img_box {}
+
+#event_main_sec_3 ul li .img_box img {
+	width: 100%;
+	border-radius: 5px;
+}
+
+#event_main_sec_3 ul li .text_box {
+	position: absolute;
+	bottom: 30px;
+	left: 30px;
+	line-height: 1em;
+	color: #fff;
+	font-size: 24px;
+}
+
+
+#event_main_sec_4 {
+	margin-top: 50px
+}
+
+#event_main_sec_4 h3.h3 {
+	font-size: 28px;
+	color: #fff;
+	margin: 0 0 15px 0
+}
+
+#event_main_sec_4 ul {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+#event_main_sec_4 ul li {
+	position: relative;
+	width: calc(33.33% - 15px);
+	padding: 35px 25px 50px;
+	background: url('../images/fest_2025_0825/bal_box_bg.png') no-repeat center top;
+	background-size: 100% auto;
+	margin-bottom: 15px
+}
+
+#event_main_sec_4 ul li:after {
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+	width: 100%;
+	height: 50px;
+	background: rgb(16, 16, 20);
+	content: "";
+	display: block;
+	background: linear-gradient(180deg, rgba(16, 16, 20, 0) 0%, rgba(16, 16, 20, 1) 100%);
+}
+
+#event_main_sec_4 ul li span {
+	display: inline-block;
+	width: 100%;
+	vertical-align: top;
+	line-height: 1em;
+}
+
+#event_main_sec_4 ul li .text_1 {
+	font-size: 21px;
+	color: #26BBFF;
+}
+
+#event_main_sec_4 ul li .text_2 {
+	font-size: 21px;
+	font-weight: bold;
+	color: #fff;
+	margin: 8px 0;
+}
+
+#event_main_sec_4 ul li .text_3 {
+	font-size: 18px;
+	font-weight: 200;
+	color: #fff;
+}
+
+#event_main_sec_4 .info_text {
+	color: #AEAEAE;
+	font-size: 16px;
+	font-weight: 200;
+	text-align: right;
+	display: inline-block;
+	width: 100%;
+	vertical-align: top;
+	line-height: 1em;
+}
+
+#event_main_sec_4 .qu_text_box {
+	positioN: relative;
+	width: 100%;
+	border: 1px solid #2F2F36;
+	line-height: 90px;
+	padding: 0 30px;
+	border-radius: 5px;
+	display: inline-block;
+	width: 100%;
+	vertical-align: top;
+}
+
+#event_main_sec_4 .qu_text_box a {
+	position: absolute;
+	right: 30px;
+	top: 20px;
+	height: 50px;
+	line-height: 50px;
+	padding: 0 50px;
+	color: #BABABA;
+	font-size: 22px;
+	font-weight: bold;
+	background: #343437;
+	border-radius: 5px;
+}
+
+#event_main_sec_4 .qu_text_box p {
+	width: 100%;
+}
+
+#event_main_sec_4 .qu_text_box p span {
+	font-size: 21px;
+	color: #fff;
+}
+
+#event_main_sec_4 .qu_text_box p em {
+	font-size: 18px;
+	font-weight: 200;
+	color: #fff;
+	margin-left: 20px
+}
+
+#event_main_sec_5 {
+	margin: 200px 0
+}
+
+#event_main_sec_5 h3.h3 {
+	font-size: 28px;
+	text-align: center;
+	color: #00AAF5;
+	margin: 0 0 40px 0
+}
+
+#event_main_sec_5 h3.h3 em {
+	letter-spacing: 5px;
+}
+
+#event_main_sec_5 .acc_list {
+	margin-top: 15px;
+	border-bottom: 1px solid #1c1c20
+}
+
+#event_main_sec_5 .acc_list .close {
+	display: none
+}
+
+#event_main_sec_5 .acc_item {
+	position: relative;
+	border-top: 1px solid #1c1c20
+}
+
+#event_main_sec_5 .acc_item:after {
+	display: block;
+	position: absolute;
+	right: 15px;
+	top: 20px;
+	width: 24px;
+	height: 24px;
+	background: url('../images/fest_2025_0825/faq_plus.svg') no-repeat center center;
+	background-size: 24px;
+	z-index: -1
+}
+
+#event_main_sec_5 .acc_item.active:after {
+	background: url('../images/fest_2025_0825/flat-color-icons_plus.png') no-repeat center center;
+	background-size: 24px;
+}
+
+#event_main_sec_5 .acc_item .acc_btn {
+	padding: 20px 0;
+	width: 100%;
+	text-align: left;
+}
+
+#event_main_sec_5 .acc_item .acc_btn .title {
+	position: relative;
+	font-size: 21px;
+	color: #D4D4D4;
+	padding-left: 55px;
+	word-break: keep-all;
+}
+
+#event_main_sec_5 .acc_item .acc_btn .title:before {
+	width: 18px;
+	height: 20px;
+	display: block;
+	position: absolute;
+	top: 4px;
+	left: 25px;
+	background: url('../images/fest_2025_0825/faq_q.svg') no-repeat center center;
+	background-size: cover;
+}
+
+#event_main_sec_5 .acc_item .acc_con {
+	display: none;
+	position: relative;
+	padding-right: 100px;
+	font-size: 20px;
+	padding-top: 0px;
+	word-break: keep-all;
+	text-align: left;
+}
+
+#event_main_sec_5 .acc_item .acc_con .acc_btn {
+	position: relative;
+	font-size: 21px;
+	color: #9D9D9D;
+	padding: 0 0 20px 55px;
+	word-break: keep-all;
+}
+
+#event_main_sec_5 .acc_item .acc_con .acc_btn:before {
+	width: 18px;
+	height: 20px;
+	display: block;
+	position: absolute;
+	top: 4px;
+	left: 25px;
+	background: url('../images/fest_2025_0825/faq_a.svg') no-repeat center center;
+	background-size: cover;
+}
+
+#event_main_sec_5 .acc_item.active .acc_con {
+	display: block;
+}
+
+#event_main_sec_5 .acc_item .acc_con p {
+	text-align: left;
+}
+
+
+
+
+
+
+#event_write {
+	position: relative;
+	font-family: 'Freesentation';
+	font-weight: 400;
+	margin-top: 0;
+	padding: 150px 0;
+}
+
+#event_write.full_page {
+	min-height: calc(100vh - 415px);
+}
+
+#event_write.full_page .wrap {
+	position: absolute;
+	top: calc(50% + 45px);
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.visual_mp4_bg:after {
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+	width: 100%;
+	height: 300px;
+	background: rgb(16, 16, 20);
+	content: "";
+	display: block;
+	background: linear-gradient(180deg, rgba(16, 16, 20, 0) 0%, rgba(16, 16, 20, 1) 100%);
+}
+
+.visual_mp4_bg {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	overflow: hidden;
+	margin: 0px auto;
+	z-index: -1
+}
+
+.visual_mp4_bg {
+	width: 100%;
+	display: inline-block;
+	height: 100vh;
+}
+
+.visual_mp4_bg video {
+	-webkit-transform: translateX(-50%) translateY(-50%);
+	-moz-transform: translateX(-50%) translateY(-50%);
+	-ms-transform: translateX(-50%) translateY(-50%);
+	-o-transform: translateX(-50%) translateY(-50%);
+	transform: translateX(-50%) translateY(-50%);
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	min-width: 100%;
+	min-height: 100%;
+	width: auto;
+	height: auto;
+}
+
+
+.write_text_title {
+	margin: 0 0 40px;
+}
+
+.write_text_title img {
+	width: 220px
+}
+
+.write_title.top_title {
+	margin-top: 0px;
+	border-top: 0px;
+	padding: 0px;
+}
+
+.write_title.noline {
+	border-top: 0px;
+	padding: 0px
+}
+
+.write_title {
+	position: Relative;
+	width: 100%;
+	margin-bottom: 20px;
+	margin-top: 50px;
+	border-top: 1px solid #3f3f46;
+	padding-top: 30px
+}
+
+.write_title>* {
+	display: inline-block;
+	width: 100%;
+	vertical-align: top;
+	line-height: 1em;
+}
+
+.write_title .num_text {
+	font-size: 26px;
+	color: #26BBFF;
+}
+
+.write_title h3.h3 {
+	font-size: 26px;
+	font-weight: bold;
+	color: #fff;
+	margin: 8px 0;
+}
+
+.write_title .info_text {
+	font-size: 16px;
+	font-weight: 200;
+	color: #fff;
+}
+
+#event_write .write_box {
+	background: #1C1C20;
+	border: 1px solid #2F2F36;
+	width: 100%;
+	padding: 40px 50px;
+	box-sizing: border-box;
+	border-radius: 10px;
+}
+
+#event_write .in_text_list {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+#event_write .in_text_list .in_text {
+	width: calc(50% - 10px);
+}
+
+#event_write .in_text {
+	display: inline-block;
+	width: 100%;
+	vertical-align: top;
+}
+
+#event_write .in_text .label_p,
+#event_write .in_text label {
+	font-size: 18px;
+	color: #fff;
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+
+#event_write .in_text label.h4 {
+	font-size: 22px
+}
+
+#event_write .in_text .text {
+	height: 50px;
+	border: 1px solid #3f3f46;
+	font-family: 'Freesentation';
+	padding: 10px 15px;
+	box-sizing: border-box;
+	border-radius: 5px;
+	width: 100%;
+	color: #fff;
+	background: none;
+	line-height: 48px;
+	font-size: 17px;
+}
+
+#event_write .in_text textarea.text {
+	line-height: 1.45em;
+}
+
+#event_write .in_text .text::placeholder {
+	color: #838383;
+}
+
+#event_write .in_text textarea.text {
+	height: 250px
+}
+
+#event_write .in_text .input_file {
+	position: Relative;
+	width: 100%;
+	height: 50px;
+	border: 1px solid #3f3f46;
+	color: #838383;
+	padding: 0 15px;
+	box-sizing: border-box;
+	line-height: 48px;
+	border-radius: 5px;
+	width: 100%;
+	font-size: 17px;
+}
+
+#event_write .in_text .input_file input.file {
+	visibility: hidden;
+}
+
+#event_write .in_text .input_file label {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	width: 160px;
+	height: 38px;
+	line-height: 38px;
+	text-align: center;
+	color: #BABABA;
+	background: #343437;
+	border-radius: 5px
+}
+
+
+#event_write .line {
+	padding-top: 15px;
+	margin-top: 25px;
+	border-top: 1px solid #3f3f46;
+}
+
+#event_write h4.h4 {
+	font-size: 22px;
+	color: #fff;
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+
+#event_write .in_info {
+	line-height: 1.35em;
+	color: #fff;
+	font-size: 16px;
+	margin: 0 0 10px 0;
+	font-weight: 200;
+}
+
+#event_write .ch_list_box ul {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+#event_write .ch_list_box ul li {}
+
+#event_write .ch_list_box ul li input {
+	visibility: hidden;
+	width: 0px;
+	height: 0px;
+	display: block
+}
+
+#event_write .ch_list_box ul li label {
+	background: url('../images/fest_2025_0825/ch_off.svg') no-repeat left 5px;
+	background-size: 19px auto;
+	padding: 1px 0 1px 28px;
+	font-size: 18px;
+	color: #838383
+}
+
+#event_write .ch_list_box ul li input:checked+label {
+	background: url('../images/fest_2025_0825/ch_on.svg') no-repeat left 5px;
+	background-size: 19px auto;
+	color: #fff
+}
+
+#event_write .ch_list_box ul.list_2 li {
+	width: 50%;
+}
+
+#event_write .ch_list_box ul.list_3 li {
+	width: 33.33%
+}
+
+#event_write .ch_list_box ul.list_4 li {
+	width: 25%;
+}
+
+#event_write .must {
+	width: 100%;
+	text-align: right;
+	font-weight: 200;
+	color: #FF7070;
+	font-size: 14px;
+	margin-top: 8px;
+}
+
+#event_write .must_2 {
+	width: 100%;
+	text-align: right;
+	font-weight: 200;
+	color: #FDFF70;
+	font-size: 14px;
+	margin-top: 8px;
+}
+
+#event_write .ch_list_box .must_2 {
+	margin: 20px 0 -15px 0;
+}
+
+.btn_box_fot {
+	width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	vertical-align: top;
+	justify-content: space-between;
+	margin-top: 50px
+}
+
+.btn_box_fot button {
+	width: 350px;
+	height: 52px;
+	letter-spacing: -0.025em;
+	line-height: 50px;
+	display: inline-block;
+	font-size: 21px;
+	font-weight: bold;
+	text-align: center;
+	border-radius: 5px;
+}
+
+.btn_box_fot .btn_type1 {
+	color: #000;
+	background: #686868;
+}
+
+.btn_box_fot .btn_type2 {
+	color: #000;
+	background: #26BBFF
+}
+
+.mt_0 {
+	margin-top: 0px !important
+}
+
+.mt_10 {
+	margin-top: 10px !important
+}
+
+.mt_20 {
+	margin-top: 20px !important
+}
+
+.mt_30 {
+	margin-top: 30px !important
+}
+
+
+.agree_text {}
+
+.agree_text p {
+	color: #fff;
+	margin-bottom: 10px;
+}
+
+.agree_text p input {
+	visibility: hidden;
+	width: 0px;
+	height: 0px;
+	display: block
+}
+
+.agree_text p label {
+	position: relative;
+	font-size: 16px;
+	color: #fff;
+	padding: 0 0 0 28px;
+}
+
+.agree_text p label:before {
+	background: #fff;
+	border-radius: 2px;
+	width: 18px;
+	height: 18px;
+	display: block;
+	content: "";
+	background: #fff;
+	position: absolute;
+	top: 3px;
+	left: 0px;
+}
+
+.agree_text p input:checked+label {}
+
+.agree_text p input:checked+label:before {
+	background: #26BBFF
+}
+
+.agree_text p a {
+	text-decoration: underline;
+}
+
+.em_b_red {
+	color: #FF7070
+}
+
+@media screen and (max-width:1140px) {
+	.wrap {
+		width: 100%;
+	}
+}
+
+
+@media screen and (max-height:1300px) {
+
+	#event_write.full_page .wrap {
+		position: relative;
+		top: auto;
+		left: auto;
+		transform: inherit;
+		padding: 100px 20px 50px
+	}
+
+	#event_write.full_page .wrap {
+		position: relative;
+		top: auto;
+		left: auto;
+	}
+}
+
+@media screen and (max-width:1000px) {
+	#event_main_sec_1 .visual_text_box .text_1 img {
+		width: 520px
+	}
+
+	#event_main_sec_2 .text_1 {
+		font-size: 38px;
+		line-height: 1.25em
+	}
+
+	#event_main_sec_2 .text_2,
+	#event_main_sec_2 .list li {
+		font-size: 20px;
+	}
+
+	#event_main_sec_2 .list li {
+		padding: 0 0 0 25px;
+	}
+
+	#event_main_sec_2 .list li:before {
+		top: 13px;
+		left: 12px;
+	}
+
+	#event_main_sec_3 h3.h3,
+	#event_main_sec_4 h3.h3 {
+		font-size: 26px
+	}
+
+	#event_main_sec_3 ul li .text_box {
+		left: 20px;
+		bottom: 20px;
+		font-size: 20px
+	}
+
+	#event_main_sec_4 .qu_text_box p {
+		padding: 25px 0 0
+	}
+
+	#event_main_sec_4 .qu_text_box p span {
+		font-size: 20px;
+		display: block;
+		line-height: 1.35em
+	}
+
+	#event_main_sec_4 .qu_text_box p em {
+		font-size: 17px;
+		display: block;
+		line-height: 1.35em;
+		margin: 10px 0 0 0
+	}
+
+	#event_main_sec_4 .qu_text_box a {
+		position: relative;
+		right: auto;
+		top: auto;
+		line-height: 40px;
+		height: 40px;
+		font-size: 18px;
+		padding: 0 30px
+	}
+
+	#event_main_sec_5 {
+		margin: 120px 0
+	}
+
+	#event_main_sec_5 .acc_item .acc_btn {
+		padding: 15px 0;
+	}
+
+	#event_main_sec_5 .acc_item .acc_btn .title,
+	#event_main_sec_5 .acc_item .acc_con .acc_btn {
+		font-size: 18px;
+		padding-left: 30px;
+		padding-right: 20px;
+	}
+
+	#event_main_sec_5 .acc_item .acc_btn .title:before,
+	#event_main_sec_5 .acc_item .acc_con .acc_btn:before {
+		width: 16px;
+		height: 17px;
+		top: 3px;
+		left: 7px
+	}
+
+	#event_main_sec_5 .acc_item:after {
+		width: 20px;
+		height: 20px;
+		background-size: 20px;
+		right: 10px;
+		top: 17px
+	}
+
+	#event_main_sec_5 .acc_item.active:after {
+		background: url('../images/fest_2025_0825/flat-color-icons_plus.png') no-repeat center center;
+		background-size: 20px;
+	}
+
+	#event_write .write_box {
+		padding: 30px 40px
+	}
+
+	.write_title .num_text,
+	.write_title h3.h3 {
+		font-size: 24px;
+	}
+
+	#event_write .ch_list_box ul.list_3 li {
+		width: 50%;
+	}
+
+	#event_write .ch_list_box ul.list_4 li {
+		width: 33.33%
+	}
+
+
+	#event_write .in_text .label_p,
+	#event_write .in_text label {
+		font-size: 17px;
+	}
+
+	#event_write .in_text .input_file,
+	#event_write .in_text .text {
+		height: 45px;
+		line-height: 43px;
+		font-size: 17px
+	}
+
+	#event_write .in_text .file_text {
+		padding-right: 140px;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	#event_write .in_text .input_file label {
+		width: 130px;
+		height: 32px;
+		line-height: 32px;
+	}
+
+	#event_write .in_text textarea.text {
+		height: 160px
+	}
+
+	#event_write h4.h4 {
+		font-size: 20px;
+		line-height: 1.35em
+	}
+
+	#event_write .ch_list_box ul li label {
+		font-size: 17px;
+		background-size: 17px auto;
+		padding: 1px 0 1px 25px;
+	}
+
+	#event_write .in_text label.h4 {
+		font-sizE: 21px
+	}
+
+	.btn_box_fot button {
+		font-size: 20px;
+		width: 280px;
+		height: 48px;
+		line-height: 46px
+	}
+
+	#event_write.full_page .wrap {
+		position: relative;
+		top: auto;
+		left: auto;
+		transform: inherit;
+		padding: 100px 20px 50px
+	}
+
+	#event_write.full_page .wrap {
+		position: relative;
+		top: auto;
+		left: auto;
+	}
+
+	.btn_box_fot {
+		margin-top: 25px
+	}
+}
+
+
+@media screen and (max-width:640px) {
+	#event_main_sec_1 .visual_text_box .text_1 img {
+		width: 420px
+	}
+
+	.btn_box_fot button,
+	#event_main_sec_2 .btn_box a {
+		width: 180px;
+		height: 45px;
+		line-height: 43px;
+		font-size: 18px;
+	}
+
+	#event_main_sec_2 {
+		padding: 50px 0 80px
+	}
+
+	#event_main_sec_3 ul li {
+		width: calc(50% - 10px);
+		margin-bottom: 10px;
+	}
+
+	#event_main_sec_4 ul li {
+		width: 100%;
+		padding: 25px 25px 30px;
+	}
+
+	#event_main_sec_4 ul li .text_1,
+	#event_main_sec_4 ul li .text_2 {
+		font-size: 19px;
+	}
+
+	#event_main_sec_4 ul li .text_3 {
+		font-size: 17px
+	}
+
+	#event_write .write_box {
+		padding: 20px 25px
+	}
+
+	.write_title .num_text,
+	.write_title h3.h3 {
+		font-size: 22px;
+	}
+
+	#event_write .ch_list_box ul.list_4 li {
+		width: 50%
+	}
+
+	#event_write .in_text label.h4 {
+		font-sizE: 20px
+	}
+
+
+	.btn_box_fot button {
+		font-size: 19px;
+		width: 200px;
+		height: 46px;
+		line-height: 44px
+	}
+
+	#event_write .in_text_list .in_text {
+		width: 100%;
+	}
+
+}
+
+
+@media screen and (max-width:480px) {
+	#event_main_sec_1 .visual_text_box .text_1 img {
+		width: 320px
+	}
+
+	.write_text_title img {
+		width: 200px
+	}
+
+	#event_main_sec_2 .btn_box .btn_type2 {
+		margin-left: 0px;
+	}
+
+	.btn_box_fot button,
+	#event_main_sec_2 .btn_box a {
+		width: 100%;
+		margin-top: 10px;
+		height: 40px;
+		line-height: 38px;
+		font-size: 16px;
+	}
+
+	#event_main_sec_2 .text_1 {
+		font-size: 32px;
+	}
+
+	#event_main_sec_2 .text_2,
+	#event_main_sec_2 .list li {
+		font-size: 18px;
+	}
+
+	#event_write .write_box {
+		padding: 20px 20px
+	}
+
+	.write_title .num_text,
+	.write_title h3.h3 {
+		font-size: 20px;
+	}
+
+	.write_title .info_text {
+		font-size: 15px
+	}
+
+	#event_write .ch_list_box ul.list_2 li,
+	#event_write .ch_list_box ul.list_3 li,
+	#event_write .ch_list_box ul.list_4 li {
+		width: 100%;
+	}
+
+	#event_write .ch_list_box ul.list_2.yes_no li {
+		width: 50%
+	}
+
+
+
+	#event_write .ch_list_box ul li label {
+		font-size: 16px;
+		background-size: 16px auto;
+		background-position: left 4px;
+		padding: 1px 0 1px 23px;
+	}
+
+	#event_write .ch_list_box ul li input:checked+label {
+		background: url('../images/fest_2025_0825/ch_on.svg') no-repeat left 4px;
+		background-size: 16px auto;
+	}
+
+	#event_write .in_text label.h4 {
+		font-sizE: 18px
+	}
+
+	#event_write h4.h4 {
+		font-size: 18px
+	}
+
+	#event_write .in_info {
+		font-size: 15px;
+	}
+}
