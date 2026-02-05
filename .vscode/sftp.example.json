@@ -1,0 +1,29 @@
+{
+  "name": "Epic Lounge Production",
+  "host": "your-server.com",
+  "protocol": "sftp",
+  "port": 22,
+  "username": "your-username",
+  "remotePath": "/path/to/remote/directory",
+  "uploadOnSave": false,
+  "useTempFile": false,
+  "openSsh": false,
+  "ignore": [
+    ".vscode",
+    ".git",
+    ".DS_Store",
+    "node_modules",
+    "*.md",
+    ".gitignore",
+    "renewal.md",
+    "INDEX.md",
+    "AGENTS.md"
+  ],
+  "watcher": {
+    "files": "**/*",
+    "autoUpload": false,
+    "autoDelete": false
+  },
+  "context": "/Users/griff_m5/Documents/GRIFF_PROJECT/EPICLOUNGE25/v3_renew",
+  "_comment": "이 파일을 .vscode/sftp.json으로 복사한 후, 실제 서버 정보를 입력하세요. SSH 키 사용을 권장합니다: privateKeyPath와 passphrase 추가"
+}

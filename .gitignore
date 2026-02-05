@@ -3,11 +3,14 @@
 Thumbs.db
 
 # IDE files
-.vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# SFTP credentials (실제 서버 정보 포함, 개인 설정)
+.vscode/sftp.json
+# Note: .vscode/sftp.example.json은 Git에 포함하여 팀과 공유
 
 # PHP
 vendor/
