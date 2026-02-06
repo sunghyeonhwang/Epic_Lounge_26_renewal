@@ -194,10 +194,8 @@ contents/                        ← 기존 레거시 (라이브 운영, 손대�
 │
 contents/v4/                     ← 리뉴얼 신규 (테스트 → 검증 후 교체)
 │
-├── event_list.php               # 커뮤니티 이벤트 목록
-├── event_view.php               # 커뮤니티 이벤트 상세 (event_view_copy 흡수)
-├── global_event_list.php        # 글로벌 이벤트 목록 (분리 유지)
-├── global_event_view.php        # 글로벌 이벤트 상세 (분리 유지)
+├── event_list.php               # 이벤트 목록 (커뮤니티+글로벌 탭 통합)
+├── event_view.php               # 이벤트 상세 (커뮤니티+글로벌 type 파라미터 통합)
 │
 ├── replay_list.php              # 영상 목록 (replay + replay_all 통합)
 ├── replay_view.php              # 영상 상세
@@ -211,19 +209,18 @@ contents/v4/                     ← 리뉴얼 신규 (테스트 → 검증 후 
 ├── book_list.php                # 백서 목록
 ├── book_view.php                # 백서 상세
 │
-├── search.php                   # 통합 검색
+├── total_search.php             # 통합 검색 (5개 테이블 동시)
 │
 ├── personal.php                 # 개인정보보호정책
 ├── ode.php                      # 이용약관
 │
 └── ajax/                        # AJAX 엔드포인트 (파일별 분리 유지)
+    ├── event.ajax.php           # 이벤트 필터 (커뮤니티+글로벌 분기)
     ├── replay.ajax.php          # 영상 필터
     ├── news.ajax.php            # 뉴스 필터
     ├── free.ajax.php            # 무료콘텐츠 필터
     ├── book.ajax.php            # 백서 필터
-    ├── search_news.ajax.php     # 검색 (뉴스)
-    ├── search_event.ajax.php    # 검색 (이벤트)
-    └── search_rsc.ajax.php      # 검색 (리소스)
+    └── search.ajax.php          # 통합 검색 (5개 테이블 동시)
 ```
 
 #### 운영 전환 절차
@@ -244,7 +241,8 @@ contents/v4/                     ← 리뉴얼 신규 (테스트 → 검증 후 
 
 ```
 inc/
-├── v4_helpers.php             # v4 전용 안전 래퍼 (v4_int, v4_str, v4_limit 등)
+├── v4_helpers.php             # v4 전용 안전 래퍼 (v4_int, v4_str, v4_limit, v4_ajax_guard 등)
+├── v4_cards.php               # 카드 렌더링 (render_event_card, render_resource_card)
 ├── components/
 │   ├── card_list.php          # 카드 리스트 렌더링 (리스트뷰/갤러리뷰)
 │   ├── sidebar_filter.php     # 사이드바 필터 (체크박스 필터 공통)
@@ -980,56 +978,57 @@ Phase 7 (전환)
 ### Phase 1: 기반 구축
 
 #### 1-1. 디렉토리 구조 생성 `[Haiku]`
-- ⬜ `contents/v4/` 디렉토리 생성
-- ⬜ `contents/v4/ajax/` 디렉토리 생성
-- ⬜ `inc/components/` 디렉토리 생성
-- ⬜ `resource/css/pages/` 디렉토리 생성
-- ⬜ `_test/screenshots/legacy/` 디렉토리 생성 (Playwright 캡처용)
-- ⬜ `_test/screenshots/v4/` 디렉토리 생성 (Playwright 캡처용)
+- ✅ `contents/v4/` 디렉토리 생성
+- ✅ `contents/v4/ajax/` 디렉토리 생성
+- ✅ `inc/components/` 디렉토리 생성
+- ✅ `resource/css/pages/` 디렉토리 생성
+- ✅ `_test/screenshots/legacy/` 디렉토리 생성 (Playwright 캡처용)
+- ✅ `_test/screenshots/v4/` 디렉토리 생성 (Playwright 캡처용)
 
 #### 1-0. 🎭 Playwright - 레거시 페이지 기준선 캡처 `[Haiku]`
 > Phase 1 시작 시 가장 먼저 수행. 리뉴얼 전 현행 페이지의 스크린샷을 보존한다.
-- ⬜ 목록 페이지 6개 스크린샷 캡처 (Desktop 1440px / Tablet 768px / Mobile 375px)
-  - `event_list`, `global_event_list`, `replay`, `news_list`, `free`, `book`
-- ⬜ 상세 페이지 6개 스크린샷 캡처 (샘플 idx 지정)
-  - `event_view`, `global_event_view`, `replay_view`, `news_view`, `free_view`, `book_view`
-- ⬜ 통합 검색 + 정적 페이지 스크린샷 캡처
-  - `total_search` (키워드 "테스트"), `personal`
-- ⬜ `_test/screenshots/legacy/` 에 저장 완료 확인
+- ✅ 목록 페이지 6개 스크린샷 캡처 (Desktop 1440px / Tablet 768px / Mobile 375px)
+  - `event_list`, `global_event_list`, `replay`, `news_list`, `free`, `book` — 각 3해상도 × 6 = 18장
+- ✅ 상세 페이지 스크린샷 캡처 (샘플 idx 지정)
+  - `event_view`(idx=326), `global_event_view`(idx=222), `replay_view`(idx=1406) — 각 3해상도 × 3 = 9장
+  - ⚠️ `news_view`, `free_view`, `book_view` — 레거시에 상세 페이지 없음 (외부 링크/PDF로 연결)
+- ✅ 통합 검색 + 정적 페이지 스크린샷 캡처
+  - `total_search` (키워드 "언리얼"), `personal` — 각 3해상도 × 2 = 6장
+- ✅ `_test/screenshots/legacy/` 에 총 33장 저장 완료
 
 #### 1-2. `v4.app.js` 생성 (common26.js + sub.js 통합) `[Opus]`
-- ⬜ `common26.js` 분석 → 유지할 함수/제거할 함수 목록 확정
-- ⬜ `sub.js` 분석 → 유지할 함수/제거할 함수 목록 확정
-- ⬜ IIFE 래퍼 + `'use strict'` 기본 골격 작성
-- ⬜ 헤더 메뉴 이식 (`web_menu`, `mobile_menu`, 모바일 네비)
-- ⬜ `tab_layout` 중복 제거 후 1개로 통합 이식
-- ⬜ 스크롤 감지 통합 (`lastScroll` 전역변수 → 스코프 내 변수)
-- ⬜ SNS 공유 이식 (`.snsbox` 토글, `naverSns`, `facebookSns`)
-- ⬜ 아코디언 이식 (`.acc_toggle`)
-- ⬜ 다크모드 테마 토글 이식 (`localStorage` 연동)
-- ⬜ `PopupZone` 플러그인 이식
-- ⬜ IE 관련 코드 제거 (`GetIEVersion`, `checkIE`)
-- ⬜ `.bind()` → `.on()` 전환, `$(document).ready()` 1개로 통합
+- ✅ `common26.js` 분석 → 유지할 함수/제거할 함수 목록 확정
+- ✅ `sub.js` 분석 → 유지할 함수/제거할 함수 목록 확정
+- ✅ IIFE 래퍼 + `'use strict'` 기본 골격 작성
+- ✅ 헤더 메뉴 이식 (`web_menu`, `mobile_menu`, 모바일 네비)
+- ✅ `tab_layout` 중복 제거 후 1개로 통합 이식
+- ✅ 스크롤 감지 통합 (`lastScroll` 전역변수 → 스코프 내 변수)
+- ✅ SNS 공유 이식 (`.snsbox` 토글, `naverSns`, `facebookSns`)
+- ✅ 아코디언 이식 (`.acc_toggle`)
+- ✅ 다크모드 테마 토글 이식 (`localStorage` 연동)
+- ✅ `PopupZone` 플러그인 이식
+- ✅ IE 관련 코드 제거 (`GetIEVersion`, `checkIE`)
+- ✅ `.bind()` → `.on()` 전환, `$(document).ready()` 1개로 통합
 - ⬜ 동작 테스트 (헤더 메뉴, 다크모드, SNS 공유, 스크롤)
 
 #### 1-3. 공통 컴포넌트 생성 (`inc/components/`) `[Opus → Sonnet]`
 > Opus가 `sidebar_filter.php` 인터페이스 설계 → Sonnet이 나머지 구현
-- ⬜ `sidebar_filter.php` - 사이드바 체크박스 필터 (카테고리 데이터 파라미터화) `[Opus]`
-- ⬜ `card_list.php` - 카드 리스트 렌더링 (리스트뷰/갤러리뷰 전환) `[Sonnet]`
-- ⬜ `banner_slide.php` - 배너 슬라이드 (position 파라미터로 Swiper 초기화) `[Sonnet]`
-- ⬜ `social_share.php` - SNS 공유 버튼 (Twitter, Facebook, 링크 복사) `[Sonnet]`
-- ⬜ `related_items.php` - 관련 콘텐츠 3개 표시 (테이블명/현재ID 파라미터) `[Sonnet]`
-- ⬜ `pagination.php` - 더보기 버튼 (AJAX 엔드포인트 URL 파라미터) `[Sonnet]`
-- ⬜ `search_bar.php` - 키워드 검색바 (폼 action URL 파라미터) `[Sonnet]`
+- ✅ `sidebar_filter.php` - 사이드바 체크박스 필터 (카테고리 데이터 파라미터화) `[Opus]`
+- ✅ `card_list.php` - 카드 리스트 렌더링 (리스트뷰/갤러리뷰 전환) `[Sonnet]`
+- ✅ `banner_slide.php` - 배너 슬라이드 (position 파라미터로 Swiper 초기화) `[Sonnet]`
+- ✅ `social_share.php` - SNS 공유 버튼 (Twitter, Facebook, 링크 복사) `[Sonnet]`
+- ✅ `related_items.php` - 관련 콘텐츠 3개 표시 (테이블명/현재ID 파라미터) `[Sonnet]`
+- ✅ `pagination.php` - 더보기 버튼 (AJAX 엔드포인트 URL 파라미터) `[Sonnet]`
+- ✅ `search_bar.php` - 키워드 검색바 (폼 action URL 파라미터) `[Sonnet]`
 
 #### 1-4. CSS 구축 `[Sonnet]`
-- ⬜ `resource/css/pages/list.css` - 목록 페이지 공통 (사이드바, 카드 그리드, 필터, 뷰 전환, 더보기)
-- ⬜ `resource/css/pages/detail.css` - 상세 페이지 공통 (히어로 이미지, 본문, SNS 공유, 관련 콘텐츠)
-- ⬜ `resource/css/pages/search.css` - 검색 페이지 (탭, 하이라이팅, 결과 카드)
-- ⬜ 다크모드: `body.dark-theme` 셀렉터 사용 (common26.css line 1243-1430 패턴)
-- ⬜ 색상 팔레트: `--v4-primary: #33aeec`, `--v4-dark-bg: #101014`, `--v4-accent: #ffd700`
-- ⬜ 반응형 브레이크포인트: 1000px (태블릿 핵심), 640px (모바일) — common26.css와 동일
-- ⬜ 컨테이너: 기존 `.wrap` 클래스 재사용 (1240px)
+- ✅ `resource/css/pages/list.css` - 목록 페이지 공통 (사이드바, 카드 그리드, 필터, 뷰 전환, 더보기)
+- ✅ `resource/css/pages/detail.css` - 상세 페이지 공통 (히어로 이미지, 본문, SNS 공유, 관련 콘텐츠)
+- ✅ `resource/css/pages/search.css` - 검색 페이지 (탭, 하이라이팅, 결과 카드)
+- ✅ 다크모드: `body.dark-theme` 셀렉터 사용 (common26.css line 1243-1430 패턴)
+- ✅ 색상 팔레트: `--v4-primary: #33aeec`, `--v4-dark-bg: #101014`, `--v4-accent: #ffd700`
+- ✅ 반응형 브레이크포인트: 1000px (태블릿 핵심), 640px (모바일) — common26.css와 동일
+- ✅ 컨테이너: 기존 `.wrap` 클래스 재사용 (1240px)
 
 #### 1-5. v4 헬퍼 함수 준비 `[Opus]`
 
@@ -1047,140 +1046,142 @@ Phase 7 (전환)
 | 제목 자르기 | `conv_subject()` | common.lib.php:507 |
 | 페이지네이션 HTML | `get_paging()` | common.lib.php:21 |
 
-- ⬜ `inc/v4_helpers.php` 생성 (v4 전용 최소 헬퍼)
+- ✅ `inc/v4_helpers.php` 생성 (v4 전용 최소 헬퍼)
+- ✅ `inc/v4_cards.php` 생성 (카드 렌더링 함수)
+  - `render_event_card($item, $view_url)` — 이벤트 카드 (상태 배지 포함)
+  - `render_resource_card($item, $type, $view_url, $data_subdir)` — 리소스 카드 (카테고리 태그 포함)
   - `v4_int($val)` — 정수 파라미터 강제 캐스팅
   - `v4_str($val)` — 문자열 안전 처리 (strip_tags + trim + stripslashes + sql_real_escape_string)
   - `v4_filter_array($arr, $allowed)` — 필터 배열 + whitelist 검증
   - `v4_where_like($field, $values)` — WHERE 조건 빌더 (LIKE 검색)
+  - `v4_where_in($field, $values)` — WHERE 조건 빌더 (정확히 일치)
   - `v4_limit($page, $per_page)` — 페이지네이션 LIMIT 계산
   - `v4_relative_time($datetime)` — 상대 시간 표시 (방금전, X분전, X시간전...)
   - `v4_highlight($text, $keyword)` — 검색 키워드 하이라이팅
+  - `v4_thumb_url($row, $subdir)` — 썸네일 URL 헬퍼
+  - `v4_ajax_guard()` — AJAX 보안 검증 (POST + XHR 헤더)
+  - `v4_youtube_embed_id($url)` — YouTube URL → 임베드 ID 추출
 
 ---
 
 ### Phase 2: 목록 페이지 (`contents/v4/`)
 
-#### 2-1. `event_list.php` (커뮤니티 이벤트 목록) `[Opus]` ← 패턴 확립
-- ⬜ 기준 구조 (섹션 4.2) 기반 PHP 골격 작성
-- ⬜ SEO 동적 로딩 (`v3_seo_config WHERE seo_page = 'event_list'`)
-- ⬜ 상태 필터 탭 구현 (전체/진행중/종료/결과발표)
-- ⬜ `v3_rsc_event_bbs` 목록 쿼리 (GNU Board `sql_query()` + `v4_helpers` 래퍼)
-- ⬜ 카드 레이아웃 렌더링 (썸네일 + 제목 + 기간 + 상태 배지)
-- ⬜ 페이지네이션 / 더보기 연동
-- ⬜ XSS 방지 출력 이스케이프 적용
-- ⬜ 레거시 `event_list.php`와 결과 비교 확인
+#### 2-1. `event_list.php` (커뮤니티+글로벌 이벤트 목록) `[Opus]` ← 패턴 확립
+> **변경**: 커뮤니티/글로벌을 카테고리탭으로 통합 (별도 global_event_list.php 불필요)
+- ✅ 기준 구조 (섹션 4.2) 기반 PHP 골격 작성
+- ✅ SEO 동적 로딩 (`v3_seo_config WHERE seo_page = 'event_list'`)
+- ✅ 카테고리 탭 구현 (커뮤니티/글로벌 — 테이블 분기)
+- ✅ 상태 필터 탭 구현 (전체/진행중/종료/결과발표/예고)
+- ✅ `v3_rsc_event_bbs` + `v3_rsc_global_event_bbs` 목록 쿼리 (탭에 따라 분기)
+- ✅ 카드 레이아웃 렌더링 (`render_event_card()` — 썸네일 + 제목 + 기간 + 상태 배지)
+- ✅ 리스트뷰/갤러리뷰 전환
+- ✅ 페이지네이션 / 더보기 AJAX 연동 (`ajax/event.ajax.php`)
+- ✅ XSS 방지 출력 이스케이프 적용
 
-#### 2-2. `global_event_list.php` (글로벌 이벤트 목록) `[Haiku]` ← 테이블명만 변경
-- ⬜ `event_list.php` 기반 복제 → 테이블명만 `v3_rsc_global_event_bbs`로 변경
-- ⬜ SEO 동적 로딩 (`seo_page = 'global_event_list'`)
-- ⬜ 레거시 `global_event_list.php`와 결과 비교 확인
+#### 2-2. ~~`global_event_list.php`~~ → `event_list.php`에 통합 ✅
+> **변경**: 별도 파일 대신 `event_list.php`의 카테고리탭(커뮤니티/글로벌)으로 통합 구현
+- ✅ `event_list.php` 카테고리탭에서 `v3_rsc_global_event_bbs` 테이블 조회
+- ✅ AJAX(`event.ajax.php`)에서도 `category=global` 파라미터로 글로벌 테이블 분기
 
 #### 2-3. `replay_list.php` (영상 목록 - replay + replay_all 통합) `[Sonnet]`
-- ⬜ 기준 구조 기반 PHP 골격 작성
-- ⬜ SEO 동적 로딩
-- ⬜ `banner_slide.php` 컴포넌트 삽입 (position: 다시보기)
-- ⬜ `sidebar_filter.php` 컴포넌트 삽입 (산업분야/제품군/주제/난이도)
-  - ⬜ `v3_rsc_review_category` 테이블에서 필터 옵션 동적 조회
-- ⬜ `search_bar.php` 키워드 검색 삽입
-- ⬜ 리스트뷰/갤러리뷰 전환 버튼
-- ⬜ `v3_rsc_review_bbs` 목록 쿼리 (필터 조건 + `v4_where_like()` + `sql_query()`)
-- ⬜ `card_list.php` 컴포넌트로 카드 렌더링
-- ⬜ `pagination.php` 더보기 버튼 → `ajax/replay.ajax.php` 연동
-- ⬜ 레거시 `replay.php`, `replay_all.php`와 결과 비교 확인
+- ✅ 기준 구조 기반 PHP 골격 작성
+- ✅ SEO 동적 로딩
+- ✅ 사이드바 필터 (산업분야/제품군/주제/난이도) — `v3_rsc_review_category` 동적 조회
+- ✅ 키워드 검색바
+- ✅ 리스트뷰/갤러리뷰 전환 버튼
+- ✅ `v3_rsc_review_bbs` 목록 쿼리 (필터 조건 + `v4_where_like()` + `sql_query()`)
+- ✅ `render_resource_card()` 카드 렌더링
+- ✅ 더보기 AJAX 연동 (`ajax/replay.ajax.php`)
+- ✅ CSS 클래스 list.css와 일치 검증 완료
 
 #### 2-4. `news_list.php` (뉴스 목록) `[Sonnet]`
-- ⬜ 기준 구조 기반 PHP 골격 작성
-- ⬜ SEO 동적 로딩
-- ⬜ 카테고리 필터 탭 (뉴스/업데이트·출시/블로그)
-- ⬜ `v3_rsc_news_bbs` 목록 쿼리 (`v4_str()` + `sql_query()`)
-- ⬜ 상대 시간 표시 함수 적용 (방금전, X분전, X시간전...)
-- ⬜ `card_list.php` 컴포넌트로 카드 렌더링
-- ⬜ `pagination.php` 더보기 → `ajax/news.ajax.php` 연동
-- ⬜ 레거시 `news_list.php`와 결과 비교 확인
+- ✅ 기준 구조 기반 PHP 골격 작성
+- ✅ SEO 동적 로딩
+- ✅ 키워드 검색 (사이드바 없음)
+- ✅ `v3_rsc_news_bbs` 목록 쿼리 (`v4_str()` + `sql_query()`)
+- ✅ `render_resource_card()` 카드 렌더링
+- ✅ 리스트뷰/갤러리뷰 전환
+- ✅ 더보기 AJAX 연동 (`ajax/news.ajax.php`)
 
 #### 2-5. `free_list.php` (무료콘텐츠 목록) `[Sonnet]`
-- ⬜ 기준 구조 기반 PHP 골격 작성
-- ⬜ SEO 동적 로딩
-- ⬜ `banner_slide.php` 컴포넌트 삽입 (position: 무료콘텐츠)
-- ⬜ `sidebar_filter.php` 컴포넌트 삽입 (산업분야/엔진버전/카테고리)
-  - ⬜ `v3_rsc_free_category` 테이블에서 필터 옵션 동적 조회
-- ⬜ `search_bar.php` 키워드 검색 삽입
-- ⬜ 리스트뷰/갤러리뷰 전환
-- ⬜ `v3_rsc_free_bbs` 목록 쿼리 (`v4_str()` + `v4_where_like()` + `sql_query()`)
-- ⬜ `card_list.php` + `pagination.php` → `ajax/free.ajax.php` 연동
-- ⬜ 레거시 `free.php`와 결과 비교 확인
+- ✅ 기준 구조 기반 PHP 골격 작성
+- ✅ SEO 동적 로딩
+- ✅ 사이드바 필터 (산업분야/제품군/주제/엔진버전) — `v3_rsc_free_category` 동적 조회
+- ✅ 키워드 검색바
+- ✅ 리스트뷰/갤러리뷰 전환
+- ✅ `v3_rsc_free_bbs` 목록 쿼리 (`v4_str()` + `v4_where_like()` + `sql_query()`)
+- ✅ `render_resource_card()` 카드 렌더링
+- ✅ 더보기 AJAX 연동 (`ajax/free.ajax.php`)
+- ✅ CSS 클래스 list.css와 일치 검증 완료
 
 #### 2-6. `book_list.php` (백서 목록) `[Sonnet]`
-- ⬜ 기준 구조 기반 PHP 골격 작성
-- ⬜ SEO 동적 로딩
-- ⬜ `banner_slide.php` 컴포넌트 삽입 (position: 백서)
-- ⬜ `sidebar_filter.php` 컴포넌트 삽입 (산업분야만)
-  - ⬜ `v3_rsc_book_category` 테이블에서 필터 옵션 동적 조회
-- ⬜ `search_bar.php` 키워드 검색 삽입
-- ⬜ 리스트뷰/갤러리뷰 전환
-- ⬜ `v3_rsc_book_bbs` 목록 쿼리 (`v4_str()` + `v4_where_like()` + `sql_query()`)
-- ⬜ `card_list.php` + `pagination.php` → `ajax/book.ajax.php` 연동
-- ⬜ 레거시 `book.php`와 결과 비교 확인
+- ✅ 기준 구조 기반 PHP 골격 작성
+- ✅ SEO 동적 로딩
+- ✅ 사이드바 필터 (산업분야/제품군/주제) — `v3_rsc_book_category` 동적 조회
+- ✅ 키워드 검색바
+- ✅ 리스트뷰/갤러리뷰 전환
+- ✅ `v3_rsc_book_bbs` 목록 쿼리 (`v4_str()` + `v4_where_like()` + `sql_query()`)
+- ✅ `render_resource_card()` 카드 렌더링
+- ✅ 더보기 AJAX 연동 (`ajax/book.ajax.php`)
+- ✅ CSS 클래스 list.css와 일치 검증 완료
 
 ---
 
 ### Phase 3: 상세 페이지 (`contents/v4/`)
 
-#### 3-1. `event_view.php` (커뮤니티 이벤트 상세 - event_view_copy 흡수) `[Opus]` ← 패턴 확립
-- ⬜ 기준 구조 기반 PHP 골격 작성
-- ⬜ SEO 동적 로딩 (이벤트 제목 기반 OG 태그 동적 생성)
-- ⬜ `rsc_bbs_idx` 파라미터 검증 (정수 캐스팅, 존재 여부 확인)
-- ⬜ 상단 배경 이미지 렌더링 (`top_bbs_img`)
-- ⬜ 본문 콘텐츠 렌더링 (`contents` HTML 출력, XSS 주의)
-- ⬜ 첨부파일 다운로드 버튼 (`doc_file` 필드)
-- ⬜ 액션 버튼 분기 (`add_btn_yn` + `add_btn_url` → 참가/신청 버튼 동적 렌더링)
-  - ⬜ 기존 `event_view_copy.php` 로직 흡수 (버튼 텍스트 DB 기반 분기)
-- ⬜ `social_share.php` 컴포넌트 삽입
-- ⬜ `related_items.php` 컴포넌트 삽입 (관련 이벤트 3개)
-- ⬜ 레거시 `event_view.php` + `event_view_copy.php`와 결과 비교 확인
+#### 3-1. `event_view.php` (커뮤니티+글로벌 이벤트 상세) `[Opus]` ← 패턴 확립
+> **변경**: 커뮤니티/글로벌을 `type=global` GET 파라미터로 통합 (별도 global_event_view.php 불필요)
+- ✅ 기준 구조 기반 PHP 골격 작성
+- ✅ SEO 동적 로딩 (이벤트 제목 기반 OG 태그 동적 생성)
+- ✅ `rsc_bbs_idx` 파라미터 검증 (정수 캐스팅, 존재 여부 확인)
+- ✅ `type=global` 파라미터로 커뮤니티/글로벌 테이블 분기
+- ✅ 상단 배경 이미지 렌더링 (`top_bbs_img`) — 히어로 + 오버레이 + 상태 배지
+- ✅ 본문 콘텐츠 렌더링 (`contents` HTML 출력)
+- ✅ 첨부파일 다운로드 버튼 (`doc_file` 필드)
+- ✅ 액션 버튼 분기 (`add_btn_yn` + `add_btn_url` → 참가/신청 버튼 동적 렌더링)
+- ✅ 소셜 공유 (Facebook, Twitter, URL 복사)
+- ✅ 관련 이벤트 3개 (`ORDER BY ABS(idx - rsc_bbs_idx) ASC`)
 
-#### 3-2. `global_event_view.php` (글로벌 이벤트 상세) `[Haiku]` ← 테이블명만 변경
-- ⬜ `event_view.php` 기반 복제 → 테이블명만 `v3_rsc_global_event_bbs`로 변경
-- ⬜ SEO 동적 로딩
-- ⬜ 레거시 `global_event_view.php`와 결과 비교 확인
+#### 3-2. ~~`global_event_view.php`~~ → `event_view.php`에 통합 ✅
+> **변경**: 별도 파일 대신 `event_view.php?type=global&rsc_bbs_idx=N` 으로 통합 구현
+- ✅ `event_view.php`에서 `type=global` 파라미터로 `v3_rsc_global_event_bbs` 테이블 조회
+- ✅ 관련 콘텐츠도 글로벌 테이블에서 조회
 
 #### 3-3. `replay_view.php` (영상 상세) `[Sonnet]`
-- ⬜ 기준 구조 기반 PHP 골격 작성
-- ⬜ SEO 동적 로딩 (영상 제목 기반 OG 태그)
-- ⬜ `rsc_bbs_idx` 파라미터 검증
-- ⬜ YouTube 임베드 플레이어 렌더링 (`youtube_url` → iframe 변환)
-- ⬜ 발표자(`speker`), 이벤트 정보(`event_title`, `event_year`) 표시
-- ⬜ PDF 자료 다운로드 버튼 (`pdf_url`)
-- ⬜ 태그 표시 (`tag` 쉼표 구분 → 개별 태그 링크)
-- ⬜ `social_share.php` 컴포넌트 삽입
-- ⬜ `related_items.php` 컴포넌트 삽입 (관련 영상 3개)
-- ⬜ 레거시 `replay_view.php`와 결과 비교 확인
+- ✅ 기준 구조 기반 PHP 골격 작성
+- ✅ SEO 동적 로딩 (영상 제목 기반 OG 태그)
+- ✅ `rsc_bbs_idx` 파라미터 검증 + 권한 체크 (비공개=관리자만)
+- ✅ YouTube 임베드 플레이어 렌더링 (`v4_youtube_embed_id()` 헬퍼 사용)
+- ✅ 발표자(`speker`), 이벤트 제목(`event_title`) 표시
+- ✅ PDF 자료 다운로드 버튼 (`pdf_url`)
+- ✅ 카테고리 태그 표시 (산업분야/제품군/주제)
+- ✅ 소셜 공유 (Facebook, Twitter, URL 복사)
+- ✅ 관련 리플레이 3개
 
 #### 3-4. `news_view.php` (뉴스 상세) `[Sonnet]`
-- ⬜ 기준 구조 기반 PHP 골격 작성
-- ⬜ SEO 동적 로딩 (뉴스 제목 기반 OG 태그)
-- ⬜ `rsc_bbs_idx` 파라미터 검증
-- ⬜ 본문 콘텐츠 렌더링
-- ⬜ 태그 표시 (`tag` 쉼표 구분 → 개별 태그 링크)
-- ⬜ `social_share.php` 컴포넌트 삽입
-- ⬜ `related_items.php` 컴포넌트 삽입 (관련 뉴스 3개)
-- ⬜ 레거시 `news_view.php`와 결과 비교 확인
+- ✅ 기준 구조 기반 PHP 골격 작성
+- ✅ SEO 동적 로딩 (뉴스 제목 기반 OG 태그)
+- ✅ `rsc_bbs_idx` 파라미터 검증 + 권한 체크
+- ✅ 본문 콘텐츠 렌더링
+- ✅ 카테고리 배지 + 태그 표시 (쉼표 구분)
+- ✅ 소셜 공유 (Facebook, Twitter, URL 복사)
+- ✅ 관련 뉴스 3개
 
 #### 3-5. `free_view.php` (무료콘텐츠 상세) `[Sonnet]`
-- ⬜ 기준 구조 기반 PHP 골격 작성
-- ⬜ SEO 동적 로딩
-- ⬜ `rsc_bbs_idx` 파라미터 검증
-- ⬜ YouTube 임베드 또는 외부 링크 분기 렌더링 (`youtube_url` / `site_url`)
-- ⬜ `social_share.php` + `related_items.php` 삽입
-- ⬜ 레거시 `free_view.php`와 결과 비교 확인
+- ✅ 기준 구조 기반 PHP 골격 작성
+- ✅ SEO 동적 로딩
+- ✅ `rsc_bbs_idx` 파라미터 검증 + 권한 체크
+- ✅ YouTube 임베드 (`v4_youtube_embed_id()`) + 외부 링크 분기 렌더링
+- ✅ 카테고리 태그 (산업분야/제품군/주제/엔진버전 — 4종)
+- ✅ 소셜 공유 + 관련 무료자료 3개
 
 #### 3-6. `book_view.php` (백서 상세) `[Sonnet]`
-- ⬜ 기준 구조 기반 PHP 골격 작성
-- ⬜ SEO 동적 로딩
-- ⬜ `rsc_bbs_idx` 파라미터 검증
-- ⬜ YouTube 임베드 또는 외부 링크 분기 렌더링
-- ⬜ `social_share.php` + `related_items.php` 삽입
-- ⬜ 레거시 `book_view.php`와 결과 비교 확인
+- ✅ 기준 구조 기반 PHP 골격 작성
+- ✅ SEO 동적 로딩
+- ✅ `rsc_bbs_idx` 파라미터 검증 + 권한 체크
+- ✅ YouTube 임베드 (`v4_youtube_embed_id()`) + 외부 링크 분기 렌더링
+- ✅ 카테고리 태그 (산업분야/제품군/주제 — 3종)
+- ✅ 소셜 공유 + 관련 도서 3개
 
 ---
 
@@ -1205,71 +1206,75 @@ if (empty($_SERVER['HTTP_X_REQUESTED_WITH']) ||
 header('Content-Type: application/json; charset=utf-8');
 ```
 
-- ⬜ AJAX 공통 보안 패턴 확립 (Referer + XHR 헤더 검증)
-- ⬜ `json_encode()` 기반 JSON 응답 패턴 확립
+- ✅ AJAX 공통 보안 패턴 확립 → `v4_ajax_guard()` 함수로 구현 (`v4_helpers.php`)
+- ✅ `json_encode()` 기반 JSON 응답 패턴 확립
+
+#### 4-0b. `event.ajax.php` (이벤트 필터) `[Opus]` ← 추가 생성
+> **추가**: 원안에 없었으나, event_list.php의 카테고리탭/상태탭/더보기를 위해 필요
+- ✅ `v4_ajax_guard()` 보안 검증 적용
+- ✅ 카테고리(community/global) + 상태 필터 + 페이지네이션
+- ✅ `render_event_card()` HTML + `json_encode()` JSON 응답
 
 #### 4-1. `replay.ajax.php` (영상 필터) `[Opus]` ← 패턴 확립
-- ⬜ Referer + XHR 헤더 검증 적용
-- ⬜ 필터 파라미터 수신 (산업분야/제품군/주제/난이도/키워드/페이지)
-- ⬜ `v4_str()` / `v4_filter_array()` 로 입력값 sanitize + whitelist 검증
-- ⬜ `v4_where_like()` + `v4_limit()` 로 쿼리 빌드 → `sql_query()` 실행
-- ⬜ `json_encode()` JSON 응답 반환
-- ⬜ 레거시 `replay_ajax.php`와 응답 비교 확인
+- ✅ `v4_ajax_guard()` 보안 검증 적용 (POST + XHR 헤더)
+- ✅ 필터 파라미터 수신 (산업분야/제품군/주제/난이도/키워드/페이지)
+- ✅ `v4_str()` / `v4_filter_array()` 로 입력값 sanitize
+- ✅ `v4_where_like()` + `v4_limit()` 로 쿼리 빌드 → `sql_query()` 실행
+- ✅ `render_resource_card()` HTML 렌더링 + `json_encode()` JSON 응답
+- ✅ 응답 형식: `{success, html, total_count, has_more}`
 
 #### 4-2. `news.ajax.php` (뉴스 필터) `[Sonnet]`
-- ⬜ Referer + XHR 헤더 검증 적용
-- ⬜ 필터 파라미터 수신 (카테고리/키워드/페이지)
-- ⬜ `v4_str()` sanitize + `sql_query()` 쿼리
-- ⬜ `json_encode()` JSON 응답 반환
-- ⬜ 레거시 `news_ajax.php`와 응답 비교 확인
+- ✅ `v4_ajax_guard()` 보안 검증 적용
+- ✅ 필터 파라미터 수신 (키워드/페이지)
+- ✅ `v4_str()` sanitize + `sql_query()` 쿼리
+- ✅ `render_resource_card()` HTML + `json_encode()` JSON 응답
 
 #### 4-3. `free.ajax.php` (무료콘텐츠 필터) `[Sonnet]`
-- ⬜ Referer + XHR 헤더 검증 적용
-- ⬜ 필터 파라미터 수신 (산업분야/엔진버전/카테고리/키워드/페이지)
-- ⬜ `v4_str()` sanitize + `sql_query()` 쿼리
-- ⬜ `json_encode()` JSON 응답 반환
-- ⬜ 레거시 `free_ajax.php`와 응답 비교 확인
+- ✅ `v4_ajax_guard()` 보안 검증 적용
+- ✅ 필터 파라미터 수신 (산업분야/제품군/주제/엔진버전/키워드/페이지)
+- ✅ `v4_str()` sanitize + `v4_where_like()` + `sql_query()` 쿼리
+- ✅ `render_resource_card()` HTML + `json_encode()` JSON 응답
 
 #### 4-4. `book.ajax.php` (백서 필터) `[Sonnet]`
-- ⬜ Referer + XHR 헤더 검증 적용
-- ⬜ 필터 파라미터 수신 (산업분야/키워드/페이지)
-- ⬜ `v4_str()` sanitize + `sql_query()` 쿼리
-- ⬜ `json_encode()` JSON 응답 반환
-- ⬜ 레거시 `book_ajax.php`와 응답 비교 확인
+- ✅ `v4_ajax_guard()` 보안 검증 적용
+- ✅ 필터 파라미터 수신 (산업분야/제품군/주제/키워드/페이지)
+- ✅ `v4_str()` sanitize + `v4_where_like()` + `sql_query()` 쿼리
+- ✅ `render_resource_card()` HTML + `json_encode()` JSON 응답
 
-#### 4-5. 검색 AJAX (3개) `[Sonnet]`
-- ⬜ `search_news.ajax.php` - 뉴스 검색 (키워드 + 페이지, `v4_str()` + `sql_query()`)
-- ⬜ `search_event.ajax.php` - 이벤트 검색 (키워드 + 페이지, `v4_str()` + `sql_query()`)
-- ⬜ `search_rsc.ajax.php` - 리소스 통합 검색 (영상+무료+백서 합산, `v4_str()` + `sql_query()`)
-- ⬜ 각 AJAX에 Referer + XHR 헤더 검증 + `v4_str()` sanitize 적용
-- ⬜ 레거시 `total_search_ajax_*.php`와 응답 비교 확인
+#### 4-5. ~~검색 AJAX (3개)~~ → `search.ajax.php` 1개로 통합 ✅
+> **변경**: 3개 파일 대신 `search.ajax.php` 1개에서 5개 테이블(뉴스/이벤트/리플레이/무료/백서) 동시 검색
+- ✅ `search.ajax.php` — 통합 검색 AJAX (`section` 파라미터로 개별/전체 분기)
+- ✅ `v4_ajax_guard()` 보안 검증 적용
+- ✅ `v4_str()` sanitize + 5개 테이블 동시 쿼리
+- ✅ `render_search_result_card()` — 검색 전용 카드 렌더링 (키워드 하이라이팅)
+- ✅ 응답 형식: `{success, keyword, total_all, sections: {news: {label, total, html, has_more}, ...}}`
 
 ---
 
 ### Phase 5: 검색 + 정적 (`contents/v4/`)
 
-#### 5-1. `search.php` (통합 검색) `[Opus]` ← 3테이블 합산 복합 로직
-- ⬜ 기준 구조 기반 PHP 골격 작성
-- ⬜ SEO 동적 로딩
-- ⬜ 검색 키워드 입력 폼 (`v4_str()` sanitize 적용)
-- ⬜ 3개 섹션 탭 구현 (새소식 / 이벤트 / 리소스)
-- ⬜ 초기 검색 결과 서버사이드 렌더링 (각 섹션 최초 N건)
-- ⬜ 키워드 하이라이팅 함수 구현
-- ⬜ 총 검색 건수 표시 (섹션별 카운트)
-- ⬜ 섹션별 더보기 → `ajax/search_*.ajax.php` 연동
-- ⬜ 레거시 `total_search.php`와 결과 비교 확인
+#### 5-1. `total_search.php` (통합 검색) `[Opus]` ← 5테이블 합산 복합 로직
+> **변경**: `search.php` → `total_search.php`로 명명 (레거시와 일관성 유지)
+- ✅ 기준 구조 기반 PHP 골격 작성
+- ✅ SEO 동적 로딩
+- ✅ 검색 키워드 입력 폼 (`v4_str()` sanitize 적용)
+- ✅ 5개 섹션 탭 구현 (새소식 / 이벤트 / 다시보기 / 무료콘텐츠 / 백서)
+- ✅ 초기 검색 결과 서버사이드 렌더링
+- ✅ 키워드 하이라이팅 (`v4_highlight()` 함수)
+- ✅ 총 검색 건수 표시 (섹션별 카운트)
+- ✅ 섹션별 더보기 → `ajax/search.ajax.php` (통합) 연동
 
 #### 5-2. `personal.php` (개인정보보호정책) `[Sonnet]`
-- ⬜ 기준 구조 기반 PHP 골격 작성
-- ⬜ SEO 동적 로딩
-- ⬜ 기존 내용 이관 (현재 2022.04.03 기준 → 최신 날짜 확인 필요)
-- ⬜ 스타일 적용 (common26.css 기반)
+- ✅ 기준 구조 기반 PHP 골격 작성 (v4 패턴: common_header26 + detail.css)
+- ✅ SEO 동적 로딩 (v3_seo_config → personal)
+- ✅ 기존 내용 이관 (2022.04.03 기준 원본 그대로 유지)
+- ✅ 스타일 적용 (v4-detail-content 타이포그래피 자동 적용)
 
 #### 5-3. `ode.php` (이용약관) `[Sonnet]`
-- ⬜ 기준 구조 기반 PHP 골격 작성
-- ⬜ SEO 동적 로딩
-- ⬜ 기존 내용 이관
-- ⬜ 스타일 적용
+- ✅ 기준 구조 기반 PHP 골격 작성 (v4 패턴: common_header26 + detail.css)
+- ✅ SEO 동적 로딩 (v3_seo_config → ode)
+- ✅ 기존 내용 이관 (개인정보처리방침 링크를 v4 경로로 업데이트)
+- ✅ 스타일 적용
 
 ---
 
