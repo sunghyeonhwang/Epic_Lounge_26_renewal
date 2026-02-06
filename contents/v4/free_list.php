@@ -29,6 +29,11 @@ $seo_extra_body     = $v3_seo['seo_extra_body'] ?? '';
 $page     = v4_int($_GET['page'] ?? 1);
 $per_page = 12;
 
+// ----- 리소스 탭 카운트 -----
+$replay_cnt = sql_fetch("SELECT COUNT(*) as cnt FROM v3_rsc_review_bbs WHERE display_yn='Y'")['cnt'];
+$free_cnt = sql_fetch("SELECT COUNT(*) as cnt FROM v3_rsc_free_bbs WHERE display_yn='Y'")['cnt'];
+$book_cnt = sql_fetch("SELECT COUNT(*) as cnt FROM v3_rsc_book_bbs WHERE display_yn='Y'")['cnt'];
+
 // 카테고리 옵션 조회 (DISTINCT)
 $categories = [
     'industry' => [],
@@ -114,6 +119,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
+    <link rel="stylesheet" href="/v3/resource/css/sub.css">
     <link rel="stylesheet" href="/v3/resource/css/pages/list.css">
 
     <!-- JS (jQuery first) -->
@@ -125,12 +131,46 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 <?php include G5_PATH.'/inc/marketing_body.php'; ?>
 <?php include G5_PATH.'/inc/common_header26.php'; ?>
 
-<!-- container -->
-<div class="container" style="margin-top: 80px;">
+<!-- sub_visual -->
+<div id="sub_visual" class="resource_vi">
+    <h2>리소스</h2>
+    <p>언리얼 엔진 학습에 도움되는 무료 콘텐츠를 만나보세요.</p>
+</div>
 
-    <!-- 페이지 타이틀 -->
-    <div class="wrap" style="padding-top: 48px; padding-bottom: 16px;">
-        <h1 style="font-size: 32px; font-weight: 900; color: var(--v4-text, #333);">무료 콘텐츠</h1>
+<!-- container -->
+<div class="container">
+
+    <div class="wrap" style="padding-top: 40px;">
+        <!-- 상단 검색 -->
+        <div class="v4-search-bar" style="margin-bottom: 24px; max-width: 400px;">
+            <input type="text"
+                   class="v4-search-bar__input"
+                   id="top-keyword-input"
+                   placeholder="검색어를 입력하세요"
+                   value="">
+            <button type="button" class="v4-search-bar__button" id="top-search-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12.5 12.5L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- 리소스 카테고리 탭 -->
+        <div class="v4-resource-tabs">
+            <a href="/v3/contents/v4/replay_list.php" class="v4-resource-tabs__item">
+                <span class="v4-resource-tabs__text">영상</span>
+                <span class="v4-resource-tabs__count"><?php echo number_format($replay_cnt); ?></span>
+            </a>
+            <a href="/v3/contents/v4/free_list.php" class="v4-resource-tabs__item active">
+                <span class="v4-resource-tabs__text">무료 콘텐츠</span>
+                <span class="v4-resource-tabs__count"><?php echo number_format($free_cnt); ?></span>
+            </a>
+            <a href="/v3/contents/v4/book_list.php" class="v4-resource-tabs__item">
+                <span class="v4-resource-tabs__text">백서</span>
+                <span class="v4-resource-tabs__count"><?php echo number_format($book_cnt); ?></span>
+            </a>
+        </div>
     </div>
 
     <div class="wrap">

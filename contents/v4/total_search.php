@@ -68,6 +68,7 @@ if ($keyword) {
 
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
+    <link rel="stylesheet" href="/v3/resource/css/sub.css">
     <link rel="stylesheet" href="/v3/resource/css/pages/search.css">
 
     <!-- JS -->
@@ -79,8 +80,14 @@ if ($keyword) {
 <?php include G5_PATH.'/inc/marketing_body.php'; ?>
 <?php include G5_PATH.'/inc/common_header26.php'; ?>
 
-<div class="container" style="margin-top: 80px;">
-    <div class="v4-search-container">
+<!-- sub_visual -->
+<div id="sub_visual" class="search_vi">
+    <h2>검색</h2>
+    <p>키워드를 검색하세요.</p>
+</div>
+
+<div class="container">
+    <div class="v4-search-container" style="padding-top: 40px;">
 
         <!-- 검색 헤더 -->
         <div class="v4-search-header">

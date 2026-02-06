@@ -98,6 +98,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
+    <link rel="stylesheet" href="/v3/resource/css/sub.css">
     <link rel="stylesheet" href="/v3/resource/css/pages/list.css">
 
     <!-- JS (jQuery first) -->
@@ -109,15 +110,16 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 <?php include G5_PATH.'/inc/marketing_body.php'; ?>
 <?php include G5_PATH.'/inc/common_header26.php'; ?>
 
+<!-- sub_visual -->
+<div id="sub_visual" class="event_vi">
+    <h2>이벤트</h2>
+    <p>웨비나, 테크토크, 챌린지 등 온/오프라인 이벤트를 모두 만나보세요.</p>
+</div>
+
 <!-- container -->
-<div class="container" style="margin-top: 80px;">
+<div class="container">
 
-    <!-- 페이지 타이틀 -->
-    <div class="wrap" style="padding-top: 48px; padding-bottom: 16px;">
-        <h1 style="font-size: 32px; font-weight: 900; color: var(--v4-text, #333);">이벤트</h1>
-    </div>
-
-    <div class="wrap">
+    <div class="wrap" style="padding-top: 40px;">
 
         <!-- 카테고리 탭 -->
         <div class="v4-search-tabs" id="category-tabs">
@@ -171,8 +173,8 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
             </div>
         </div>
 
-        <!-- 카드 그리드 -->
-        <div id="card-list" class="v4-card-grid v4-card-grid--gallery">
+        <!-- 카드 그리드 (이벤트 2열) -->
+        <div id="card-list" class="v4-card-grid v4-card-grid--gallery v4-card-grid--event">
             <?php if (empty($items)): ?>
                 <div class="v4-empty">
                     <div class="v4-empty__icon">&#128197;</div>

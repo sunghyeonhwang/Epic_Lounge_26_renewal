@@ -38,6 +38,7 @@ $seo_extra_body     = $v3_seo['seo_extra_body'] ?? '';
     <title><?php echo get_text($seo_title); ?></title>
 
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
+    <link rel="stylesheet" href="/v3/resource/css/sub.css">
     <link rel="stylesheet" href="/v3/resource/css/pages/detail.css">
 
     <script src="/v3/resource/js/jquery-3.4.1.min.js"></script>
@@ -48,9 +49,10 @@ $seo_extra_body     = $v3_seo['seo_extra_body'] ?? '';
 <?php include G5_PATH.'/inc/marketing_body.php'; ?>
 <?php include G5_PATH.'/inc/common_header26.php'; ?>
 
-<!-- 페이지 헤더 -->
-<div class="v4-detail-hero" style="min-height: 200px; background: linear-gradient(135deg, #101014 0%, #1a1a2e 100%);">
-    <div class="v4-detail-hero__overlay" style="background: transparent;"></div>
+<!-- sub_visual -->
+<div id="sub_visual" class="resource_vi">
+    <h2>개인정보보호정책</h2>
+    <p></p>
 </div>
 
 <!-- 본문 컨테이너 -->

@@ -85,6 +85,13 @@ function render_resource_card($item, $type, $view_url, $data_subdir) {
     $detail_url = $view_url . $idx;
     $reg_date = $item['reg_date'] ?? '';
 
+    // 새창 열기 처리 (새소식에서 site_url이 있으면)
+    $target = '';
+    if ($type === 'news' && !empty($item['site_url'])) {
+        $detail_url = get_text($item['site_url']);
+        $target = ' target="_blank" rel="noopener noreferrer"';
+    }
+
     // 카테고리 태그
     $categories = array_filter([
         get_text($item['cate_industry'] ?? ''),
@@ -103,7 +110,7 @@ function render_resource_card($item, $type, $view_url, $data_subdir) {
 
     ob_start();
     ?>
-    <a href="<?php echo $detail_url; ?>" class="v4-card">
+    <a href="<?php echo $detail_url; ?>" class="v4-card"<?php echo $target; ?>>
         <div class="v4-card__thumbnail">
             <img src="<?php echo $thumb_url; ?>" alt="<?php echo $title; ?>" loading="lazy">
         </div>

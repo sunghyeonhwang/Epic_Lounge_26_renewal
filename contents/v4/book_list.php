@@ -28,6 +28,12 @@ $seo_extra_body     = $v3_seo['seo_extra_body'] ?? '';
 // ----- 필터 파라미터 -----
 $page     = v4_int($_GET['page'] ?? 1);
 $per_page = 12;
+$keyword  = v4_str($_GET['keyword'] ?? '');
+
+// 리소스 탭 카운트
+$replay_cnt = (int)sql_fetch("SELECT COUNT(*) as cnt FROM v3_rsc_review_bbs WHERE display_yn='Y'")['cnt'];
+$free_cnt   = (int)sql_fetch("SELECT COUNT(*) as cnt FROM v3_rsc_free_bbs WHERE display_yn='Y'")['cnt'];
+$book_cnt   = (int)sql_fetch("SELECT COUNT(*) as cnt FROM v3_rsc_book_bbs WHERE display_yn='Y'")['cnt'];
 
 // 카테고리 옵션 조회 (DISTINCT)
 $categories = [
@@ -114,6 +120,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
+    <link rel="stylesheet" href="/v3/resource/css/sub.css">
     <link rel="stylesheet" href="/v3/resource/css/pages/list.css">
 
     <!-- JS (jQuery first) -->
@@ -125,15 +132,41 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 <?php include G5_PATH.'/inc/marketing_body.php'; ?>
 <?php include G5_PATH.'/inc/common_header26.php'; ?>
 
+<!-- sub_visual -->
+<div id="sub_visual" class="resource_vi">
+    <h2>리소스</h2>
+    <p>언리얼 엔진 관련 백서와 eBook을 다운로드하세요.</p>
+</div>
+
 <!-- container -->
-<div class="container" style="margin-top: 80px;">
+<div class="container">
 
-    <!-- 페이지 타이틀 -->
-    <div class="wrap" style="padding-top: 48px; padding-bottom: 16px;">
-        <h1 style="font-size: 32px; font-weight: 900; color: var(--v4-text, #333);">백서/eBook</h1>
-    </div>
+    <div class="wrap" style="padding-top: 40px;">
 
-    <div class="wrap">
+        <!-- 상단 검색 + 리소스 탭 -->
+        <div class="v4-resource-search">
+            <form class="v4-search-bar v4-search-bar--top" id="top-search-form" action="" method="get">
+                <input type="text" name="keyword" class="v4-search-bar__input" placeholder="검색어를 입력하세요"
+                       value="<?php echo get_text($keyword); ?>">
+                <button type="submit" class="v4-search-bar__button">검색</button>
+            </form>
+        </div>
+
+        <div class="v4-resource-tabs">
+            <a href="/v3/contents/v4/replay_list.php" class="v4-resource-tabs__item">
+                <span class="v4-resource-tabs__text">영상</span>
+                <span class="v4-resource-tabs__count"><?php echo number_format($replay_cnt); ?></span>
+            </a>
+            <a href="/v3/contents/v4/free_list.php" class="v4-resource-tabs__item">
+                <span class="v4-resource-tabs__text">무료 콘텐츠</span>
+                <span class="v4-resource-tabs__count"><?php echo number_format($free_cnt); ?></span>
+            </a>
+            <a href="/v3/contents/v4/book_list.php" class="v4-resource-tabs__item active">
+                <span class="v4-resource-tabs__text">백서</span>
+                <span class="v4-resource-tabs__count"><?php echo number_format($book_cnt); ?></span>
+            </a>
+        </div>
+
         <div class="v4-list-layout">
             <!-- 사이드바 필터 -->
             <div class="v4-list-layout__sidebar">

@@ -21,27 +21,31 @@ include_once(G5_PATH.'/inc/v4_cards.php');
 v4_ajax_guard();
 
 // ----- 파라미터 -----
-$keyword  = v4_str($_POST['keyword'] ?? '');
-$page     = v4_int($_POST['page'] ?? 1);
-$per_page = v4_int($_POST['per_page'] ?? 12);
+$keyword   = v4_str($_POST['keyword'] ?? '');
+$category  = v4_str($_POST['category'] ?? '');
+$page      = v4_int($_POST['page'] ?? 1);
+$per_page  = v4_int($_POST['per_page'] ?? 12);
 
 if ($per_page < 1 || $per_page > 100) $per_page = 12;
 if ($page < 1) $page = 1;
 
+// 카테고리 whitelist
+$allowed_categories = ['뉴스', '업데이트/출시', '블로그'];
+if ($category && !in_array($category, $allowed_categories)) {
+    $category = '';
+}
+
 // ----- DB 조회 -----
 $where = "WHERE display_yn = 'Y'";
 
+// 카테고리 필터
+if ($category) {
+    $category_esc = sql_real_escape_string($category);
+    $where .= " AND category = '{$category_esc}'";
+}
+
 // 키워드 검색 (title, content)
 if ($keyword) {
-    $where .= v4_where_like('title', [$keyword]);
-    // content도 검색에 포함하려면:
-    // $where = str_replace(
-    //     " AND (title LIKE '%{$keyword}%')",
-    //     " AND (title LIKE '%{$keyword}%' OR content LIKE '%{$keyword}%')",
-    //     $where
-    // );
-    // 위 방식은 복잡하므로 직접 작성:
-    $where = "WHERE display_yn = 'Y'";
     $keyword_esc = sql_real_escape_string($keyword);
     $where .= " AND (title LIKE '%{$keyword_esc}%' OR content LIKE '%{$keyword_esc}%')";
 }

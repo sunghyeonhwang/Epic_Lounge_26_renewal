@@ -26,12 +26,25 @@ $seo_extra_head     = $v3_seo['seo_extra_head'] ?? '';
 $seo_extra_body     = $v3_seo['seo_extra_body'] ?? '';
 
 // ----- 필터 파라미터 -----
-$keyword  = v4_str($_GET['keyword'] ?? '');
-$page     = v4_int($_GET['page'] ?? 1);
-$per_page = 12;
+$keyword   = v4_str($_GET['keyword'] ?? '');
+$category  = v4_str($_GET['category'] ?? '');
+$page      = v4_int($_GET['page'] ?? 1);
+$per_page  = 12;
+
+// 카테고리 whitelist
+$allowed_categories = ['뉴스', '업데이트/출시', '블로그'];
+if ($category && !in_array($category, $allowed_categories)) {
+    $category = '';
+}
 
 // ----- DB 조회 -----
 $where = "WHERE display_yn = 'Y'";
+
+// 카테고리 필터
+if ($category) {
+    $category_esc = sql_real_escape_string($category);
+    $where .= " AND category = '{$category_esc}'";
+}
 
 // 키워드 검색
 if ($keyword) {
@@ -85,6 +98,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
+    <link rel="stylesheet" href="/v3/resource/css/sub.css">
     <link rel="stylesheet" href="/v3/resource/css/pages/list.css">
 
     <!-- JS (jQuery first) -->
@@ -96,18 +110,27 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 <?php include G5_PATH.'/inc/marketing_body.php'; ?>
 <?php include G5_PATH.'/inc/common_header26.php'; ?>
 
+<!-- sub_visual -->
+<div id="sub_visual" class="news_vi">
+    <h2>새소식</h2>
+    <p>언리얼 엔진 뉴스, 이벤트 그리고 영감을 주는 사례를 확인하세요.</p>
+</div>
+
 <!-- container -->
-<div class="container" style="margin-top: 80px;">
+<div class="container">
 
-    <!-- 페이지 타이틀 -->
-    <div class="wrap" style="padding-top: 48px; padding-bottom: 16px;">
-        <h1 style="font-size: 32px; font-weight: 900; color: var(--v4-text, #333);">새소식</h1>
-    </div>
+    <div class="wrap" style="padding-top: 40px;">
 
-    <div class="wrap">
+        <!-- 카테고리 탭 -->
+        <div class="v4-news-tabs" id="category-tabs">
+            <button type="button" class="v4-news-tabs__item<?php echo empty($category) ? ' active' : ''; ?>" data-category="">전체</button>
+            <button type="button" class="v4-news-tabs__item<?php echo ($category === '뉴스') ? ' active' : ''; ?>" data-category="뉴스">뉴스</button>
+            <button type="button" class="v4-news-tabs__item<?php echo ($category === '업데이트/출시') ? ' active' : ''; ?>" data-category="업데이트/출시">출시&업데이트</button>
+            <button type="button" class="v4-news-tabs__item<?php echo ($category === '블로그') ? ' active' : ''; ?>" data-category="블로그">블로그</button>
+        </div>
 
         <!-- 검색바 -->
-        <div class="v4-search-bar" style="margin-bottom: 32px;">
+        <div class="v4-search-bar" style="margin-bottom: 32px; max-width: 400px;">
             <div class="v4-search-bar__inner">
                 <input type="text"
                        class="v4-search-bar__input"
@@ -192,10 +215,20 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 (function($) {
     'use strict';
 
-    var currentKeyword = '<?php echo addslashes(get_text($keyword)); ?>';
-    var currentPage    = <?php echo $page; ?>;
-    var perPage        = <?php echo $per_page; ?>;
-    var isLoading      = false;
+    var currentKeyword  = '<?php echo addslashes(get_text($keyword)); ?>';
+    var currentCategory = '<?php echo addslashes(get_text($category)); ?>';
+    var currentPage     = <?php echo $page; ?>;
+    var perPage         = <?php echo $per_page; ?>;
+    var isLoading       = false;
+
+    // ----- 카테고리 탭 -----
+    $('#category-tabs').on('click', '.v4-news-tabs__item', function() {
+        currentCategory = $(this).data('category');
+        currentPage = 1;
+        $('#category-tabs .v4-news-tabs__item').removeClass('active');
+        $(this).addClass('active');
+        loadNews(false);
+    });
 
     // ----- 검색 -----
     $('#search-btn').on('click', function() {
@@ -262,6 +295,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             data: {
                 keyword: currentKeyword,
+                category: currentCategory,
                 page: currentPage,
                 per_page: perPage
             },
@@ -304,6 +338,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
                 // URL 업데이트 (히스토리)
                 var params = new URLSearchParams();
                 if (currentKeyword) params.set('keyword', currentKeyword);
+                if (currentCategory) params.set('category', currentCategory);
                 var newUrl = window.location.pathname;
                 if (params.toString()) newUrl += '?' + params.toString();
                 history.replaceState(null, '', newUrl);

@@ -905,3 +905,145 @@ body.dark-theme .v4-sidebar__toggle {
 body.dark-theme .v4-sidebar__toggle:hover {
     background: #2a9bd9;
 }
+
+/* ========================================
+   더보기 버튼 하단 여백
+======================================== */
+.v4-load-more {
+    margin-bottom: 200px;
+}
+
+/* ========================================
+   이벤트 2열 그리드
+======================================== */
+.v4-card-grid--event {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 640px) {
+    .v4-card-grid--event {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========================================
+   리소스 탭 (영상/무료콘텐츠/백서)
+======================================== */
+.v4-resource-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 32px;
+    border-bottom: 2px solid var(--v4-border);
+}
+
+.v4-resource-tabs__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 24px;
+    border: none;
+    background: transparent;
+    color: var(--v4-text-secondary);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    transition: var(--v4-transition);
+}
+
+.v4-resource-tabs__item:hover {
+    color: var(--v4-primary);
+}
+
+.v4-resource-tabs__item.active {
+    color: var(--v4-primary);
+}
+
+.v4-resource-tabs__item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--v4-primary);
+}
+
+.v4-resource-tabs__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 24px;
+    padding: 0 8px;
+    background: #f0f0f0;
+    color: var(--v4-text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 12px;
+}
+
+.v4-resource-tabs__item.active .v4-resource-tabs__count {
+    background: var(--v4-primary);
+    color: #fff;
+}
+
+@media (max-width: 640px) {
+    .v4-resource-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .v4-resource-tabs__item {
+        padding: 12px 16px;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+}
+
+/* ========================================
+   새소식 카테고리 탭
+======================================== */
+.v4-news-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.v4-news-tabs__item {
+    padding: 10px 20px;
+    border: 1px solid var(--v4-border);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--v4-text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--v4-transition);
+}
+
+.v4-news-tabs__item:hover {
+    border-color: var(--v4-primary);
+    color: var(--v4-primary);
+}
+
+.v4-news-tabs__item.active {
+    background: var(--v4-primary);
+    border-color: var(--v4-primary);
+    color: #fff;
+}
+
+body.dark-theme .v4-news-tabs__item {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+body.dark-theme .v4-news-tabs__item:hover {
+    border-color: var(--v4-primary);
+}
+
+body.dark-theme .v4-news-tabs__item.active {
+    background: var(--v4-primary);
+    border-color: var(--v4-primary);
+}
