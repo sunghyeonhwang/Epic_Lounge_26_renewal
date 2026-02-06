@@ -113,7 +113,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
     <title><?php echo get_text($seo_title); ?></title>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="/v3/resource/css/common26.css">
+    <link rel="stylesheet" href="/v3/resource/css/main26.css">
     <link rel="stylesheet" href="/v3/resource/css/pages/list.css">
 
     <!-- JS (jQuery first) -->

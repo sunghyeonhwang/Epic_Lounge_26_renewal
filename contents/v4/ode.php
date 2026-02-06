@@ -37,7 +37,7 @@ $seo_extra_body     = $v3_seo['seo_extra_body'] ?? '';
 
     <title><?php echo get_text($seo_title); ?></title>
 
-    <link rel="stylesheet" href="/v3/resource/css/common26.css">
+    <link rel="stylesheet" href="/v3/resource/css/main26.css">
     <link rel="stylesheet" href="/v3/resource/css/pages/detail.css">
 
     <script src="/v3/resource/js/jquery-3.4.1.min.js"></script>

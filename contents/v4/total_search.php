@@ -67,7 +67,7 @@ if ($keyword) {
     <title><?php echo get_text($seo_title); ?></title>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="/v3/resource/css/common26.css">
+    <link rel="stylesheet" href="/v3/resource/css/main26.css">
     <link rel="stylesheet" href="/v3/resource/css/pages/search.css">
 
     <!-- JS -->
