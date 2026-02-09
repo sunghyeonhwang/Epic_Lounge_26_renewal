@@ -86,7 +86,7 @@ $seo_extra_body = $v3_seo['seo_extra_body'];
   <script src="/v3/resource/js/ScrollTrigger.min.js"></script>
   <script src="/v3/resource/js/jquery.menu.min.js"></script>
   <script src="/v3/resource/js/jquery.responsive.min.js"></script>
-  <script src="/v3/resource/js/common26.js"></script>
+  <script src="/v3/resource/js/common26.js?v=20260209"></script>
   <script src="/v3/resource/js/main26.js"></script>
 
   <style>
@@ -225,9 +225,413 @@ $seo_extra_body = $v3_seo['seo_extra_body'];
     }
 
     @media (max-width: 768px) {
-      .cinematic-hero { height: 600px; }
-      .hero-title { font-size: 40px; }
-      .hero-title img { max-width: 300px; }
+
+      /* [Fix 1] 햄버거 아이콘 다크모드 — 검은 라인 → 흰색 */
+      body.dark-theme .lnb_m_nav .open .line { background: #fff !important; }
+
+      /* [Fix 5] 모바일 메뉴 z-index — hero 위로 올리기 */
+      #header { z-index: 1100 !important; }
+      #header #lnb { z-index: 1200 !important; }
+
+      /* Hero */
+      .cinematic-hero { height: 500px; margin-top: 60px; }
+      .hero-title { font-size: 40px; height: 280px; }
+      .hero-title img { max-width: 280px; }
+      .hero-cta a { padding: 10px 40px; font-size: 14px; }
+      .swiper-button-prev, .swiper-button-next { display: none; }
+
+      /* [Fix 2] Hero-News 간격 제거 — 레거시 margin-top 무효화 */
+      .news_sec { margin-top: 0 !important; padding-bottom: 60px; }
+
+      /* [Fix 4] 섹션 타이틀 통일 — 모든 섹션 동일 레이아웃 */
+      .news_sec .sec_title,
+      .event_sec .sec_title,
+      .resource_list .resource_title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 40px 0 20px;
+        text-align: left;
+      }
+      .news_sec .sec_title h2,
+      .event_sec .sec_title h2,
+      .resource_list .resource_title h2 { font-size: 22px; margin: 0; }
+      .news_sec .sec_title a,
+      .event_sec .sec_title a,
+      .resource_list .resource_title a {
+        position: static !important;
+        display: inline-block;
+        margin-top: 0;
+        flex-shrink: 0;
+        font-size: 13px;
+        padding: 4px 12px;
+      }
+      .event_sec .sec_title a { color: #aaa; }
+
+      /* [Fix 3] 뉴스 카드 — 가로 스크롤 스냅 (카드형 캐러셀) */
+      .news_sec .con {
+        width: 100%;
+        margin: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        scroll-padding: 0 16px;
+        padding: 0 0 12px;
+      }
+      .news_sec .con::-webkit-scrollbar { display: none; }
+      .news_sec .con .scroll_box {
+        width: max-content;
+        display: flex;
+        flex-direction: row;
+        gap: 12px;
+        padding: 0 16px;
+      }
+      .news_sec .con .list_box {
+        width: 280px;
+        flex-shrink: 0;
+        padding: 0;
+        scroll-snap-align: start;
+        aspect-ratio: 3 / 4;
+      }
+      .news_sec .con .list_box .img_box { border-radius: 12px; aspect-ratio: 3 / 4; }
+      .news_sec .con .list_box .news_text {
+        padding: 0 16px 16px;
+        bottom: 0;
+      }
+      .news_sec .con .list_box .news_text .news_text_title { font-size: 12px; }
+      .news_sec .con .list_box .news_text .news_text_info { font-size: 14px; margin: 4px 0 0; line-height: 1.3; }
+
+      /* BG Slide section mobile */
+      .bg_slide_list_box { height: 380px !important; }
+      .bg_slide_box .slick-slide { height: 380px !important; }
+      .bg_slide_box .bg_slide_list1 .bg_slide_title,
+      .bg_slide_box .bg_slide_list2 .bg_slide_title { font-size: 24px; margin: 0 auto 12px; }
+      .bg_slide_box .bg_slide_list1 .bg_slide_text,
+      .bg_slide_box .bg_slide_list2 .bg_slide_text {
+        font-size: 14px;
+        padding: 0 20px;
+        word-break: keep-all;
+        line-height: 1.5;
+      }
+      .bg_slide_box .bg_slide_list1 .bg_slide_text br,
+      .bg_slide_box .bg_slide_list2 .bg_slide_text br { display: none; }
+      .bg_slide_box .bg_slide_list1 .bg_slide_btn,
+      .bg_slide_box .bg_slide_list2 .bg_slide_btn { margin-top: 24px; }
+      .bg_slide_box .bg_slide_list1 .bg_slide_btn a,
+      .bg_slide_box .bg_slide_list2 .bg_slide_btn a {
+        width: 160px; height: 36px; line-height: 34px; font-size: 14px;
+      }
+      .bg_slide_box .slider-dots-box { bottom: 20px; }
+
+      /* Event section mobile */
+      .event_sec { padding: 60px 0; }
+
+      /* Resource section mobile — 1열 */
+      .resource_list .con { width: 100%; margin: 0 0 40px 0; }
+      .resource_list .con .list_box {
+        width: 100%;
+        padding: 0;
+        margin: 0 0 20px;
+      }
+      .resource_list .con .list_box .img_box { border-radius: 8px; }
+      .resource_list .con .list_box .text_box { padding: 12px 0; }
+      .resource_list .con .list_box .text_box .title { font-size: 16px; }
+      .resource_list .con .list_box .text_box .text { font-size: 13px; }
+
+      /* ===== 풀스크린 모바일 메뉴 ===== */
+
+      /* 1) #lnb 풀스크린 오버레이 */
+      #header #lnb {
+        width: 100vw !important;
+        right: auto !important;
+        left: 0 !important;
+        top: 0 !important;
+        height: 100vh !important;
+        background: #0a0a0e !important;
+        transform: translateX(100%);
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-y: auto !important;
+        padding: 0 24px 40px !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      /* 2) 열린 상태 */
+      #header #lnb.v4-menu-open {
+        transform: translateX(0) !important;
+      }
+
+      /* 3) 로고 영역 */
+      #header .m_logo {
+        margin: 20px 0 !important;
+        text-align: left !important;
+      }
+      #header .m_logo a.logo_img img {
+        width: 140px !important;
+      }
+
+      /* 4) 검색바 다크 스타일 */
+      .m_top_search_btn_box .top_search_box {
+        background: rgba(255,255,255,0.08) !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+        border-radius: 12px !important;
+        margin: 0 0 24px !important;
+        width: 100% !important;
+        padding: 12px 16px !important;
+      }
+      .m_top_search_btn_box .top_search_box input {
+        color: #fff !important;
+        background: transparent !important;
+      }
+      .m_top_search_btn_box .top_search_box input::placeholder {
+        color: rgba(255,255,255,0.4);
+      }
+      .m_top_search_btn_box .top_search_box button img {
+        filter: invert(1) brightness(2);
+      }
+      .m_top_search_btn_box .top_btn2 {
+        display: none !important;
+      }
+
+      /* 5) 메인 메뉴 */
+      #lnb .top1menu {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        flex: 1;
+      }
+      #lnb .top1menu > li {
+        border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+        background: transparent !important;
+      }
+      #lnb .top1menu .depth1_ti {
+        padding: 18px 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+      }
+      #lnb .top1menu .depth1_ti span {
+        font-size: 22px !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.02em;
+      }
+      /* 메뉴 화살표 (CSS pseudo-element) */
+      #lnb .top1menu .depth1_ti::after {
+        content: '' !important;
+        width: 10px; height: 10px;
+        border-right: 2px solid rgba(255,255,255,0.5);
+        border-bottom: 2px solid rgba(255,255,255,0.5);
+        transform: rotate(45deg);
+        transition: transform 0.25s ease;
+        display: block !important;
+        position: static !important;
+        background: none !important;
+      }
+      #lnb .top1menu .depth1.v4-sub-open .depth1_ti::after {
+        transform: rotate(-135deg);
+      }
+
+      /* 6) 서브메뉴 복원 — common26.css의 display:none!important 오버라이드 */
+      #lnb .top1menu .depth1.v4-sub-open > div {
+        display: block !important;
+      }
+      #lnb ul .top2m,
+      #header #lnb .top1menu .depth1 > div.top2m,
+      #lnb .top1menu .depth1 > div,
+      #lnb .top1menu .depth1 > div > .menu_bg,
+      #lnb .top1menu .depth1 > div > div {
+        position: static !important;
+        width: 100% !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 0 12px 16px !important;
+        height: auto !important;
+      }
+      #lnb .lnb_title_box { display: none !important; }
+      #lnb .lnb_banner { display: none !important; }
+      #lnb .lnb_menu_box { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+      #lnb .depth2 { width: 100% !important; }
+
+      /* 7) 서브메뉴 depth2 스타일 */
+      #lnb .depth2 {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+      }
+      #lnb .depth2 > li {
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+      }
+      #lnb .depth2 > li > a {
+        color: rgba(255,255,255,0.65) !important;
+        font-size: 16px !important;
+        padding: 10px 0 !important;
+        display: block !important;
+        background: transparent !important;
+      }
+      #lnb .depth2 > li > a:hover {
+        color: #33aeec !important;
+      }
+
+      /* 8) 닫기 버튼 — #lnb 내부 우상단 */
+      .lnb_close {
+        position: fixed !important;
+        right: 24px !important;
+        top: 20px !important;
+        left: auto !important;
+        background: transparent !important;
+        z-index: 10001 !important;
+        display: none !important;
+      }
+      body.v4-menu-active .lnb_close {
+        display: block !important;
+      }
+      .lnb_close button {
+        width: 44px !important;
+        height: 44px !important;
+      }
+      .lnb_close button:before,
+      .lnb_close button:after {
+        background-color: #fff !important;
+      }
+
+      /* 9) 마스크 */
+      .mask {
+        display: none !important;
+      }
+
+      /* 10) 햄버거 버튼 */
+      .lnb_m_nav {
+        z-index: 1100 !important;
+      }
+      .lnb_m_nav .open .line {
+        background: #fff !important;
+      }
+
+      /* 11) 메뉴 하단 다크모드 토글 */
+      .v4-menu-footer {
+        padding: 24px 0 0;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        margin-top: auto;
+      }
+      .v4-theme-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 0;
+      }
+      .v4-theme-toggle-row > span {
+        font-size: 15px;
+        font-weight: 500;
+        color: rgba(255,255,255,0.7);
+      }
+      .v4-theme-switch {
+        position: relative;
+        width: 52px;
+        height: 28px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 14px;
+        border: none;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        padding: 0;
+        overflow: hidden;
+      }
+      /* 토글 원형 노브 */
+      .v4-theme-switch::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 22px;
+        height: 22px;
+        background: #fff;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        z-index: 2;
+      }
+      /* 달 아이콘 (라이트모드 = 오른쪽에 달) */
+      .v4-theme-switch::before {
+        content: '';
+        position: absolute;
+        top: 6px;
+        right: 8px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: transparent;
+        box-shadow: -3px -1px 0 0 rgba(255,255,255,0.8);
+        transition: opacity 0.3s ease;
+        z-index: 1;
+        opacity: 1;
+      }
+      /* 다크모드 ON 상태 */
+      body.dark-theme .v4-theme-switch {
+        background: #33aeec;
+      }
+      body.dark-theme .v4-theme-switch::after {
+        transform: translateX(24px);
+      }
+      body.dark-theme .v4-theme-switch::before {
+        opacity: 0;
+      }
+
+      /* 12) 라이트 모드 메뉴 오버라이드 */
+      body:not(.dark-theme) #header #lnb {
+        background: #fff !important;
+      }
+      body:not(.dark-theme) #lnb .top1menu .depth1_ti span {
+        color: #111 !important;
+      }
+      body:not(.dark-theme) #lnb .top1menu .depth1_ti::after {
+        border-color: rgba(0,0,0,0.3) !important;
+      }
+      body:not(.dark-theme) #lnb .top1menu > li {
+        border-color: rgba(0,0,0,0.1) !important;
+      }
+      body:not(.dark-theme) #lnb .depth2 > li {
+        background: transparent !important;
+      }
+      body:not(.dark-theme) #lnb .depth2 > li > a {
+        color: rgba(0,0,0,0.6) !important;
+        background: transparent !important;
+      }
+      body:not(.dark-theme) .m_top_search_btn_box .top_search_box {
+        background: rgba(0,0,0,0.05) !important;
+        border-color: rgba(0,0,0,0.15) !important;
+      }
+      body:not(.dark-theme) .m_top_search_btn_box .top_search_box input {
+        color: #111 !important;
+      }
+      body:not(.dark-theme) .m_top_search_btn_box .top_search_box button img {
+        filter: none !important;
+      }
+      body:not(.dark-theme) .lnb_close button:before,
+      body:not(.dark-theme) .lnb_close button:after {
+        background-color: #111 !important;
+      }
+      body:not(.dark-theme) .lnb_m_nav .open .line {
+        background: #000 !important;
+      }
+      body:not(.dark-theme) .v4-menu-footer {
+        border-color: rgba(0,0,0,0.1);
+      }
+      body:not(.dark-theme) .v4-theme-toggle-row span {
+        color: rgba(0,0,0,0.6);
+      }
+      body:not(.dark-theme) .v4-theme-switch {
+        background: rgba(0,0,0,0.15);
+      }
+      body:not(.dark-theme) .v4-theme-switch::after {
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      }
     }
 
     /* Community Event Section - Editorial Grid */
@@ -951,6 +1355,107 @@ $seo_extra_body = $v3_seo['seo_extra_body'];
         return false; //리턴펄스로 스크롤이 최상위로 갔다가 돌아오는 현상 없어짐
       });
     });
+  </script>
+
+  <!-- v4 모바일 메뉴 오버라이드 -->
+  <script>
+  (function($) {
+    if ($(window).width() > 768) return;
+
+    var $lnb = $('#lnb');
+    var $hamburger = $('.lnb_m_nav');
+
+    // 1) mobile_menu() 함수를 오버라이드 — jquery.responsive가 재호출해도 우리 코드 유지
+    window.mobile_menu = function() {
+      var $depth1 = $lnb.find('.top1menu');
+      $depth1.find('> li > div').addClass('top2m');
+      // 기존 mobile_menu의 핸들러 등록을 차단 — 우리 아코디언 사용
+    };
+
+    // 2) 기존 이벤트 핸들러 완전 제거
+    $hamburger.off();
+    $('.mask, .lnb_close button').off();
+    $lnb.find('.top1menu > li > a').off();
+    $lnb.find('.top1menu ul > li a').off();
+
+    // 3) 인라인 스타일 제거 + 애니메이션 중단
+    $lnb.stop(true, true).removeAttr('style');
+    $('.lnb_close').stop(true, true).removeAttr('style');
+    $('.gnb_navi').stop(true, true).removeAttr('style');
+    $('.link_set').stop(true, true).removeAttr('style');
+
+    // 4) 서브메뉴 초기 숨김 (mobile_menu가 slideUp 했던 것 대체)
+    $lnb.find('.top1menu > li > div').hide();
+
+    // 5) 열기
+    $hamburger.on('click', function(e) {
+      e.stopImmediatePropagation();
+      $lnb.addClass('v4-menu-open');
+      $('body').addClass('v4-menu-active');
+      $('body, html').css('overflow', 'hidden');
+      $hamburger.fadeOut(200);
+    });
+
+    // 6) 닫기
+    function closeMenu() {
+      $lnb.removeClass('v4-menu-open');
+      $('body').removeClass('v4-menu-active');
+      $('body, html').css('overflow', '');
+      $lnb.find('.depth1').removeClass('v4-sub-open');
+      $hamburger.delay(200).fadeIn(200);
+    }
+    $('.lnb_close button').on('click', function(e) {
+      e.stopImmediatePropagation();
+      closeMenu();
+    });
+
+    // 7) 서브메뉴 아코디언 — CSS 클래스 토글 방식 (slideDown은 !important에 의해 차단됨)
+    $lnb.find('.top1menu .depth1_ti').off().on('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      var $parent = $(this).closest('.depth1');
+      var wasOpen = $parent.hasClass('v4-sub-open');
+
+      // 다른 서브메뉴 닫기
+      $lnb.find('.depth1.v4-sub-open').not($parent).removeClass('v4-sub-open');
+
+      // 토글
+      $parent.toggleClass('v4-sub-open', !wasOpen);
+    });
+
+    // 8) 서브메뉴 링크 클릭 시 정상 이동
+    $lnb.find('.depth2 a').on('click', function(e) {
+      e.stopPropagation();
+    });
+
+    // 9) 메뉴 하단 다크모드 토글 추가
+    var isDark = localStorage.getItem('theme') === 'dark' || $('body').hasClass('dark-theme');
+    var footerHtml = '<div class="v4-menu-footer">' +
+      '<div class="v4-theme-toggle-row">' +
+        '<span>' + (isDark ? '다크 모드' : '라이트 모드') + '</span>' +
+        '<button class="v4-theme-switch" type="button" aria-label="테마 전환"></button>' +
+      '</div>' +
+    '</div>';
+    $lnb.append(footerHtml);
+
+    // 토글 클릭 이벤트
+    $lnb.find('.v4-theme-switch').on('click', function(e) {
+      e.stopPropagation();
+      $('body').toggleClass('dark-theme');
+      var nowDark = $('body').hasClass('dark-theme');
+      localStorage.setItem('theme', nowDark ? 'dark' : 'light');
+      $lnb.find('.v4-theme-toggle-row > span').text(nowDark ? '다크 모드' : '라이트 모드');
+    });
+
+    // 10) 리사이즈 시 메뉴 닫기
+    $(window).on('resize', function() {
+      if ($(window).width() > 768) {
+        closeMenu();
+      }
+    });
+
+  })(jQuery);
   </script>
 
 </body>

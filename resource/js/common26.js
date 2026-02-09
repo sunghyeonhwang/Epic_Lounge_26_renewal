@@ -58,8 +58,8 @@ function web_menu(a){
 
 function mobile_menu(a){
 	var depth1 = $(".top1menu"),
-		dep1_length = depth1.find(" > li").size(),
-		depLast_length = depth1.find(" > li:nth-child("+dep1_length+")  li").size();
+		dep1_length = depth1.find(" > li").length,
+		depLast_length = depth1.find(" > li:nth-child("+dep1_length+")  li").length;
 
 	depth1.find(" > li > div").addClass('top2m');
 	depth1.off();
@@ -77,7 +77,7 @@ function mobile_menu(a){
 	$(".top1menu .top2m, .top1menu .top2m div.menu_bg2").removeClass("menu_bg2").addClass("menu_bg");
 	$(".top1menu .top2m, .top1menu .top2m").removeClass("top2m2");
 	depth1.find(" >  li > a").on('click',function(event){
-		var depth2_has=$(this).siblings("div").size();
+		var depth2_has=$(this).siblings("div").length;
 		if(depth2_has==0){
 
 		}else{
@@ -97,7 +97,7 @@ function mobile_menu(a){
 	});
 
 	depth1.find(" ul > li a ").on('click',function(event){
-		var depth3_has=$(this).siblings("ul").size();
+		var depth3_has=$(this).siblings("ul").length;
 		if(depth3_has>0){
 			event.preventDefault();
 		}
