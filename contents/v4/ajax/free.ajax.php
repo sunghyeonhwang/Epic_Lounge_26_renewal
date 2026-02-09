@@ -5,9 +5,8 @@
  *
  * 요청 파라미터:
  *   cate_industry[]  — 산업분야 (배열)
- *   cate_product[]   — 제품 (배열)
- *   cate_subject[]   — 주제 (배열)
- *   cate_difficult[] — 난이도 (배열)
+ *   cate_engine[]    — 엔진버전 (배열)
+ *   category[]       — 카테고리 (배열)
  *   keyword          — 검색 키워드
  *   page             — 페이지 번호 (1~)
  *   per_page         — 페이지당 건수 (기본 12)
@@ -26,9 +25,8 @@ v4_ajax_guard();
 
 // ----- 파라미터 -----
 $cate_industry = v4_filter_array($_POST['cate_industry'] ?? []);
-$cate_product  = v4_filter_array($_POST['cate_product'] ?? []);
-$cate_subject  = v4_filter_array($_POST['cate_subject'] ?? []);
-$cate_difficult = v4_filter_array($_POST['cate_difficult'] ?? []);
+$cate_engine   = v4_filter_array($_POST['cate_engine'] ?? []);
+$category      = v4_filter_array($_POST['category'] ?? []);
 $keyword       = v4_str($_POST['keyword'] ?? '');
 $page          = v4_int($_POST['page'] ?? 1);
 $per_page      = v4_int($_POST['per_page'] ?? 12);
@@ -43,14 +41,11 @@ $where = "WHERE display_yn = 'Y'";
 if (!empty($cate_industry)) {
     $where .= v4_where_like('cate_industry', $cate_industry);
 }
-if (!empty($cate_product)) {
-    $where .= v4_where_like('cate_product', $cate_product);
+if (!empty($cate_engine)) {
+    $where .= v4_where_like('cate_engine', $cate_engine);
 }
-if (!empty($cate_subject)) {
-    $where .= v4_where_like('cate_subject', $cate_subject);
-}
-if (!empty($cate_difficult)) {
-    $where .= v4_where_like('cate_difficult', $cate_difficult);
+if (!empty($category)) {
+    $where .= v4_where_like('category', $category);
 }
 
 // 키워드 검색 (제목)
@@ -72,7 +67,7 @@ $view_url = '/v3/contents/v4/free_view.php?rsc_bbs_idx=';
 // ----- HTML 렌더링 -----
 $html = '';
 while ($row = sql_fetch_array($result)) {
-    $html .= render_resource_card($row, 'free', $view_url, 'free');
+    $html .= render_resource_card($row, 'free', $view_url, 'rsc');
 }
 
 // ----- JSON 응답 -----

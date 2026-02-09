@@ -39,7 +39,7 @@ $seo_extra_body     = $v3_seo['seo_extra_body'] ?? '';
 
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
     <link rel="stylesheet" href="/v3/resource/css/sub.css">
-    <link rel="stylesheet" href="/v3/resource/css/pages/detail.css">
+    <link rel="stylesheet" href="/v3/resource/css/pages/detail.css?v=20250209b">
 
     <script src="/v3/resource/js/jquery-3.4.1.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">

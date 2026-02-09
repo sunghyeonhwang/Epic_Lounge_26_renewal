@@ -99,7 +99,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
     <link rel="stylesheet" href="/v3/resource/css/sub.css">
-    <link rel="stylesheet" href="/v3/resource/css/pages/list.css">
+    <link rel="stylesheet" href="/v3/resource/css/pages/list.css?v=20260209b">
 
     <!-- JS (jQuery first) -->
     <script src="/v3/resource/js/jquery-3.4.1.min.js"></script>

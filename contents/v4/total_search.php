@@ -29,9 +29,9 @@ if ($keyword) {
     $search_tables = [
         'news'   => ['table' => 'v3_rsc_news_bbs',   'fields' => 'title, contents', 'label' => '새소식',      'order' => 'rsc_bbs_idx DESC'],
         'event'  => ['table' => 'v3_rsc_event_bbs',  'fields' => 'title, contents', 'label' => '이벤트',      'order' => 'ordr DESC, rsc_bbs_idx DESC'],
-        'replay' => ['table' => 'v3_rsc_review_bbs', 'fields' => 'title, content',  'label' => '다시보기',     'order' => 'ordr DESC, rsc_bbs_idx DESC'],
-        'free'   => ['table' => 'v3_rsc_free_bbs',   'fields' => 'title, content',  'label' => '무료 콘텐츠', 'order' => 'ordr DESC, rsc_bbs_idx DESC'],
-        'book'   => ['table' => 'v3_rsc_book_bbs',   'fields' => 'title, content',  'label' => '백서/eBook',  'order' => 'ordr DESC, rsc_bbs_idx DESC'],
+        'replay' => ['table' => 'v3_rsc_review_bbs', 'fields' => 'title, contents', 'label' => '다시보기',     'order' => 'ordr DESC, rsc_bbs_idx DESC'],
+        'free'   => ['table' => 'v3_rsc_free_bbs',   'fields' => 'title, contents', 'label' => '무료 콘텐츠', 'order' => 'ordr DESC, rsc_bbs_idx DESC'],
+        'book'   => ['table' => 'v3_rsc_book_bbs',   'fields' => 'title, contents', 'label' => '백서/eBook',  'order' => 'ordr DESC, rsc_bbs_idx DESC'],
     ];
 
     foreach ($search_tables as $key => $cfg) {
@@ -69,7 +69,7 @@ if ($keyword) {
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
     <link rel="stylesheet" href="/v3/resource/css/sub.css">
-    <link rel="stylesheet" href="/v3/resource/css/pages/search.css">
+    <link rel="stylesheet" href="/v3/resource/css/pages/search.css?v=20260209">
 
     <!-- JS -->
     <script src="/v3/resource/js/jquery-3.4.1.min.js"></script>

@@ -26,9 +26,6 @@ v4_ajax_guard();
 
 // ----- 파라미터 -----
 $cate_industry = v4_filter_array($_POST['cate_industry'] ?? []);
-$cate_product  = v4_filter_array($_POST['cate_product'] ?? []);
-$cate_subject  = v4_filter_array($_POST['cate_subject'] ?? []);
-$cate_difficult = v4_filter_array($_POST['cate_difficult'] ?? []);
 $keyword       = v4_str($_POST['keyword'] ?? '');
 $page          = v4_int($_POST['page'] ?? 1);
 $per_page      = v4_int($_POST['per_page'] ?? 12);
@@ -42,15 +39,6 @@ $where = "WHERE display_yn = 'Y'";
 // 카테고리 필터 (LIKE 검색)
 if (!empty($cate_industry)) {
     $where .= v4_where_like('cate_industry', $cate_industry);
-}
-if (!empty($cate_product)) {
-    $where .= v4_where_like('cate_product', $cate_product);
-}
-if (!empty($cate_subject)) {
-    $where .= v4_where_like('cate_subject', $cate_subject);
-}
-if (!empty($cate_difficult)) {
-    $where .= v4_where_like('cate_difficult', $cate_difficult);
 }
 
 // 키워드 검색 (제목)
@@ -72,7 +60,7 @@ $view_url = '/v3/contents/v4/book_view.php?rsc_bbs_idx=';
 // ----- HTML 렌더링 -----
 $html = '';
 while ($row = sql_fetch_array($result)) {
-    $html .= render_resource_card($row, 'book', $view_url, 'book');
+    $html .= render_resource_card($row, 'book', $view_url, 'rsc');
 }
 
 // ----- JSON 응답 -----

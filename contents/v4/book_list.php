@@ -35,40 +35,23 @@ $replay_cnt = (int)sql_fetch("SELECT COUNT(*) as cnt FROM v3_rsc_review_bbs WHER
 $free_cnt   = (int)sql_fetch("SELECT COUNT(*) as cnt FROM v3_rsc_free_bbs WHERE display_yn='Y'")['cnt'];
 $book_cnt   = (int)sql_fetch("SELECT COUNT(*) as cnt FROM v3_rsc_book_bbs WHERE display_yn='Y'")['cnt'];
 
+// ----- 배너 슬라이더 -----
+$banner_result = sql_query("SELECT * FROM v3_shop_banner WHERE bn_position = '백서' ORDER BY bn_id DESC");
+$banners = [];
+while ($bn = sql_fetch_array($banner_result)) {
+    $banners[] = $bn;
+}
+
 // 카테고리 옵션 조회 (DISTINCT)
 $categories = [
-    'industry' => [],
-    'product'  => [],
-    'subject'  => [],
-    'difficult' => []
+    'industry' => []
 ];
 
 // 산업분야
-$sql = "SELECT DISTINCT cate_industry FROM v3_rsc_book_bbs WHERE cate_industry != '' AND display_yn = 'Y' ORDER BY cate_industry";
+$sql = "SELECT * FROM v3_rsc_book_category WHERE rsc_type='산업분야' ORDER BY sort ASC";
 $result = sql_query($sql);
 while ($row = sql_fetch_array($result)) {
-    $categories['industry'][] = $row['cate_industry'];
-}
-
-// 제품
-$sql = "SELECT DISTINCT cate_product FROM v3_rsc_book_bbs WHERE cate_product != '' AND display_yn = 'Y' ORDER BY cate_product";
-$result = sql_query($sql);
-while ($row = sql_fetch_array($result)) {
-    $categories['product'][] = $row['cate_product'];
-}
-
-// 주제
-$sql = "SELECT DISTINCT cate_subject FROM v3_rsc_book_bbs WHERE cate_subject != '' AND display_yn = 'Y' ORDER BY cate_subject";
-$result = sql_query($sql);
-while ($row = sql_fetch_array($result)) {
-    $categories['subject'][] = $row['cate_subject'];
-}
-
-// 난이도
-$sql = "SELECT DISTINCT cate_difficult FROM v3_rsc_book_bbs WHERE cate_difficult != '' AND display_yn = 'Y' ORDER BY cate_difficult";
-$result = sql_query($sql);
-while ($row = sql_fetch_array($result)) {
-    $categories['difficult'][] = $row['cate_difficult'];
+    $categories['industry'][] = $row['rsc_name'];
 }
 
 // ----- DB 조회 -----
@@ -121,7 +104,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
     <link rel="stylesheet" href="/v3/resource/css/sub.css">
-    <link rel="stylesheet" href="/v3/resource/css/pages/list.css">
+    <link rel="stylesheet" href="/v3/resource/css/pages/list.css?v=20260209b">
 
     <!-- JS (jQuery first) -->
     <script src="/v3/resource/js/jquery-3.4.1.min.js"></script>
@@ -167,6 +150,29 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
             </a>
         </div>
 
+        <!-- 배너 슬라이더 -->
+        <?php if (!empty($banners)): ?>
+        <div class="v4-banner-slider">
+            <div class="swiper" id="banner-swiper">
+                <div class="swiper-wrapper">
+                    <?php foreach ($banners as $bn): ?>
+                    <?php $bn_img = G5_DATA_URL . '/banner/' . $bn['bn_id']; ?>
+                    <div class="swiper-slide">
+                        <a href="<?php echo get_text($bn['bn_url']); ?>" target="_blank" rel="noopener noreferrer">
+                            <img class="v4-banner-slider__item" src="<?php echo $bn_img; ?>" alt="배너">
+                        </a>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php if (count($banners) > 1): ?>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-pagination"></div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <div class="v4-list-layout">
             <!-- 사이드바 필터 -->
             <div class="v4-list-layout__sidebar">
@@ -174,69 +180,44 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
                     <h3 class="v4-sidebar__title">필터</h3>
                     <button type="button" class="v4-sidebar__toggle" id="sidebar-toggle">필터</button>
                     <div class="v4-sidebar__body">
-                        <form id="filter-form">
-                            <?php if (!empty($categories['industry'])): ?>
-                            <div class="v4-filter-group">
-                                <div class="v4-filter-group__label">산업분야</div>
-                                <div class="v4-filter-group__list">
+
+                        <!-- 선택된 필터 요약 -->
+                        <div class="v4-filter-active" id="active-filters" style="display:none;">
+                            <div class="v4-filter-active__tags" id="active-tags"></div>
+                            <button type="button" class="v4-filter-active__clear" id="filter-reset-top">전체 초기화</button>
+                        </div>
+
+                        <?php if (!empty($categories['industry'])): ?>
+                        <!-- 산업분야 (기본 열림) -->
+                        <div class="v4-filter-group" data-filter="industry">
+                            <button type="button" class="v4-filter-group__header open">
+                                <span class="v4-filter-group__label">산업분야</span>
+                                <span class="v4-filter-group__badge" style="display:none;">0</span>
+                                <svg class="v4-filter-group__arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                            <div class="v4-filter-group__body">
+                                <div class="v4-filter-chips">
                                     <?php foreach ($categories['industry'] as $idx => $cat): ?>
-                                    <label class="v4-filter-checkbox">
+                                    <label class="v4-filter-chip">
                                         <input type="checkbox" name="cate_industry[]" value="<?php echo get_text($cat); ?>">
-                                        <span class="v4-filter-checkbox__box"></span>
-                                        <span class="v4-filter-checkbox__text"><?php echo get_text($cat); ?></span>
+                                        <span class="v4-filter-chip__text"><?php echo get_text($cat); ?></span>
                                     </label>
                                     <?php endforeach; ?>
                                 </div>
                             </div>
-                            <?php endif; ?>
+                        </div>
+                        <?php endif; ?>
 
-                            <?php if (!empty($categories['product'])): ?>
-                            <div class="v4-filter-group">
-                                <div class="v4-filter-group__label">제품</div>
-                                <div class="v4-filter-group__list">
-                                    <?php foreach ($categories['product'] as $idx => $cat): ?>
-                                    <label class="v4-filter-checkbox">
-                                        <input type="checkbox" name="cate_product[]" value="<?php echo get_text($cat); ?>">
-                                        <span class="v4-filter-checkbox__box"></span>
-                                        <span class="v4-filter-checkbox__text"><?php echo get_text($cat); ?></span>
-                                    </label>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                            <?php endif; ?>
+                        <button type="button" class="v4-filter-reset" id="filter-reset">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M2 8a6 6 0 0112 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M14 8a6 6 0 01-12 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            필터 초기화
+                        </button>
 
-                            <?php if (!empty($categories['subject'])): ?>
-                            <div class="v4-filter-group">
-                                <div class="v4-filter-group__label">주제</div>
-                                <div class="v4-filter-group__list">
-                                    <?php foreach ($categories['subject'] as $idx => $cat): ?>
-                                    <label class="v4-filter-checkbox">
-                                        <input type="checkbox" name="cate_subject[]" value="<?php echo get_text($cat); ?>">
-                                        <span class="v4-filter-checkbox__box"></span>
-                                        <span class="v4-filter-checkbox__text"><?php echo get_text($cat); ?></span>
-                                    </label>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                            <?php endif; ?>
-
-                            <?php if (!empty($categories['difficult'])): ?>
-                            <div class="v4-filter-group">
-                                <div class="v4-filter-group__label">난이도</div>
-                                <div class="v4-filter-group__list">
-                                    <?php foreach ($categories['difficult'] as $idx => $cat): ?>
-                                    <label class="v4-filter-checkbox">
-                                        <input type="checkbox" name="cate_difficult[]" value="<?php echo get_text($cat); ?>">
-                                        <span class="v4-filter-checkbox__box"></span>
-                                        <span class="v4-filter-checkbox__text"><?php echo get_text($cat); ?></span>
-                                    </label>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                            <?php endif; ?>
-
-                            <button type="button" class="v4-filter-reset" id="filter-reset">초기화</button>
-                        </form>
                     </div>
                 </div>
             </div>
@@ -279,7 +260,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
                         </div>
                     <?php else: ?>
                         <?php foreach ($items as $item): ?>
-                            <?php echo render_resource_card($item, 'book', $view_url, 'book'); ?>
+                            <?php echo render_resource_card($item, 'book', $view_url, 'rsc'); ?>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
@@ -312,22 +293,124 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 (function($) {
     'use strict';
 
-    var currentPage     = <?php echo $page; ?>;
-    var perPage         = <?php echo $per_page; ?>;
-    var isLoading       = false;
+    var currentFilters = {
+        cate_industry: []
+    };
+    var currentKeyword = '<?php echo addslashes(get_text($keyword)); ?>';
+    var currentPage    = <?php echo $page; ?>;
+    var perPage        = <?php echo $per_page; ?>;
+    var isLoading      = false;
 
-    // ----- 사이드바 필터 -----
-    $('#filter-form').on('change', 'input[type="checkbox"]', function() {
+    // ----- 검색 -----
+    $('#top-search-form').on('submit', function(e) {
+        e.preventDefault();
+        currentKeyword = $(this).find('input[name="keyword"]').val().trim();
         currentPage = 1;
         loadContent(false);
     });
 
-    // 필터 초기화
-    $('#filter-reset').on('click', function() {
-        $('#filter-form input[type="checkbox"]').prop('checked', false);
+    // ----- 아코디언 토글 -----
+    $('.v4-sidebar').on('click', '.v4-filter-group__header', function() {
+        var $header = $(this);
+        var $body = $header.next('.v4-filter-group__body');
+        $header.toggleClass('open');
+        $body.slideToggle(200);
+    });
+
+    // ----- 칩/체크박스 변경 -----
+    $('.v4-sidebar').on('change', 'input[type=checkbox]', function() {
+        var name = $(this).attr('name');
+        var filterKey = name.replace('[]', '');
+
+        currentFilters[filterKey] = [];
+        $('input[name="' + name + '"]:checked').each(function() {
+            currentFilters[filterKey].push($(this).val());
+        });
+
+        updateActiveTags();
+        updateBadges();
         currentPage = 1;
         loadContent(false);
     });
+
+    // ----- 활성 태그 업데이트 -----
+    function updateActiveTags() {
+        var $container = $('#active-tags');
+        var $wrap = $('#active-filters');
+        $container.empty();
+
+        var hasAny = false;
+        $.each(currentFilters, function(key, vals) {
+            $.each(vals, function(i, val) {
+                hasAny = true;
+                var $tag = $('<button type="button" class="v4-filter-active__tag">' +
+                    '<span>' + val + '</span>' +
+                    '<span class="v4-filter-active__tag-x">&times;</span>' +
+                    '</button>');
+                $tag.data('filter-key', key);
+                $tag.data('filter-val', val);
+                $container.append($tag);
+            });
+        });
+
+        if (hasAny) {
+            $wrap.show();
+        } else {
+            $wrap.hide();
+        }
+    }
+
+    // ----- 활성 태그 X 클릭 -----
+    $('#active-tags').on('click', '.v4-filter-active__tag', function() {
+        var key = $(this).data('filter-key');
+        var val = $(this).data('filter-val');
+        var name = key + '[]';
+
+        $('input[name="' + name + '"]').each(function() {
+            if ($(this).val() === val) {
+                $(this).prop('checked', false);
+            }
+        });
+
+        currentFilters[key] = $.grep(currentFilters[key], function(v) {
+            return v !== val;
+        });
+
+        updateActiveTags();
+        updateBadges();
+        currentPage = 1;
+        loadContent(false);
+    });
+
+    // ----- 배지 카운트 업데이트 -----
+    function updateBadges() {
+        $('.v4-filter-group').each(function() {
+            var count = $(this).find('input[type=checkbox]:checked').length;
+            var $badge = $(this).find('.v4-filter-group__badge');
+
+            if (count > 0) {
+                $badge.text(count).show();
+            } else {
+                $badge.hide();
+            }
+        });
+    }
+
+    // ----- 필터 초기화 -----
+    function resetAllFilters() {
+        $('.v4-sidebar input[type=checkbox]').prop('checked', false);
+        $('input[name="keyword"]').val('');
+        currentFilters = {
+            cate_industry: []
+        };
+        currentKeyword = '';
+        updateActiveTags();
+        updateBadges();
+        currentPage = 1;
+        loadContent(false);
+    }
+
+    $('#filter-reset, #filter-reset-top').on('click', resetAllFilters);
 
     // ----- 뷰 전환 -----
     $('#view-toggle').on('click', '.v4-view-toggle__button', function() {
@@ -374,14 +457,19 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
             $grid.css('opacity', '0.5');
         }
 
-        var formData = $('#filter-form').serialize();
+        var data = {
+            cate_industry: currentFilters.cate_industry,
+            keyword: currentKeyword,
+            page: currentPage,
+            per_page: perPage
+        };
 
         $.ajax({
             url: '/v3/contents/v4/ajax/book.ajax.php',
             type: 'POST',
             dataType: 'json',
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            data: formData + '&page=' + currentPage + '&per_page=' + perPage,
+            data: data,
             success: function(res) {
                 if (!res.success) {
                     alert(res.error || '데이터를 불러오는 중 오류가 발생했습니다.');
@@ -420,7 +508,9 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 
                 // URL 업데이트 (히스토리)
                 var params = new URLSearchParams();
+                if (currentKeyword) params.set('keyword', currentKeyword);
                 var newUrl = window.location.pathname;
+                if (params.toString()) newUrl += '?' + params.toString();
                 history.replaceState(null, '', newUrl);
             },
             error: function() {
@@ -432,6 +522,17 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
                 $grid.css('opacity', '1');
                 $btn.prop('disabled', false);
             }
+        });
+    }
+
+    // 배너 슬라이더
+    if ($('#banner-swiper').length) {
+        new Swiper('#banner-swiper', {
+            slidesPerView: 1,
+            loop: true,
+            autoplay: { delay: 4000, disableOnInteraction: false },
+            pagination: { el: '.swiper-pagination', clickable: true },
+            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
         });
     }
 

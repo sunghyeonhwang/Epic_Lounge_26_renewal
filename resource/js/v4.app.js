@@ -620,12 +620,54 @@
     initV4LoadMore();
     initV4Search();
 
+    // 상세 페이지 테이블 가로 스크롤 래핑
+    $('.v4-detail-content table').each(function() {
+      if (!$(this).parent().hasClass('table-wrapper')) {
+        $(this).wrap('<div class="table-wrapper"></div>');
+      }
+    });
+
     // body 클래스
     $('html').addClass('body_active');
     $('body').addClass('active');
   });
 
 })(jQuery);
+
+// ══════════════════════════════════════
+// 사이드바 스티키 스크롤 (jQuery 독립)
+// ══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  var sidebar = document.querySelector('.v4-list-layout__sidebar');
+  if (!sidebar) return;
+
+  var headerOffset = 100;
+  var lastScroll = window.pageYOffset;
+  var stickyTop = headerOffset;
+
+  function onScroll() {
+    var scrollTop = window.pageYOffset;
+    var delta = scrollTop - lastScroll;
+    var sidebarH = sidebar.offsetHeight;
+    var viewportH = window.innerHeight;
+
+    if (sidebarH <= viewportH - headerOffset) {
+      sidebar.style.top = headerOffset + 'px';
+    } else {
+      var minTop = viewportH - sidebarH;
+      var maxTop = headerOffset;
+      stickyTop = Math.max(minTop, Math.min(maxTop, stickyTop - delta));
+      sidebar.style.top = stickyTop + 'px';
+    }
+    lastScroll = scrollTop;
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', function() {
+    stickyTop = headerOffset;
+    onScroll();
+  });
+});
 
 // ══════════════════════════════════════
 // 전역 함수 (외부 호출용 — SNS 공유)

@@ -47,7 +47,7 @@ if ($category) {
 // 키워드 검색 (title, content)
 if ($keyword) {
     $keyword_esc = sql_real_escape_string($keyword);
-    $where .= " AND (title LIKE '%{$keyword_esc}%' OR content LIKE '%{$keyword_esc}%')";
+    $where .= " AND (title LIKE '%{$keyword_esc}%' OR contents LIKE '%{$keyword_esc}%')";
 }
 
 // 전체 건수

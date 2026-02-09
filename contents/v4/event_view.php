@@ -133,7 +133,7 @@ $seo_extra_body     = $v3_seo['seo_extra_body'] ?? '';
 
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
-    <link rel="stylesheet" href="/v3/resource/css/pages/detail.css">
+    <link rel="stylesheet" href="/v3/resource/css/pages/detail.css?v=20250209b">
 
     <!-- JS -->
     <script src="/v3/resource/js/jquery-3.4.1.min.js"></script>
@@ -230,11 +230,11 @@ $seo_extra_body     = $v3_seo['seo_extra_body'] ?? '';
                         <path d="M18 10a8 8 0 10-9.25 7.9v-5.59H6.74V10h2.01V8.14c0-1.99 1.18-3.08 2.99-3.08.87 0 1.78.15 1.78.15v1.95h-1c-.99 0-1.3.61-1.3 1.24V10h2.2l-.35 2.31h-1.85v5.59A8 8 0 0018 10z"/>
                     </svg>
                 </button>
-                <button type="button" class="v4-share__button v4-share__button--twitter"
-                        onclick="window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent('<?php echo addslashes($title); ?>')+'&url='+encodeURIComponent('<?php echo $current_url; ?>'),'_blank','width=600,height=400');"
-                        aria-label="트위터 공유">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M18.36 5.57a7.06 7.06 0 01-2.03.56 3.53 3.53 0 001.55-1.95 7.08 7.08 0 01-2.24.86 3.53 3.53 0 00-6.01 3.22A10.01 10.01 0 013.36 4.8a3.53 3.53 0 001.09 4.71 3.52 3.52 0 01-1.6-.44v.04a3.53 3.53 0 002.83 3.46 3.54 3.54 0 01-1.59.06 3.53 3.53 0 003.3 2.45A7.08 7.08 0 012 16.58a10 10 0 005.42 1.59c6.5 0 10.06-5.39 10.06-10.06l-.01-.46a7.18 7.18 0 001.76-1.83z"/>
+                <button type="button" class="v4-share__button v4-share__button--x"
+                        onclick="window.open('https://x.com/intent/tweet?text='+encodeURIComponent('<?php echo addslashes($title); ?>')+'&url='+encodeURIComponent('<?php echo $current_url; ?>'),'_blank','width=600,height=400');"
+                        aria-label="X 공유">
+                    <svg width="20" height="20" viewBox="0 0 1200 1227" fill="currentColor">
+                        <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z"/>
                     </svg>
                 </button>
                 <button type="button" class="v4-share__button v4-share__button--copy"

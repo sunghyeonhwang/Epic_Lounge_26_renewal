@@ -19,6 +19,54 @@
 }
 
 /* ========================================
+   배너 슬라이더
+======================================== */
+.v4-banner-slider {
+    position: relative;
+    margin-bottom: 32px;
+    border-radius: var(--v4-card-radius);
+    overflow: hidden;
+}
+
+.v4-banner-slider .swiper-slide a {
+    display: block;
+}
+
+.v4-banner-slider__item {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--v4-card-radius);
+    object-fit: contain;
+}
+
+.v4-banner-slider .swiper-button-prev,
+.v4-banner-slider .swiper-button-next {
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+}
+
+.v4-banner-slider .swiper-button-prev::after,
+.v4-banner-slider .swiper-button-next::after {
+    font-size: 16px;
+}
+
+.v4-banner-slider .swiper-pagination-bullet {
+    background: #fff;
+    opacity: 0.5;
+}
+
+.v4-banner-slider .swiper-pagination-bullet-active {
+    opacity: 1;
+    background: var(--v4-primary);
+}
+
+/* 배너 이미지는 width: 100%; height: auto; 이므로 모바일 고정 높이 불필요 */
+
+/* ========================================
    레이아웃
 ======================================== */
 .v4-list-layout {
@@ -35,8 +83,8 @@
     position: sticky;
     top: 100px;
     align-self: flex-start;
-    max-height: calc(100vh - 120px);
-    overflow-y: auto;
+    max-height: none;
+    overflow-y: visible;
 }
 
 .v4-list-layout__content {
@@ -225,6 +273,173 @@
 }
 
 /* ========================================
+   활성 필터 요약 (Active Tags)
+======================================== */
+.v4-filter-active {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--v4-border);
+}
+
+.v4-filter-active__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.v4-filter-active__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: rgba(51, 174, 236, 0.1);
+    color: var(--v4-primary);
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    transition: var(--v4-transition);
+    line-height: 1.4;
+}
+
+.v4-filter-active__tag:hover {
+    background: rgba(51, 174, 236, 0.2);
+}
+
+.v4-filter-active__tag-x {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 0.7;
+}
+
+.v4-filter-active__tag:hover .v4-filter-active__tag-x {
+    opacity: 1;
+}
+
+.v4-filter-active__clear {
+    display: inline-block;
+    padding: 0;
+    background: none;
+    border: none;
+    color: var(--v4-text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: var(--v4-transition);
+}
+
+.v4-filter-active__clear:hover {
+    color: var(--v4-primary);
+}
+
+/* ========================================
+   아코디언 필터 그룹 헤더
+======================================== */
+.v4-filter-group__header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--v4-text);
+    text-align: left;
+}
+
+.v4-filter-group__header .v4-filter-group__label {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.v4-filter-group__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: var(--v4-primary);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
+    margin-right: 8px;
+}
+
+.v4-filter-group__arrow {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform var(--v4-transition);
+    color: var(--v4-text-secondary);
+    flex-shrink: 0;
+}
+
+.v4-filter-group__header.open .v4-filter-group__arrow {
+    transform: rotate(180deg);
+}
+
+.v4-filter-group__body {
+    padding-top: 12px;
+}
+
+/* ========================================
+   칩 (Chip) 필터 UI
+======================================== */
+.v4-filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.v4-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.v4-filter-chip input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.v4-filter-chip__text {
+    display: inline-block;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--v4-text);
+    background: transparent;
+    border: 1px solid var(--v4-border);
+    border-radius: 20px;
+    transition: var(--v4-transition);
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.v4-filter-chip:hover .v4-filter-chip__text {
+    border-color: var(--v4-primary);
+    color: var(--v4-primary);
+}
+
+.v4-filter-chip input:checked + .v4-filter-chip__text {
+    background: var(--v4-primary);
+    border-color: var(--v4-primary);
+    color: #fff;
+}
+
+/* ========================================
    검색바
 ======================================== */
 .v4-search-bar {
@@ -234,7 +449,7 @@
 
 .v4-search-bar__input {
     width: 100%;
-    padding: 14px 50px 14px 20px;
+    padding: 14px 100px 14px 20px;
     border: 2px solid var(--v4-border);
     border-radius: var(--v4-card-radius);
     font-size: 15px;
@@ -257,8 +472,10 @@
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
-    width: 40px;
+    min-width: 40px;
     height: 40px;
+    padding: 0 16px;
+    gap: 6px;
     border: none;
     background: var(--v4-primary);
     color: #fff;
@@ -268,6 +485,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .v4-search-bar__button:hover {
@@ -834,6 +1053,37 @@
 }
 
 /* ========================================
+   #sub_visual 높이 축소 (v4 전용)
+======================================== */
+#sub_visual {
+    height: 300px;
+    padding-top: 100px;
+}
+
+#sub_visual h2 {
+    font-size: 45px;
+}
+
+#sub_visual p {
+    font-size: 18px;
+}
+
+@media (max-width: 1000px) {
+    #sub_visual {
+        height: 280px;
+        padding-top: 90px;
+    }
+
+    #sub_visual h2 {
+        font-size: 38px;
+    }
+
+    #sub_visual p {
+        font-size: 16px;
+    }
+}
+
+/* ========================================
    다크모드
 ======================================== */
 body.dark-theme {
@@ -904,6 +1154,133 @@ body.dark-theme .v4-sidebar__toggle {
 
 body.dark-theme .v4-sidebar__toggle:hover {
     background: #2a9bd9;
+}
+
+/* 리소스 탭 (a 태그 inherit 오버라이드) */
+body.dark-theme .v4-resource-tabs__item {
+    color: #a0a0a0;
+}
+
+body.dark-theme .v4-resource-tabs__item:hover,
+body.dark-theme .v4-resource-tabs__item.active {
+    color: var(--v4-primary);
+}
+
+body.dark-theme .v4-resource-tabs__count {
+    background: rgba(255, 255, 255, 0.1);
+    color: #a0a0a0;
+}
+
+body.dark-theme .v4-resource-tabs__item.active .v4-resource-tabs__count {
+    background: var(--v4-primary);
+    color: #fff;
+}
+
+/* 배지 다크모드 (결과발표 — 기본 #333 텍스트 수정) */
+body.dark-theme .v4-badge--result {
+    background: rgba(255, 215, 0, 0.3);
+    color: #ffd700;
+}
+
+body.dark-theme .v4-badge--primary {
+    background: rgba(51, 174, 236, 0.15);
+    color: var(--v4-primary);
+}
+
+/* 필터 체크박스 텍스트 */
+body.dark-theme .v4-filter-checkbox {
+    color: #e0e0e0;
+}
+
+body.dark-theme .v4-filter-checkbox:hover {
+    color: var(--v4-primary);
+}
+
+/* 뷰 토글 아이콘 */
+body.dark-theme .v4-view-toggle__button {
+    color: #a0a0a0;
+}
+
+body.dark-theme .v4-view-toggle__button.active {
+    color: var(--v4-primary);
+}
+
+/* 카드 썸네일 배경 */
+body.dark-theme .v4-card__thumbnail {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* 필터 초기화 버튼 */
+body.dark-theme .v4-filter-reset {
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #a0a0a0;
+}
+
+body.dark-theme .v4-filter-reset:hover {
+    border-color: var(--v4-primary);
+    color: var(--v4-primary);
+}
+
+/* 아코디언 헤더 */
+body.dark-theme .v4-filter-group__header {
+    color: #e0e0e0;
+}
+
+body.dark-theme .v4-filter-group__arrow {
+    color: #a0a0a0;
+}
+
+/* 칩 필터 */
+body.dark-theme .v4-filter-chip__text {
+    color: #e0e0e0;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-theme .v4-filter-chip:hover .v4-filter-chip__text {
+    border-color: var(--v4-primary);
+    color: var(--v4-primary);
+}
+
+body.dark-theme .v4-filter-chip input:checked + .v4-filter-chip__text {
+    background: var(--v4-primary);
+    border-color: var(--v4-primary);
+    color: #fff;
+}
+
+/* 활성 필터 태그 */
+body.dark-theme .v4-filter-active {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .v4-filter-active__tag {
+    background: rgba(51, 174, 236, 0.2);
+    color: var(--v4-primary);
+}
+
+body.dark-theme .v4-filter-active__tag:hover {
+    background: rgba(51, 174, 236, 0.3);
+}
+
+body.dark-theme .v4-filter-active__clear {
+    color: #a0a0a0;
+}
+
+body.dark-theme .v4-filter-active__clear:hover {
+    color: var(--v4-primary);
+}
+
+/* 배너 슬라이더 */
+body.dark-theme .v4-banner-slider {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 빈 상태 */
+body.dark-theme .v4-empty__title {
+    color: #fff;
+}
+
+body.dark-theme .v4-empty__desc {
+    color: #a0a0a0;
 }
 
 /* ========================================

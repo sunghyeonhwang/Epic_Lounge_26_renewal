@@ -99,7 +99,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
     <link rel="stylesheet" href="/v3/resource/css/sub.css">
-    <link rel="stylesheet" href="/v3/resource/css/pages/list.css">
+    <link rel="stylesheet" href="/v3/resource/css/pages/list.css?v=20260209b">
 
     <!-- JS (jQuery first) -->
     <script src="/v3/resource/js/jquery-3.4.1.min.js"></script>
@@ -136,7 +136,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
         </div>
 
         <!-- 상태 필터 탭 -->
-        <div class="v4-search-tabs" id="status-tabs" style="margin-bottom: 24px;">
+        <div class="v4-search-tabs" id="status-tabs" style="margin-bottom: 24px; justify-content: center;">
             <button type="button" class="v4-search-tabs__item<?php echo empty($status) ? ' active' : ''; ?>"
                     data-status="">전체</button>
             <button type="button" class="v4-search-tabs__item<?php echo ($status === '진행중') ? ' active' : ''; ?>"

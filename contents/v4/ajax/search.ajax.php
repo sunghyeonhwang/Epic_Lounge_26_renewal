@@ -60,7 +60,7 @@ $search_configs = [
     ],
     'replay' => [
         'table'     => 'v3_rsc_review_bbs',
-        'fields'    => "title, content",
+        'fields'    => "title, contents",
         'view_url'  => '/v3/contents/v4/replay_view.php?rsc_bbs_idx=',
         'type'      => 'replay',
         'subdir'    => 'review',
@@ -69,7 +69,7 @@ $search_configs = [
     ],
     'free' => [
         'table'     => 'v3_rsc_free_bbs',
-        'fields'    => "title, content",
+        'fields'    => "title, contents",
         'view_url'  => '/v3/contents/v4/free_view.php?rsc_bbs_idx=',
         'type'      => 'free',
         'subdir'    => 'free',
@@ -78,7 +78,7 @@ $search_configs = [
     ],
     'book' => [
         'table'     => 'v3_rsc_book_bbs',
-        'fields'    => "title, content",
+        'fields'    => "title, contents",
         'view_url'  => '/v3/contents/v4/book_view.php?rsc_bbs_idx=',
         'type'      => 'book',
         'subdir'    => 'book',

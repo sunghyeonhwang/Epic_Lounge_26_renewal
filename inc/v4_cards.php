@@ -85,9 +85,9 @@ function render_resource_card($item, $type, $view_url, $data_subdir) {
     $detail_url = $view_url . $idx;
     $reg_date = $item['reg_date'] ?? '';
 
-    // 새창 열기 처리 (새소식에서 site_url이 있으면)
+    // 새창 열기 처리 (site_url이 있으면 외부 링크로)
     $target = '';
-    if ($type === 'news' && !empty($item['site_url'])) {
+    if (in_array($type, ['news', 'free', 'book']) && !empty($item['site_url'])) {
         $detail_url = get_text($item['site_url']);
         $target = ' target="_blank" rel="noopener noreferrer"';
     }
@@ -97,13 +97,17 @@ function render_resource_card($item, $type, $view_url, $data_subdir) {
         get_text($item['cate_industry'] ?? ''),
         get_text($item['cate_product'] ?? ''),
         get_text($item['cate_subject'] ?? ''),
+        get_text($item['cate_engine'] ?? ''),
+        get_text($item['category'] ?? ''),
     ]);
 
-    // 설명 (content에서 태그 제거 후 100자)
+    // 설명 (contents에서 태그 제거 후 100자)
+    $raw_content = $item['contents'] ?? $item['content'] ?? '';
     $desc = '';
-    if (!empty($item['content'])) {
-        $desc = mb_substr(strip_tags($item['content']), 0, 100, 'UTF-8');
-        if (mb_strlen(strip_tags($item['content']), 'UTF-8') > 100) {
+    if (!empty($raw_content)) {
+        $stripped = strip_tags($raw_content);
+        $desc = mb_substr($stripped, 0, 100, 'UTF-8');
+        if (mb_strlen($stripped, 'UTF-8') > 100) {
             $desc .= '...';
         }
     }

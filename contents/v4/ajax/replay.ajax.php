@@ -72,7 +72,7 @@ $view_url = '/v3/contents/v4/replay_view.php?rsc_bbs_idx=';
 // ----- HTML 렌더링 -----
 $html = '';
 while ($row = sql_fetch_array($result)) {
-    $html .= render_resource_card($row, 'replay', $view_url, 'review');
+    $html .= render_resource_card($row, 'replay', $view_url, 'rsc');
 }
 
 // ----- JSON 응답 -----

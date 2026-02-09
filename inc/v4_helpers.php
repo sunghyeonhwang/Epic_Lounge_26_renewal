@@ -163,7 +163,7 @@ function v4_highlight($text, $keyword) {
  * @param string $default 기본 이미지 URL
  * @return string 이미지 URL
  */
-function v4_thumb_url($row, $data_subdir, $default = '/v3/resource/images/sub/event_list_img.jpg') {
+function v4_thumb_url($row, $data_subdir, $default = '/v3/resource/images/sub/no_img.jpg') {
     if (!empty($row['thumb_img_url'])) {
         return $row['thumb_img_url'];
     }

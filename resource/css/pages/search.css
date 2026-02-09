@@ -17,6 +17,22 @@
 }
 
 /* ========================================
+   #sub_visual 높이 축소 (v4 전용)
+======================================== */
+#sub_visual {
+    height: 300px;
+    padding-top: 100px;
+}
+
+#sub_visual h2 {
+    font-size: 45px;
+}
+
+#sub_visual p {
+    font-size: 18px;
+}
+
+/* ========================================
    검색 컨테이너
 ======================================== */
 .v4-search-container {
@@ -619,6 +635,19 @@
    반응형 - 태블릿 (1000px 이하)
 ======================================== */
 @media (max-width: 1000px) {
+    #sub_visual {
+        height: 280px;
+        padding-top: 90px;
+    }
+
+    #sub_visual h2 {
+        font-size: 38px;
+    }
+
+    #sub_visual p {
+        font-size: 16px;
+    }
+
     .v4-search-container {
         padding: 32px 16px 60px;
     }
