@@ -106,7 +106,7 @@ $seo_extra_body     = $v3_seo['seo_extra_body'] ?? '';
 
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
-    <link rel="stylesheet" href="/v3/resource/css/pages/detail.css?v=20250209b">
+    <link rel="stylesheet" href="/v3/resource/css/pages/detail.css?v=20260318b">
 
     <!-- JS -->
     <script src="/v3/resource/js/jquery-3.4.1.min.js"></script>

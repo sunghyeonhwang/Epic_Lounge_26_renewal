@@ -498,14 +498,13 @@ body {
 }
 
 #event_main_sec_4 .qu_text_box {
-	positioN: relative;
+	position: relative;
 	width: 100%;
 	border: 1px solid #5FD0C3;
 	line-height: 90px;
 	padding: 0 30px;
 	border-radius: 5px;
 	display: inline-block;
-	width: 100%;
 	vertical-align: top;
 	top:20px;
 }
@@ -578,6 +577,7 @@ body {
 }
 
 #event_main_sec_5 .acc_item:after {
+	content: "";
 	display: block;
 	position: absolute;
 	right: 15px;
@@ -610,6 +610,7 @@ body {
 }
 
 #event_main_sec_5 .acc_item .acc_btn .title:before {
+	content: "";
 	width: 18px;
 	height: 20px;
 	display: block;
@@ -636,9 +637,12 @@ body {
 	color: #9D9D9D;
 	padding: 0 0 20px 55px;
 	word-break: keep-all;
+	width: 100%;
+	text-align: left;
 }
 
 #event_main_sec_5 .acc_item .acc_con .acc_btn:before {
+	content: "";
 	color: #CECECE;
 	width: 18px;
 	height: 20px;
@@ -658,6 +662,8 @@ body {
 #event_main_sec_5 .acc_item .acc_con p {
 	text-align: left;
 	font-weight: 200;
+	width: 100%;
+	max-width: 100%;
 }
 
 
@@ -743,14 +749,13 @@ body {
 }
 
 #event_main_sec_6 .qu_text_box {
-	positioN: relative;
+	position: relative;
 	width: 100%;
 	border: 1px solid #5FD0C3;
 	line-height: 90px;
 	padding: 0 30px;
 	border-radius: 5px;
 	display: inline-block;
-	width: 100%;
 	vertical-align: top;
 	top:20px;
 }
@@ -1329,16 +1334,12 @@ body.lang-en .notice-ko-only {
 	}
 
 	#event_main_sec_3 h3.h3,
-	#event_main_sec_4 h3.h3,
-	#event_main_sec_6 h3.h3,
-		 {
+	#event_main_sec_4 h3.h3 {
 		font-size: 26px
 	}
 
 	#event_main_sec_3 h4.h4,
-	#event_main_sec_4 h4.h4,
-	#event_main_sec_6 h4.h4
-		 {
+	#event_main_sec_4 h4.h4 {
 		font-size: 22px;
 		font-weight: 200;
 	}
@@ -1409,11 +1410,15 @@ body.lang-en .notice-ko-only {
 		padding: 15px 0;
 	}
 
+	#event_main_sec_5 .acc_item .acc_con {
+		padding-right: 40px;
+	}
+
 	#event_main_sec_5 .acc_item .acc_btn .title,
 	#event_main_sec_5 .acc_item .acc_con .acc_btn {
 		font-size: 18px;
 		padding-left: 30px;
-		padding-right: 20px;
+		padding-right: 0;
 	}
 
 	#event_main_sec_5 .acc_item .acc_btn .title:before,
@@ -1792,5 +1797,11 @@ body.lang-en .notice-ko-only {
 
 	#event_write .in_info {
 		font-size: 15px;
+	}
+}
+
+@media (hover: none) {
+	#event_main_sec_3 ul li .img_box video {
+		filter: brightness(0.8);
 	}
 }

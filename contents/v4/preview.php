@@ -138,7 +138,7 @@
                     <div class="link-card__title">이벤트 목록</div>
                     <div class="link-card__desc">sub_visual + 2열 그리드 + 상태 탭</div>
                 </a>
-                <a href="/contents/event.php" class="link-card" target="_blank">
+                <a href="/v3/contents/event_list.php" class="link-card" target="_blank">
                     <span class="link-card__badge link-card__badge--legacy">Legacy</span>
                     <div class="link-card__title">이벤트 목록 (레거시)</div>
                     <div class="link-card__desc">기존 이벤트 페이지</div>
@@ -151,7 +151,7 @@
                     <div class="link-card__title">글로벌 이벤트</div>
                     <div class="link-card__desc">글로벌 이벤트 바로가기 URL</div>
                 </a>
-                <a href="/contents/event.php?category=글로벌%20이벤트" class="link-card" target="_blank">
+                <a href="/v3/contents/global_event_list.php" class="link-card" target="_blank">
                     <span class="link-card__badge link-card__badge--legacy">Legacy</span>
                     <div class="link-card__title">글로벌 이벤트 (레거시)</div>
                     <div class="link-card__desc">기존 글로벌 이벤트</div>
@@ -164,7 +164,7 @@
                     <div class="link-card__title">새소식 목록</div>
                     <div class="link-card__desc">sub_visual + 카테고리 탭 (뉴스/출시&업데이트/블로그)</div>
                 </a>
-                <a href="/contents/news.php" class="link-card" target="_blank">
+                <a href="/v3/contents/news_list.php" class="link-card" target="_blank">
                     <span class="link-card__badge link-card__badge--legacy">Legacy</span>
                     <div class="link-card__title">새소식 목록 (레거시)</div>
                     <div class="link-card__desc">기존 새소식 페이지</div>
@@ -177,7 +177,7 @@
                     <div class="link-card__title">다시보기 (영상)</div>
                     <div class="link-card__desc">sub_visual + 리소스 탭 + 상단 검색</div>
                 </a>
-                <a href="/contents/replay.php" class="link-card" target="_blank">
+                <a href="/v3/contents/replay.php" class="link-card" target="_blank">
                     <span class="link-card__badge link-card__badge--legacy">Legacy</span>
                     <div class="link-card__title">다시보기 (레거시)</div>
                     <div class="link-card__desc">기존 다시보기 페이지</div>
@@ -190,7 +190,7 @@
                     <div class="link-card__title">무료 콘텐츠</div>
                     <div class="link-card__desc">sub_visual + 리소스 탭 + 상단 검색</div>
                 </a>
-                <a href="/contents/free.php" class="link-card" target="_blank">
+                <a href="/v3/contents/free.php" class="link-card" target="_blank">
                     <span class="link-card__badge link-card__badge--legacy">Legacy</span>
                     <div class="link-card__title">무료 콘텐츠 (레거시)</div>
                     <div class="link-card__desc">기존 무료 콘텐츠 페이지</div>
@@ -203,7 +203,7 @@
                     <div class="link-card__title">백서/eBook</div>
                     <div class="link-card__desc">sub_visual + 리소스 탭 + 상단 검색</div>
                 </a>
-                <a href="/contents/book.php" class="link-card" target="_blank">
+                <a href="/v3/contents/book.php" class="link-card" target="_blank">
                     <span class="link-card__badge link-card__badge--legacy">Legacy</span>
                     <div class="link-card__title">백서 (레거시)</div>
                     <div class="link-card__desc">기존 백서 페이지</div>
@@ -220,7 +220,7 @@
                     <div class="link-card__title">통합 검색</div>
                     <div class="link-card__desc">sub_visual + form width 조정</div>
                 </a>
-                <a href="/contents/total_search.php" class="link-card" target="_blank">
+                <a href="/v3/contents/total_search.php" class="link-card" target="_blank">
                     <span class="link-card__badge link-card__badge--legacy">Legacy</span>
                     <div class="link-card__title">통합 검색 (레거시)</div>
                     <div class="link-card__desc">기존 검색 페이지</div>
@@ -249,28 +249,6 @@
                     <div class="link-card__title">이용약관</div>
                     <div class="link-card__desc">sub_visual 추가 (내용 업데이트 별도)</div>
                 </a>
-            </div>
-        </div>
-
-        <!-- 수정 요약 -->
-        <div class="section">
-            <h2 class="section-title">수정 요약 (2026-02-06)</h2>
-            <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; line-height: 1.8;">
-                <p><strong>✅ 완료:</strong></p>
-                <ul style="margin-left: 20px; margin-bottom: 16px;">
-                    <li>8개 페이지에 #sub_visual 추가</li>
-                    <li>새소식: 카테고리 탭 (전체/뉴스/출시&업데이트/블로그) + 새창 열기</li>
-                    <li>이벤트: 2열 그리드 레이아웃</li>
-                    <li>리소스 3종: 상단 검색바 + 리소스 카테고리 탭 (건수 표시)</li>
-                    <li>검색: form max-width 600px</li>
-                    <li>더보기 버튼 하단 여백 200px</li>
-                </ul>
-                <p><strong>⏳ 미완료 (별도 진행):</strong></p>
-                <ul style="margin-left: 20px;">
-                    <li>이벤트/리소스 상세 페이지 레이아웃 개선</li>
-                    <li>약관/정책 내용 업데이트 (2026년)</li>
-                    <li>배너 슬라이더 (.visual_item)</li>
-                </ul>
             </div>
         </div>
 

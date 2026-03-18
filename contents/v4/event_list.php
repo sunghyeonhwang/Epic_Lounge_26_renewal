@@ -26,6 +26,7 @@ $seo_extra_head     = $v3_seo['seo_extra_head'] ?? '';
 $seo_extra_body     = $v3_seo['seo_extra_body'] ?? '';
 
 // ----- 필터 파라미터 -----
+$keyword  = v4_str($_GET['keyword'] ?? '');
 $category = v4_str($_GET['category'] ?? '커뮤니티 이벤트');
 $status   = v4_str($_GET['status'] ?? '');
 $page     = v4_int($_GET['page'] ?? 1);
@@ -48,6 +49,10 @@ $table = ($category === '글로벌 이벤트') ? 'v3_rsc_global_event_bbs' : 'v3
 $where = "WHERE display_yn = 'Y'";
 if ($status) {
     $where .= " AND status = '{$status}'";
+}
+if ($keyword) {
+    $keyword_esc = sql_real_escape_string($keyword);
+    $where .= " AND (title LIKE '%{$keyword_esc}%' OR contents LIKE '%{$keyword_esc}%')";
 }
 
 // 전체 건수
@@ -99,7 +104,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
     <link rel="stylesheet" href="/v3/resource/css/sub.css">
-    <link rel="stylesheet" href="/v3/resource/css/pages/list.css?v=20260209b">
+    <link rel="stylesheet" href="/v3/resource/css/pages/list.css?v=20260318b">
 
     <!-- JS (jQuery first) -->
     <script src="/v3/resource/js/jquery-3.4.1.min.js"></script>
@@ -121,38 +126,30 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 
     <div class="wrap" style="padding-top: 40px;">
 
-        <!-- 카테고리 탭 -->
-        <div class="v4-search-tabs" id="category-tabs">
-            <button type="button"
-                    class="v4-search-tabs__item<?php echo ($category === '커뮤니티 이벤트') ? ' active' : ''; ?>"
-                    data-category="커뮤니티 이벤트">
-                커뮤니티
+        <!-- 검색바 -->
+        <div class="v4-search-bar" style="margin-bottom: 24px; max-width: 400px;">
+            <input type="text"
+                   class="v4-search-bar__input"
+                   id="keyword-input"
+                   placeholder="검색어를 입력하세요"
+                   value="<?php echo get_text($keyword); ?>">
+            <button type="button" class="v4-search-bar__button" id="search-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12.5 12.5L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
             </button>
-            <button type="button"
-                    class="v4-search-tabs__item<?php echo ($category === '글로벌 이벤트') ? ' active' : ''; ?>"
-                    data-category="글로벌 이벤트">
-                글로벌
-            </button>
-        </div>
-
-        <!-- 상태 필터 탭 -->
-        <div class="v4-search-tabs" id="status-tabs" style="margin-bottom: 24px; justify-content: center;">
-            <button type="button" class="v4-search-tabs__item<?php echo empty($status) ? ' active' : ''; ?>"
-                    data-status="">전체</button>
-            <button type="button" class="v4-search-tabs__item<?php echo ($status === '진행중') ? ' active' : ''; ?>"
-                    data-status="진행중">진행중</button>
-            <button type="button" class="v4-search-tabs__item<?php echo ($status === '종료') ? ' active' : ''; ?>"
-                    data-status="종료">종료</button>
-            <button type="button" class="v4-search-tabs__item<?php echo ($status === '결과발표') ? ' active' : ''; ?>"
-                    data-status="결과발표">결과발표</button>
         </div>
 
         <!-- 목록 컨트롤 -->
         <div class="v4-list-controls">
             <div class="v4-list-controls__left">
-                <span class="v4-list-controls__count" id="total-count">
-                    전체 <strong><?php echo number_format($total_count); ?></strong>건
-                </span>
+                <div class="v4-news-tabs" id="status-tabs" style="margin: 0;">
+                    <button type="button" class="v4-news-tabs__item<?php echo empty($status) ? ' active' : ''; ?>" data-status="">전체</button>
+                    <button type="button" class="v4-news-tabs__item<?php echo ($status === '진행중') ? ' active' : ''; ?>" data-status="진행중">진행중</button>
+                    <button type="button" class="v4-news-tabs__item<?php echo ($status === '종료') ? ' active' : ''; ?>" data-status="종료">종료</button>
+                    <button type="button" class="v4-news-tabs__item<?php echo ($status === '결과발표') ? ' active' : ''; ?>" data-status="결과발표">결과발표</button>
+                </div>
             </div>
             <div class="v4-view-toggle" id="view-toggle">
                 <button type="button" class="v4-view-toggle__button active" data-view="gallery" aria-label="갤러리 뷰">
@@ -215,28 +212,33 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 (function($) {
     'use strict';
 
+    var currentKeyword  = '<?php echo addslashes(get_text($keyword)); ?>';
     var currentCategory = '<?php echo addslashes(get_text($category)); ?>';
     var currentStatus   = '<?php echo addslashes(get_text($status)); ?>';
     var currentPage     = <?php echo $page; ?>;
     var perPage         = <?php echo $per_page; ?>;
     var isLoading       = false;
 
-    // ----- 카테고리 탭 -----
-    $('#category-tabs').on('click', '.v4-search-tabs__item', function() {
-        currentCategory = $(this).data('category');
+    // ----- 상태 필터 탭 -----
+    $('#status-tabs').on('click', '.v4-news-tabs__item', function() {
+        currentStatus = $(this).data('status');
         currentPage = 1;
-        $('#category-tabs .v4-search-tabs__item').removeClass('active');
+        $('#status-tabs .v4-news-tabs__item').removeClass('active');
         $(this).addClass('active');
         loadEvents(false);
     });
 
-    // ----- 상태 필터 탭 -----
-    $('#status-tabs').on('click', '.v4-search-tabs__item', function() {
-        currentStatus = $(this).data('status');
+    // ----- 검색 -----
+    $('#search-btn').on('click', function() {
+        currentKeyword = $('#keyword-input').val().trim();
         currentPage = 1;
-        $('#status-tabs .v4-search-tabs__item').removeClass('active');
-        $(this).addClass('active');
         loadEvents(false);
+    });
+    $('#keyword-input').on('keypress', function(e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            $('#search-btn').click();
+        }
     });
 
     // ----- 뷰 전환 -----
@@ -290,6 +292,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
             dataType: 'json',
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             data: {
+                keyword: currentKeyword,
                 category: currentCategory,
                 status: currentStatus,
                 page: currentPage,
@@ -335,6 +338,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
                 var params = new URLSearchParams();
                 params.set('category', currentCategory);
                 if (currentStatus) params.set('status', currentStatus);
+                if (currentKeyword) params.set('keyword', currentKeyword);
                 var newUrl = window.location.pathname + '?' + params.toString();
                 history.replaceState(null, '', newUrl);
             },

@@ -69,7 +69,7 @@ if ($keyword) {
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
     <link rel="stylesheet" href="/v3/resource/css/sub.css">
-    <link rel="stylesheet" href="/v3/resource/css/pages/search.css?v=20260209">
+    <link rel="stylesheet" href="/v3/resource/css/pages/search.css?v=20260318b">
 
     <!-- JS -->
     <script src="/v3/resource/js/jquery-3.4.1.min.js"></script>

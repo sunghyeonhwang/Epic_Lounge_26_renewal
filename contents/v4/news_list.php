@@ -99,7 +99,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
     <link rel="stylesheet" href="/v3/resource/css/sub.css">
-    <link rel="stylesheet" href="/v3/resource/css/pages/list.css?v=20260209b">
+    <link rel="stylesheet" href="/v3/resource/css/pages/list.css?v=20260318b">
 
     <!-- JS (jQuery first) -->
     <script src="/v3/resource/js/jquery-3.4.1.min.js"></script>
@@ -121,16 +121,8 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 
     <div class="wrap" style="padding-top: 40px;">
 
-        <!-- 카테고리 탭 -->
-        <div class="v4-news-tabs" id="category-tabs">
-            <button type="button" class="v4-news-tabs__item<?php echo empty($category) ? ' active' : ''; ?>" data-category="">전체</button>
-            <button type="button" class="v4-news-tabs__item<?php echo ($category === '뉴스') ? ' active' : ''; ?>" data-category="뉴스">뉴스</button>
-            <button type="button" class="v4-news-tabs__item<?php echo ($category === '업데이트/출시') ? ' active' : ''; ?>" data-category="업데이트/출시">출시&업데이트</button>
-            <button type="button" class="v4-news-tabs__item<?php echo ($category === '블로그') ? ' active' : ''; ?>" data-category="블로그">블로그</button>
-        </div>
-
         <!-- 검색바 -->
-        <div class="v4-search-bar" style="margin-bottom: 32px; max-width: 400px;">
+        <div class="v4-search-bar" style="margin-bottom: 24px; max-width: 400px;">
             <div class="v4-search-bar__inner">
                 <input type="text"
                        class="v4-search-bar__input"
@@ -145,6 +137,14 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
                     검색
                 </button>
             </div>
+        </div>
+
+        <!-- 카테고리 탭 -->
+        <div class="v4-news-tabs" id="category-tabs" style="margin-bottom: 24px;">
+            <button type="button" class="v4-news-tabs__item<?php echo empty($category) ? ' active' : ''; ?>" data-category="">전체</button>
+            <button type="button" class="v4-news-tabs__item<?php echo ($category === '뉴스') ? ' active' : ''; ?>" data-category="뉴스">뉴스</button>
+            <button type="button" class="v4-news-tabs__item<?php echo ($category === '업데이트/출시') ? ' active' : ''; ?>" data-category="업데이트/출시">출시&업데이트</button>
+            <button type="button" class="v4-news-tabs__item<?php echo ($category === '블로그') ? ' active' : ''; ?>" data-category="블로그">블로그</button>
         </div>
 
         <!-- 목록 컨트롤 -->

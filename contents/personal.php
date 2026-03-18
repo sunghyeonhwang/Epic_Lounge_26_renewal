@@ -233,7 +233,7 @@ include_once('../common.php');
 		<p class="indent">182 (http://cyberbureau.police.go.kr)</p>
 
 		<h3 class="h3">제12조 </h3>
-		<p class="indent margin_b_70">개인정보 처리방침 변경<br />이 개인정보 처리방침은 2022. 04. 03부터 적용됩니다.</p>
+		<p class="indent margin_b_70">개인정보 처리방침 변경<br />이 개인정보 처리방침은 2026. 02. 12부터 적용됩니다. 관련 법령 또는 서비스 변경사항을 반영하기 위해 처리방침을 수정할 수 있으며, 중요한 변경사항은 홈페이지를 통해 사전에 안내합니다.</p>
 
 	</div>
 </div>

@@ -926,3 +926,18 @@ body.dark-theme .v4-search-loading__spinner {
     border-color: rgba(255, 255, 255, 0.1);
     border-top-color: var(--v4-primary);
 }
+
+/* ========================================
+   GNB 검색 버튼 수정 (common.css 충돌 해결)
+======================================== */
+#header .top_search_btn_box form {
+    width: 260px;
+    height: 40px;
+    overflow: hidden;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+#header .top_search_btn_box form input {
+    width: calc(100% - 40px);
+}

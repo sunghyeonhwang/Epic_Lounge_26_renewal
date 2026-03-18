@@ -9,7 +9,7 @@ $url = 'http://' . $http_host . $request_uri;
 		<h1 class="logo"><a class="logo_img" href="/index.php"><img src="/resource/images/common/logo_new.svg" /></a></h1>
 		
 		<div class="top_search_btn_box">
-			<form action="/contents/total_search.php" name="frm_total_sc" id="frm_total_sc">
+			<form action="/v3/contents/v4/total_search.php" name="frm_total_sc" id="frm_total_sc">
 				<fieldset>
 					<div class="top_search_box">
 						<input type="text" name="keyword" id="keyword" />
@@ -40,7 +40,7 @@ $url = 'http://' . $http_host . $request_uri;
 		<h1 class="m_logo"><a class="logo_img" href="/index.php"><img src="/resource/images/common/foot_logo.svg" /></a></h1>
 	
 	<div class="m_top_search_btn_box">
-		<form action="/contents/total_search.php" name="frm_total_sc" id="frm_total_sc">
+		<form action="/v3/contents/v4/total_search.php" name="frm_total_sc" id="frm_total_sc">
 			<fieldset>
 				<div class="top_search_box">
 					<input type="text" name="keyword" id="keyword" />
@@ -57,7 +57,7 @@ $url = 'http://' . $http_host . $request_uri;
 
   <ul class="top1menu clearfix">
 	
-    <li class="depth1"><a href="/contents/news_list.php" target="_self" class="tit depth1_ti"><span>새소식</span></a><div>
+    <li class="depth1"><a href="/v3/contents/v4/news_list.php" target="_self" class="tit depth1_ti"><span>새소식</span></a><div>
             <div class="menu_bg clearfix">   
 				 
 					<div class="lnb_title_box">
@@ -66,9 +66,9 @@ $url = 'http://' . $http_host . $request_uri;
 					</div>
 					<div class="lnb_menu_box">
 						<ul class="depth2">
-							<li class="tit02_1_1"><a href="/contents/news_list.php?category=뉴스" target="_self" class="tit02">뉴스</a></li>
-							<li class="tit02_1_2"><a href="/contents/news_list.php?category=업데이트/출시" target="_self" class="tit02">출시 &#38; 업데이트</a></li>
-							<li class="tit02_1_3"><a href="/contents/news_list.php?category=블로그" target="_self" class="tit02">블로그</a></li>
+							<li class="tit02_1_1"><a href="/v3/contents/v4/news_list.php?category=뉴스" target="_self" class="tit02">뉴스</a></li>
+							<li class="tit02_1_2"><a href="/v3/contents/v4/news_list.php?category=업데이트/출시" target="_self" class="tit02">출시 &#38; 업데이트</a></li>
+							<li class="tit02_1_3"><a href="/v3/contents/v4/news_list.php?category=블로그" target="_self" class="tit02">블로그</a></li>
 						</ul>
 					</div>
 
@@ -86,7 +86,7 @@ $url = 'http://' . $http_host . $request_uri;
 				</div>
         </div>
     </li>
-    <li class="depth1"> <a href="/contents/event_list.php?category=커뮤니티 이벤트" target="_self" class="tit depth1_ti"><span>이벤트</span></a><div>
+    <li class="depth1"> <a href="/v3/contents/v4/event_list.php?category=커뮤니티 이벤트" target="_self" class="tit depth1_ti"><span>이벤트</span></a><div>
             <div class="menu_bg clearfix"> 
 					<div class="lnb_title_box">
 						<span class="title">이벤트</span>
@@ -97,8 +97,8 @@ $url = 'http://' . $http_host . $request_uri;
 					<!-- <strong><a href="https://epiclounge.co.kr/unrealfest24.php" target="_blank" class="tit02" style="color:#00C2E8; font-weight: 800;">언리얼 페스트 2024 서울</a></strong> -->
 						<ul class="depth2">
 							<!-- <li class="tit02_2_1"><a href="https://epiclounge.co.kr/unrealfest2025/" target="_blank" class="tit02" style="color:#00C2E8; font-weight: 800;">언리얼 페스트 서울 2025</a></li> -->
-							<li class="tit02_2_1"><a href="/contents/event_list.php?category=커뮤니티 이벤트" target="_self" class="tit02">커뮤니티 이벤트</a></li>
-							<li class="tit02_2_2"><a href="/contents/global_event_list.php" target="_blank" class="tit02">글로벌 이벤트</a></li>
+							<li class="tit02_2_1"><a href="/v3/contents/v4/event_list.php?category=커뮤니티 이벤트" target="_self" class="tit02">커뮤니티 이벤트</a></li>
+							<li class="tit02_2_2"><a href="/v3/contents/v4/event_list.php?type=global" target="_self" class="tit02">글로벌 이벤트</a></li>
 						</ul>
 					</div>
 					<div class="lnb_banner">
@@ -115,7 +115,7 @@ $url = 'http://' . $http_host . $request_uri;
 				</div>
         </div>
     </li>
-    <li class="depth1"> <a href="/contents/replay.php" target="_self" class="tit depth1_ti"><span>리소스</span></a><div>
+    <li class="depth1"> <a href="/v3/contents/v4/replay_list.php" target="_self" class="tit depth1_ti"><span>리소스</span></a><div>
             <div class="menu_bg clearfix">  
 					<div class="lnb_title_box">
 						<span class="title">리소스</span>
@@ -125,9 +125,9 @@ $url = 'http://' . $http_host . $request_uri;
 					<div class="lnb_menu_box">
 						<!-- <strong>리소스</strong> -->
 						<ul class="depth2">
-							<li class="tit02_3_1"><a href="/contents/replay.php" target="_self" class="tit02">다시보기</a></li>
-							<li class="tit02_3_3"><a href="/contents/free.php" target="_self" class="tit02">무료 콘텐츠</a></li>
-							<li class="tit02_3_2"><a href="/contents/book.php" target="_self" class="tit02">백서</a></li>
+							<li class="tit02_3_1"><a href="/v3/contents/v4/replay_list.php" target="_self" class="tit02">다시보기</a></li>
+							<li class="tit02_3_3"><a href="/v3/contents/v4/free_list.php" target="_self" class="tit02">무료 콘텐츠</a></li>
+							<li class="tit02_3_2"><a href="/v3/contents/v4/book_list.php" target="_self" class="tit02">백서</a></li>
 							<li class="tit02_3_3"><a href="https://www.unrealengine.com/ko/onlinelearning-courses" target="_blank" class="tit02">에픽 디벨로퍼 커뮤니티 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px; vertical-align:middle; opacity:0.8;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a></li>
 							<br  />
 							<!--<li class="tit02_3_4"><a href="https://dev.epicgames.com/community/" target="_blank" class="tit02">DEV 커뮤니티</a><i class="fas fa-external-link-alt"></i></li>-->

@@ -104,7 +104,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
     <!-- CSS -->
     <link rel="stylesheet" href="/v3/resource/css/main26.css">
     <link rel="stylesheet" href="/v3/resource/css/sub.css">
-    <link rel="stylesheet" href="/v3/resource/css/pages/list.css?v=20260209b">
+    <link rel="stylesheet" href="/v3/resource/css/pages/list.css?v=20260318b">
 
     <!-- JS (jQuery first) -->
     <script src="/v3/resource/js/jquery-3.4.1.min.js"></script>
@@ -128,7 +128,7 @@ $total_pages = ($per_page > 0) ? ceil($total_count / $per_page) : 1;
 
         <!-- 상단 검색 + 리소스 탭 -->
         <div class="v4-resource-search">
-            <form class="v4-search-bar v4-search-bar--top" id="top-search-form" action="" method="get">
+            <form class="v4-search-bar v4-search-bar--top" id="top-search-form" action="" method="get" style="max-width: 400px;">
                 <input type="text" name="keyword" class="v4-search-bar__input" placeholder="검색어를 입력하세요"
                        value="<?php echo get_text($keyword); ?>">
                 <button type="submit" class="v4-search-bar__button">검색</button>

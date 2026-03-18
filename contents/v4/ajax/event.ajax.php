@@ -22,6 +22,7 @@ include_once(G5_PATH.'/inc/v4_cards.php');
 v4_ajax_guard();
 
 // ----- 파라미터 -----
+$keyword  = v4_str($_POST['keyword'] ?? '');
 $category = v4_str($_POST['category'] ?? '커뮤니티 이벤트');
 $status   = v4_str($_POST['status'] ?? '');
 $page     = v4_int($_POST['page'] ?? 1);
@@ -46,6 +47,10 @@ $table = ($category === '글로벌 이벤트') ? 'v3_rsc_global_event_bbs' : 'v3
 $where = "WHERE display_yn = 'Y'";
 if ($status) {
     $where .= " AND status = '{$status}'";
+}
+if ($keyword) {
+    $keyword_esc = sql_real_escape_string($keyword);
+    $where .= " AND (title LIKE '%{$keyword_esc}%' OR contents LIKE '%{$keyword_esc}%')";
 }
 
 // 전체 건수

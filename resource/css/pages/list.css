@@ -74,7 +74,7 @@
     gap: 40px;
     max-width: 1240px;
     margin: 0 auto;
-    padding: 40px 20px;
+    padding: 0;
 }
 
 .v4-list-layout__sidebar {
@@ -718,6 +718,10 @@
     aspect-ratio: 16/10;
 }
 
+.v4-card-grid--list .v4-card__thumbnail img {
+    object-position: left center;
+}
+
 .v4-card-grid--list .v4-card__body {
     padding: 24px 28px;
 }
@@ -913,6 +917,8 @@
 .v4-empty {
     text-align: center;
     padding: 80px 20px;
+    grid-column: 1 / -1;
+    width: 100%;
 }
 
 .v4-empty__icon {
@@ -982,7 +988,7 @@
 ======================================== */
 @media (max-width: 640px) {
     .v4-list-layout {
-        padding: 24px 16px;
+        padding: 0;
         gap: 24px;
     }
 
@@ -1423,4 +1429,122 @@ body.dark-theme .v4-news-tabs__item:hover {
 body.dark-theme .v4-news-tabs__item.active {
     background: var(--v4-primary);
     border-color: var(--v4-primary);
+}
+
+/* ========================================
+   Pill 스타일 탭 (이벤트 목록용)
+   index_test.php 이벤트 탭과 동일한 디자인
+======================================== */
+.v4-pill-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.v4-pill-tabs__bar {
+    display: inline-flex;
+    background: #f0f0f2;
+    padding: 5px;
+    border-radius: 12px;
+    border: 1px solid var(--v4-border);
+    gap: 0;
+}
+
+.v4-pill-tabs__item {
+    position: relative;
+    font-size: 15px;
+    font-weight: 700;
+    color: #888;
+    background: transparent;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    white-space: nowrap;
+}
+
+.v4-pill-tabs__item:hover {
+    color: var(--v4-text);
+}
+
+.v4-pill-tabs__item::after {
+    content: '';
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    border-radius: 10px;
+    background: var(--v4-primary);
+    transform: translateX(-50%);
+    transition: all 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+}
+
+.v4-pill-tabs__item.active {
+    background: #fff;
+    color: var(--v4-text);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.v4-pill-tabs__item.active::after {
+    width: 40%;
+}
+
+/* Pill 탭 다크 모드 */
+body.dark-theme .v4-pill-tabs__bar {
+    background: #1a1a1a;
+    border-color: #333;
+}
+
+body.dark-theme .v4-pill-tabs__item {
+    color: #888;
+}
+
+body.dark-theme .v4-pill-tabs__item:hover {
+    color: #fff;
+}
+
+body.dark-theme .v4-pill-tabs__item.active {
+    background: #333;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Pill 탭 반응형 */
+@media (max-width: 1000px) {
+    .v4-pill-tabs__item {
+        padding: 12px 24px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 640px) {
+    .v4-pill-tabs__bar {
+        width: 100%;
+    }
+
+    .v4-pill-tabs__item {
+        flex: 1;
+        min-width: 0;
+        padding: 10px 0;
+        font-size: 14px;
+        text-align: center;
+    }
+}
+
+/* ========================================
+   GNB 검색 버튼 수정 (common.css 충돌 해결)
+======================================== */
+#header .top_search_btn_box form {
+    width: 260px;
+    height: 40px;
+    overflow: hidden;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+#header .top_search_btn_box form input {
+    width: calc(100% - 40px);
 }

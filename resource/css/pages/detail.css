@@ -256,6 +256,15 @@
     border-bottom: none;
 }
 
+/* 에디터 테이블 — 컨테이너 너비에 맞춤 + 가로 스크롤 */
+.v4-detail-content table {
+    display: table;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
 /* 인라인 스타일 테이블 호환 */
 .v4-detail-content table img {
     margin: 0;
@@ -285,7 +294,100 @@
     color: var(--v4-text);
 }
 
-/* YouTube iframe 반응형 */
+/* ========================================
+   에디터 커스텀 클래스 (sub_contents2.css 호환)
+   관리자 에디터에서 사용하는 이벤트 레이아웃
+======================================== */
+.v4-detail-content .event_edit_wrap {
+    width: 100%;
+    display: inline-block;
+}
+
+.v4-detail-content .event_edit_mid .text_1 {
+    font-weight: bold;
+    color: var(--v4-text);
+    margin: 0 0 15px;
+    font-size: 26px;
+}
+
+.v4-detail-content .event_edit_mid .text_2 {
+    font-size: 18px;
+    color: var(--v4-text);
+}
+
+.v4-detail-content .event_edit_con_box {
+    border: 1px solid var(--v4-border);
+    width: 100%;
+    display: inline-block;
+    padding: 20px 0;
+    margin: 35px 0;
+    border-radius: var(--v4-card-radius);
+}
+
+.v4-detail-content .event_edit_con_box ul {
+    display: flex;
+    width: 100%;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.v4-detail-content .event_edit_con_box ul li {
+    position: relative;
+    width: 100%;
+    padding: 0 30px;
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--v4-text);
+}
+
+.v4-detail-content .event_edit_con_box ul li::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 100%;
+    background: var(--v4-border);
+    content: "";
+    display: block;
+}
+
+.v4-detail-content .event_edit_con_box ul li:first-child::before {
+    display: none;
+}
+
+.v4-detail-content .event_edit_con_box ul li::marker {
+    content: none;
+}
+
+@media (max-width: 640px) {
+    .v4-detail-content .event_edit_con_box ul {
+        display: block;
+    }
+    .v4-detail-content .event_edit_con_box ul li {
+        width: 100%;
+        display: block;
+        padding: 15px 20px;
+    }
+    .v4-detail-content .event_edit_con_box ul li::before {
+        display: none;
+    }
+}
+
+/* YouTube iframe 반응형 — 에디터 본문의 iframe 직접 스타일링 */
+.v4-detail-content iframe {
+    max-width: 100%;
+    width: 100%;
+    aspect-ratio: 16/9;
+    height: auto;
+    border: none;
+    border-radius: var(--v4-card-radius);
+    margin: 28px 0;
+    display: block;
+}
+
+/* .video-wrapper 래퍼가 있는 경우 (수동 마크업용) */
 .v4-detail-content .video-wrapper {
     position: relative;
     padding-bottom: 56.25%; /* 16:9 비율 */
@@ -301,6 +403,8 @@
     left: 0;
     width: 100%;
     height: 100%;
+    aspect-ratio: auto;
+    margin: 0;
     border: none;
 }
 
@@ -866,6 +970,52 @@ body.dark-theme .v4-share__button--x:hover {
 }
 
 /* ========================================
+   #sub_visual 높이 축소 (v4 전용)
+======================================== */
+#sub_visual {
+    height: 300px;
+    padding-top: 100px;
+}
+
+#sub_visual h2 {
+    font-size: 45px;
+}
+
+#sub_visual p {
+    font-size: 18px;
+}
+
+@media (max-width: 1000px) {
+    #sub_visual {
+        height: 280px;
+        padding-top: 90px;
+    }
+
+    #sub_visual h2 {
+        font-size: 38px;
+    }
+
+    #sub_visual p {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    #sub_visual {
+        height: 240px;
+        padding-top: 80px;
+    }
+
+    #sub_visual h2 {
+        font-size: 32px;
+    }
+
+    #sub_visual p {
+        font-size: 15px;
+    }
+}
+
+/* ========================================
    다크모드
 ======================================== */
 body.dark-theme {
@@ -885,7 +1035,37 @@ body.dark-theme .v4-detail-content blockquote {
 }
 
 body.dark-theme .v4-detail-content table th {
-    background: rgba(51, 174, 236, 0.15);
+    background: rgba(51, 174, 236, 0.15) !important;
+}
+
+/* 다크모드: 에디터 인라인 스타일 테이블 색상 오버라이드 */
+body.dark-theme .v4-detail-content table,
+body.dark-theme .v4-detail-content table tbody,
+body.dark-theme .v4-detail-content table tr {
+    background-color: transparent !important;
+}
+
+body.dark-theme .v4-detail-content table td,
+body.dark-theme .v4-detail-content table th {
+    color: var(--v4-text) !important;
+    background-color: transparent !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+body.dark-theme .v4-detail-content table td[style*="background"],
+body.dark-theme .v4-detail-content table th[style*="background"] {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+body.dark-theme .v4-detail-content table td span,
+body.dark-theme .v4-detail-content table td font,
+body.dark-theme .v4-detail-content table td p,
+body.dark-theme .v4-detail-content table td strong,
+body.dark-theme .v4-detail-content table th span,
+body.dark-theme .v4-detail-content table th font,
+body.dark-theme .v4-detail-content table th p,
+body.dark-theme .v4-detail-content table th strong {
+    color: var(--v4-text) !important;
 }
 
 body.dark-theme .v4-detail-content pre {
@@ -976,4 +1156,19 @@ body.dark-theme .v4-detail-header {
 
 body.dark-theme .v4-detail-nav {
     border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ========================================
+   GNB 검색 버튼 수정 (common.css 충돌 해결)
+======================================== */
+#header .top_search_btn_box form {
+    width: 260px;
+    height: 40px;
+    overflow: hidden;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+#header .top_search_btn_box form input {
+    width: calc(100% - 40px);
 }
