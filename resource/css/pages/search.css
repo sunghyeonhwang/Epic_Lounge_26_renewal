@@ -941,3 +941,11 @@ body.dark-theme .v4-search-loading__spinner {
 #header .top_search_btn_box form input {
     width: calc(100% - 40px);
 }
+#lnb .top1menu .depth1_ti {
+    font-size: 1.4rem;
+}
+#lnb .top1menu .depth1_ti span {
+    letter-spacing: -0.01em;
+    color: #1d1d1f;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

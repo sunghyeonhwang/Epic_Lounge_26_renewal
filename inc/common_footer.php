@@ -65,8 +65,8 @@
 		</div>
 		<div class="footer_bot">
 			<ul class="text_link">
-				<li><a href="/contents/personal.php">개인정보보호정책</a></li>
-				<li><a href="/contents/ode.php">이용약관</a></li>
+				<li><a href="/v3/contents/v4/personal.php">개인정보보호정책</a></li>
+				<li><a href="/v3/contents/v4/ode.php">이용약관</a></li>
 			</ul>
 
 			<!--<ul class="img_link">

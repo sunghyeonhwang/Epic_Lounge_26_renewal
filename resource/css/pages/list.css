@@ -1535,7 +1535,7 @@ body.dark-theme .v4-pill-tabs__item.active {
 }
 
 /* ========================================
-   GNB 검색 버튼 수정 (common.css 충돌 해결)
+   GNB 스타일 통일 (common.css 충돌 해결 - common26.css 기준)
 ======================================== */
 #header .top_search_btn_box form {
     width: 260px;
@@ -1547,4 +1547,12 @@ body.dark-theme .v4-pill-tabs__item.active {
 }
 #header .top_search_btn_box form input {
     width: calc(100% - 40px);
+}
+#lnb .top1menu .depth1_ti {
+    font-size: 1.4rem;
+}
+#lnb .top1menu .depth1_ti span {
+    letter-spacing: -0.01em;
+    color: #1d1d1f;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
