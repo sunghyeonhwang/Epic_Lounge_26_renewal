@@ -6,34 +6,31 @@
 	<div class="wrap">
 		<div class="footer_top">
 			<div class="footer_logo">
-				<img src="/v3/resource/images/common/foot_logo.svg" />
+				<img src="/resource/images/common/logo_dark.svg" />
 			</div>
 			<div class="footer_link">
 				<div class="footer_link_list">
 					<h3>새소식</h3>
 					<ul>
-						<li><a href="/contents/news_list.php?category=">전체보기</a></li>
-						<li><a href="/contents/news_list.php?category=뉴스">뉴스</a></li>
-						<li><a href="/contents/news_list.php?category=업데이트/출시">출시 &#38; 업데이트</a></li>
-						<li><a href="/contents/news_list.php?category=블로그">블로그</a></li>
+						<li><a href="/v3/contents/v4/news_list.php">전체보기</a></li>
+						<li><a href="/v3/contents/v4/news_list.php?category=뉴스">뉴스</a></li>
+						<li><a href="/v3/contents/v4/news_list.php?category=업데이트/출시">출시 &#38; 업데이트</a></li>
+						<li><a href="/v3/contents/v4/news_list.php?category=블로그">블로그</a></li>
 					</ul>
 				</div>
 				<div class="footer_link_list">
 					<h3>이벤트</h3>
 					<ul>
-						<!--<li><a href="https://epiclounge.co.kr/unrealfest24.php" target="_blank"style="color:#00C2E8">언리얼 페스트 2024서울</a></li>-->
-						<li><a href="/contents/event_list.php?category=커뮤니티 이벤트">커뮤니티 이벤트</a></li>
-						
-						<li><a href="https://www.unrealengine.com/ko/blog/are-you-a-lighting-master-enter-our-new-unreal-challenge-today" target="_blank">글로벌 이벤트</a></li>
-						
+						<li><a href="/v3/contents/v4/event_list.php?category=커뮤니티 이벤트">커뮤니티 이벤트</a></li>
+						<li><a href="/v3/contents/v4/event_list.php?type=global">글로벌 이벤트</a></li>
 					</ul>
 				</div>
 				<div class="footer_link_list">
 					<h3>리소스</h3>
 					<ul>
-						<li><a href="/contents/replay.php">다시보기</a></li>
-						<li><a href="/contents/free.php">무료 콘텐츠</a></li>
-						<li><a href="/contents/book.php">백서</a></li>
+						<li><a href="/v3/contents/v4/replay_list.php">다시보기</a></li>
+						<li><a href="/v3/contents/v4/free_list.php">무료 콘텐츠</a></li>
+						<li><a href="/v3/contents/v4/book_list.php">백서</a></li>
 
 					</ul>
 				</div>
