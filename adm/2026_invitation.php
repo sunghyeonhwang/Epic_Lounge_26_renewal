@@ -3,7 +3,7 @@
  * 초청 코드 발급(수동/CSV/로스터 sync)·현황·활성/삭제. 처리=2026_invitation_proc.php.
  * 공개 등록: /v3/unrealfest2026/ticket-invite.php?code=. 이메일 실발송(Resend)은 M6.
  */
-$sub_menu = "700320";
+$sub_menu = "700370";
 include_once('./_common.php');
 auth_check_menu($auth, $sub_menu, 'r');
 

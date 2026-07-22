@@ -18,10 +18,28 @@ $menu['menu700'] = array(
     array('700230', '문의내역', '' . G5_ADMIN_URL . '/2025tw_event_inquery_list.php', '2023_event_inquery_list'),
     
     // UE FEST 26
-    array('700300', 'UE FEST 26', '' . G5_ADMIN_URL . '/2026_event_speaker.php', '2026_event_speaker', 1),
+    array('700300', 'UE FEST 26', '' . G5_ADMIN_URL . '/2026_event2_list.php', '2026_event2_list', 1),
     array('700310', '스피커 신청', '' . G5_ADMIN_URL . '/2026_event_speaker.php', '2026_event_speaker'),
-    array('700320', '초청장 발송', '' . G5_ADMIN_URL . '/2026_invitation.php', '2026_invitation'),
-    
+    array('700320', '등록 현황', '' . G5_ADMIN_URL . '/2026_event2_list.php', '2026_event2_list'),
+    array('700330', '트랙 정원 설정', '' . G5_ADMIN_URL . '/2026_event2_remain.php', '2026_event2_remain'),
+    array('700340', '아젠다 관리', '' . G5_ADMIN_URL . '/2026_agenda_list.php', '2026_agenda_list'),
+    array('700350', '스케줄 CSV 업로드', '' . G5_ADMIN_URL . '/2026_agenda_import.php', '2026_agenda_import'),
+    array('700360', '결제 로그', '' . G5_ADMIN_URL . '/2026_event2_log.php', '2026_event2_log'),
+    array('700362', '얼리버드 연장 설정', '' . G5_ADMIN_URL . '/2026_earlybird_config.php', '2026_earlybird_config'),
+    array('700365', '단체 할인 설정', '' . G5_ADMIN_URL . '/2026_group_config.php', '2026_group_config'),
+    array('700366', '단체 쿠폰 관리', '' . G5_ADMIN_URL . '/2026_coupon.php', '2026_coupon'),
+    array('700367', '단체 등록 현황', '' . G5_ADMIN_URL . '/2026_group_list.php', '2026_group_list'),
+    array('700370', '초청장 발송', '' . G5_ADMIN_URL . '/2026_invitation.php', '2026_invitation'),
+
+    // 시작해요 언리얼 26
+    array('700400', '시작해요 언리얼 26', '' . G5_ADMIN_URL . '/2026_start_unreal_register_list.php', '2026_start_unreal_register_list', 1),
+    array('700410', '등록 리스트', '' . G5_ADMIN_URL . '/2026_start_unreal_register_list.php', '2026_start_unreal_register_list'),
+    array('700420', '시청 리스트', '' . G5_ADMIN_URL . '/2026_start_unreal_live_list.php', '2026_start_unreal_live_list'),
+    array('700425', '시청 리스트 D1', '' . G5_ADMIN_URL . '/2026_start_unreal_live_list_d1.php', '2026_start_unreal_live_list_d1'),
+    array('700430', '다시보기 현황', '' . G5_ADMIN_URL . '/2026_start_unreal_replay_list.php', '2026_start_unreal_replay_list'),
+    array('700450', '다시보기 콘텐츠', '' . G5_ADMIN_URL . '/2026_start_unreal_replay_content.php', '2026_start_unreal_replay_content'),
+    array('700470', '라이브 설정', '' . G5_ADMIN_URL . '/2026_start_unreal_live_config.php', '2026_start_unreal_live_config'),
+
     // UE FEST 25
     array('700700', 'UE FEST 25', '' . G5_ADMIN_URL . '/2024_event2_list.php', '2024_event2_list', 1),
     array('700710', '신청목록', '' . G5_ADMIN_URL . '/2025_event2_list.php', '2025_event2_list'),
