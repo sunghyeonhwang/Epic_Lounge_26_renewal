@@ -173,6 +173,9 @@ function imageview(id, w, h)
                     case '900':  // SERVICE
                         $menu_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecapround="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
                         break;
+                    case '950':  // 콘텐츠 v2
+                        $menu_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>';
+                        break;
                     default:
                         $menu_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>';
                 }
@@ -254,9 +257,9 @@ jQuery(function($){
                     if (menuKeyClass.indexOf('menu-600') > -1) {
                         hasOn = true;
                     }
-                    // 이벤트 관리 (700)는 모두 펼침
+                    // 이벤트 관리 (700): UE FEST 26(700300)만 기본 펼침, 나머지는 활성 그룹만
                     if (menuKeyClass.indexOf('menu-700') > -1) {
-                        hasOn = true;
+                        if (String($headerLi.attr('data-menu')) === '700300') hasOn = true;
                     }
                 }
 
