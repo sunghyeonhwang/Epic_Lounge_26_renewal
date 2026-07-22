@@ -20,6 +20,7 @@ $menu['menu700'] = array(
     // UE FEST 26
     array('700300', 'UE FEST 26', '' . G5_ADMIN_URL . '/2026_event_speaker.php', '2026_event_speaker', 1),
     array('700310', '스피커 신청', '' . G5_ADMIN_URL . '/2026_event_speaker.php', '2026_event_speaker'),
+    array('700320', '초청장 발송', '' . G5_ADMIN_URL . '/2026_invitation.php', '2026_invitation'),
     
     // UE FEST 25
     array('700700', 'UE FEST 25', '' . G5_ADMIN_URL . '/2024_event2_list.php', '2024_event2_list', 1),
