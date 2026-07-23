@@ -7,6 +7,10 @@ include_once "./_common.php";
 
 if (!$member['mb_id']) { alert('로그인이 필요합니다.', G5_BBS_URL . '/login.php'); exit; }
 
+// ⚠️ 관리자 권한 게이트 — 로그인한 일반 회원 접근/ PII export 차단(페이지와 동일 메뉴 700370, 쓰기 권한)
+$sub_menu = '700370';
+auth_check_menu($auth, $sub_menu, 'w');
+
 define('INV_PUBLIC', 'https://epiclounge.co.kr/v3/unrealfest2026/ticket-invite.php');
 define('INV_LIST',   '/v3/adm/2026_invitation.php');
 
@@ -51,7 +55,7 @@ function inv_gen_code() {
 // 코드 1건 발급(중복 이메일이 이미 코드 보유 시 skip 옵션). 반환: 'ins'|'skip'|'err'
 function inv_issue($d) {
     $email = trim($d['email']);
-    if ($email === '' || strpos($email,'@') === false) return 'err';
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) return 'err';
     if (!empty($d['skip_dup'])) {
         $ex = sql_fetch("SELECT sc_no FROM cb_unreal_2026_speaker_code WHERE sc_email='".sql_real_escape_string($email)."' AND sc_active='Y'");
         if ($ex) return 'skip';
@@ -70,6 +74,16 @@ function inv_issue($d) {
 }
 
 inv_schema();
+
+// 초청장 메일 1건 발송 + sc_sent_at 기록(공개 repo 헬퍼 재사용). 반환: array('ok'|'error')
+function inv_send_row($r) {
+    if (!function_exists('ufs_invite_mail') || !function_exists('ufs_resend_send')) return array('ok'=>false,'error'=>'메일 모듈 미로드');
+    if (trim($r['sc_email']) === '') return array('ok'=>false,'error'=>'이메일 없음');
+    $m = ufs_invite_mail($r, ($r['sc_lang']==='en' ? 'en' : 'ko'));
+    $res = ufs_resend_send($r['sc_email'], $m['subject'], $m['html'], '', $m['text']);
+    if (!empty($res['ok'])) sql_query("UPDATE cb_unreal_2026_speaker_code SET sc_sent_at=now() WHERE sc_no=".(int)$r['sc_no']);
+    return $res;
+}
 
 $mode  = isset($_POST['mode']) ? preg_replace('/[^a-z]/','',$_POST['mode']) : '';
 $mode2 = isset($_GET['mode2']) ? preg_replace('/[^a-z]/','',$_GET['mode2']) : '';
@@ -134,16 +148,52 @@ if ($mode === 'sync') {
     exit;
 }
 
+// ── 미발송 일괄 발송 (Resend) ──
+if ($mode === 'sendall') {
+    check_admin_token();
+    require_once __DIR__ . '/../unrealfest2026/_resend.php';
+    require_once __DIR__ . '/../unrealfest2026/_invite_mail.php';
+    @set_time_limit(0); @ignore_user_abort(true);   // 대량 발송 타임아웃 방지
+    $ok=0; $fail=0; $fails=array();
+    $rs = sql_query("SELECT * FROM cb_unreal_2026_speaker_code WHERE sc_active='Y' AND sc_email<>'' AND (sc_sent_at IS NULL OR sc_sent_at='0000-00-00 00:00:00') ORDER BY sc_no");
+    if ($rs) while ($r = sql_fetch_array($rs)) {
+        $res = inv_send_row($r);
+        if (!empty($res['ok'])) { $ok++; }
+        else { $fail++; if (count($fails) < 5) $fails[] = $r['sc_email'].'('.(isset($res['error'])?$res['error']:'오류').')'; }
+        usleep(300000);   // Resend rate limit 여유(약 3건/초)
+    }
+    $msg = '일괄 발송 완료 — 성공 '.$ok.'건 / 실패 '.$fail.'건';
+    if ($fails) $msg .= ' · 실패예: '.implode(', ', $fails);
+    alert($msg, INV_LIST);
+    exit;
+}
+
 // ── 활성 토글 ──
 if ($mode2 === 'toggle') {
+    check_admin_token();
     $no = (int)$_GET['no'];
     $r = sql_fetch("SELECT sc_active FROM cb_unreal_2026_speaker_code WHERE sc_no=".$no);
     if ($r) { $nv = ($r['sc_active']==='Y') ? 'N' : 'Y'; sql_query("UPDATE cb_unreal_2026_speaker_code SET sc_active='".$nv."' WHERE sc_no=".$no); }
     goto_url(INV_LIST);
 }
 
+// ── 초청장 개별 발송/재발송 (Resend) ──
+if ($mode2 === 'send') {
+    check_admin_token();
+    require_once __DIR__ . '/../unrealfest2026/_resend.php';
+    require_once __DIR__ . '/../unrealfest2026/_invite_mail.php';
+    $no = (int)$_GET['no'];
+    $r = sql_fetch("SELECT * FROM cb_unreal_2026_speaker_code WHERE sc_no=".$no);
+    if (!$r) alert('코드를 찾을 수 없습니다.', INV_LIST);
+    if ($r['sc_active'] !== 'Y') alert('비활성 코드는 발송할 수 없습니다. 먼저 활성화하세요.', INV_LIST);
+    $res = inv_send_row($r);
+    if (!empty($res['ok'])) alert('초청장을 발송했습니다. ('.$r['sc_email'].')', INV_LIST);
+    alert('발송 실패: '.(isset($res['error']) ? $res['error'] : '오류'), INV_LIST);
+}
+
 // ── 삭제(미사용 코드만) ──
 if ($mode2 === 'del') {
+    check_admin_token();
     $no = (int)$_GET['no'];
     $r = sql_fetch("SELECT sc_used FROM cb_unreal_2026_speaker_code WHERE sc_no=".$no);
     if (!$r) alert('코드를 찾을 수 없습니다.', INV_LIST);
@@ -155,6 +205,9 @@ if ($mode2 === 'del') {
 
 // ── 내보내기(CSV) ──
 if ($mode2 === 'export') {
+    check_admin_token();
+    // CSV 수식 인젝션 방어: =,+,-,@,탭,개행으로 시작하는 셀 앞에 ' 부착
+    $csv_safe = function($v){ $s=(string)$v; if ($s!=='' && strpos("=+-@\t\r", $s[0])!==false) return "'".$s; return $s; };
     $rs = sql_query("SELECT * FROM cb_unreal_2026_speaker_code ORDER BY sc_no DESC");
     header('Content-Type: text/csv; charset=UTF-8');
     header('Content-Disposition: attachment; filename=ufs2026_invitation_codes.csv');
@@ -163,8 +216,8 @@ if ($mode2 === 'export') {
     fputcsv($out, array('코드','링크','초청인','대상명','이메일','연락처','소속','언어','할인율','매수','사용','활성','발송시각','메모','발급일'));
     if ($rs) while ($r = sql_fetch_array($rs)) {
         $link = INV_PUBLIC.'?code='.$r['sc_code'].'&lang='.$r['sc_lang'];
-        fputcsv($out, array($r['sc_code'],$link,$r['sc_inviter'],$r['sc_name'],$r['sc_email'],$r['sc_phone'],$r['sc_company'],
-            $r['sc_lang'],$r['sc_discount'],$r['sc_quota'],$r['sc_used'],$r['sc_active'],$r['sc_sent_at'],$r['sc_memo'],$r['sc_reg_datetime']));
+        fputcsv($out, array_map($csv_safe, array($r['sc_code'],$link,$r['sc_inviter'],$r['sc_name'],$r['sc_email'],$r['sc_phone'],$r['sc_company'],
+            $r['sc_lang'],$r['sc_discount'],$r['sc_quota'],$r['sc_used'],$r['sc_active'],$r['sc_sent_at'],$r['sc_memo'],$r['sc_reg_datetime'])));
     }
     fclose($out);
     exit;

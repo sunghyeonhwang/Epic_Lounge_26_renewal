@@ -70,7 +70,7 @@ include_once('./admin.head.php');
 </style>
 
 <h1>2026 초청장 발송</h1>
-<p style="color:#6b7280">초청 코드를 발급하면 <b>공개 등록 링크</b>(<?php echo INV_PUBLIC; ?>?code=코드)로 스피커·스폰서·VIP가 무인증 등록합니다. 무료(100%)는 즉시완료, 부분할인(50~99%)은 카드결제. 이메일 실발송(Resend)은 준비 중입니다.</p>
+<p style="color:#6b7280">초청 코드를 발급하면 <b>공개 등록 링크</b>(<?php echo INV_PUBLIC; ?>?code=코드)로 스피커·스폰서·VIP가 무인증 등록합니다. 무료(100%)는 즉시완료, 부분할인(50~99%)은 카드결제. 초청장 이메일은 <b>Resend</b>로 발송(from noreply@update.epiclounge.co.kr).</p>
 
 <div class="vm-summary">
   <div class="vm-summary-item"><h3>전체 코드</h3><p class="vm-summary-number"><?php echo number_format((int)$st_total['c']); ?></p></div>
@@ -117,8 +117,13 @@ include_once('./admin.head.php');
       <button type="submit" class="btn btn-warning btn-sm">스피커 로스터 sync</button>
     </form>
     <div style="align-self:flex-end">
-      <a href="2026_invitation_proc.php?mode2=export" class="btn btn-info btn-sm"><i class="fa fa-download"></i> 코드 내보내기(CSV)</a>
+      <a href="2026_invitation_proc.php?mode2=export&token=<?php echo $token; ?>" class="btn btn-info btn-sm"><i class="fa fa-download"></i> 코드 내보내기(CSV)</a>
     </div>
+    <form method="post" action="2026_invitation_proc.php" onsubmit="return confirm('미발송 상태인 활성 코드 전체에 초청장을 발송할까요?')" style="align-self:flex-end">
+      <input type="hidden" name="token" value="<?php echo $token; ?>">
+      <input type="hidden" name="mode" value="sendall">
+      <button type="submit" class="btn btn-primary btn-sm"><i class="fa fa-paper-plane"></i> 미발송 일괄 발송</button>
+    </form>
   </div>
   <p style="margin:.5rem 0 0;color:#9ca3af;font-size:11px">CSV 헤더: 초청인,대상명,이메일,연락처,소속,언어,매수,할인율,메모 · 로스터 sync는 키노트 마커가 없어 전건 발급되니 키노트는 개별 비활성하세요.</p>
 </div>
@@ -157,13 +162,16 @@ include_once('./admin.head.php');
       <td><?php echo $reg; ?>명</td>
       <td><?php echo htmlspecialchars($r['sc_inviter']); ?></td>
       <td><?php echo $active ? '<span class="text-success">활성</span>' : '<span class="badge-off">중지</span>'; ?><br>
-          <a href="2026_invitation_proc.php?mode2=toggle&no=<?php echo (int)$r['sc_no']; ?>" class="btn btn-default btn-xs2"><?php echo $active?'중지':'활성'; ?></a></td>
-      <td><button type="button" class="btn btn-default btn-xs2" disabled title="Resend 연동 예정(M6)">발송(준비중)</button><br>
-          <?php echo $r['sc_sent_at'] ? htmlspecialchars($r['sc_sent_at']) : '<span class="badge-off">미발송</span>'; ?></td>
+          <a href="2026_invitation_proc.php?mode2=toggle&no=<?php echo (int)$r['sc_no']; ?>&token=<?php echo $token; ?>" class="btn btn-default btn-xs2"><?php echo $active?'중지':'활성'; ?></a></td>
+      <td>
+        <?php if (trim($r['sc_email'])!==''): ?>
+        <a href="2026_invitation_proc.php?mode2=send&no=<?php echo (int)$r['sc_no']; ?>&token=<?php echo $token; ?>" class="btn btn-<?php echo $r['sc_sent_at']?'default':'primary'; ?> btn-xs2" onclick="return confirm('<?php echo htmlspecialchars($r['sc_email'],ENT_QUOTES); ?> 로 초청장을 발송할까요?')"><?php echo $r['sc_sent_at']?'재발송':'발송'; ?></a>
+        <?php else: ?><span class="badge-off">이메일없음</span><?php endif; ?><br>
+        <?php echo $r['sc_sent_at'] ? '<span style="color:#16a34a;font-size:11px">'.htmlspecialchars(substr($r['sc_sent_at'],0,16)).'</span>' : '<span class="badge-off">미발송</span>'; ?></td>
       <td>
         <button type="button" class="btn btn-info btn-xs2" onclick="cpy('<?php echo htmlspecialchars($link, ENT_QUOTES); ?>')">링크복사</button>
         <?php if ((int)$r['sc_used']===0): ?>
-        <a href="2026_invitation_proc.php?mode2=del&no=<?php echo (int)$r['sc_no']; ?>" class="btn btn-danger btn-xs2" onclick="return confirm('삭제할까요?')">삭제</a>
+        <a href="2026_invitation_proc.php?mode2=del&no=<?php echo (int)$r['sc_no']; ?>&token=<?php echo $token; ?>" class="btn btn-danger btn-xs2" onclick="return confirm('삭제할까요?')">삭제</a>
         <?php endif; ?>
       </td>
     </tr>
