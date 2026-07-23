@@ -40,6 +40,14 @@ function inv_schema() {
     @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_msg_id VARCHAR(80) DEFAULT ''");
     @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_status VARCHAR(20) DEFAULT ''");
     @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_status_at DATETIME DEFAULT NULL");
+    @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_valid_from DATE DEFAULT NULL");
+    @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_valid_until DATE DEFAULT NULL");
+}
+
+// YYYY-MM-DD 정규화(아니면 '')
+function inv_date($v) {
+    $v = trim((string)$v);
+    return preg_match('/^\d{4}-\d{2}-\d{2}$/', $v) ? $v : '';
 }
 
 function inv_lang($raw) { $l = strtolower(trim((string)$raw));
@@ -70,10 +78,14 @@ function inv_issue($d) {
     }
     $code = inv_gen_code();
     $f = function($v){ return sql_real_escape_string(strip_tags((string)$v)); };
+    $vf = inv_date(isset($d['valid_from']) ? $d['valid_from'] : '');
+    $vu = inv_date(isset($d['valid_until']) ? $d['valid_until'] : '');
+    $vf_sql = ($vf !== '') ? "'".$vf."'" : "NULL";
+    $vu_sql = ($vu !== '') ? "'".$vu."'" : "NULL";
     sql_query("INSERT INTO cb_unreal_2026_speaker_code
-      (sc_code,sc_src,sc_ref_id,sc_name,sc_email,sc_phone,sc_company,sc_lang,sc_quota,sc_used,sc_discount,sc_inviter,sc_active,sc_memo,sc_reg_datetime)
+      (sc_code,sc_src,sc_ref_id,sc_name,sc_email,sc_phone,sc_company,sc_lang,sc_quota,sc_used,sc_discount,sc_inviter,sc_active,sc_memo,sc_valid_from,sc_valid_until,sc_reg_datetime)
       VALUES ('".$code."','".$f($d['src'])."',".(int)$d['ref_id'].",'".$f($d['name'])."','".$f($email)."','".$f($d['phone'])."','".$f($d['company'])."',
-      '".inv_lang($d['lang'])."',".inv_clamp_quota($d['quota']).",0,".inv_clamp_disc($d['discount']).",'".$f($d['inviter'])."','Y','".$f($d['memo'])."',now())");
+      '".inv_lang($d['lang'])."',".inv_clamp_quota($d['quota']).",0,".inv_clamp_disc($d['discount']).",'".$f($d['inviter'])."','Y','".$f($d['memo'])."',".$vf_sql.",".$vu_sql.",now())");
     return 'ins';
 }
 
@@ -102,7 +114,8 @@ if ($mode === 'issue') {
         'src'=>'manual','ref_id'=>0,
         'name'=>$_POST['sc_name'],'email'=>$_POST['sc_email'],'phone'=>$_POST['sc_phone'],'company'=>$_POST['sc_company'],
         'lang'=>$_POST['sc_lang'],'quota'=>$_POST['sc_quota'],'discount'=>$_POST['sc_discount'],
-        'inviter'=>($_POST['sc_inviter']!=='' ? $_POST['sc_inviter'] : '에픽게임즈'),'memo'=>$_POST['sc_memo'],'skip_dup'=>1,
+        'inviter'=>($_POST['sc_inviter']!=='' ? $_POST['sc_inviter'] : '에픽게임즈'),'memo'=>$_POST['sc_memo'],
+        'valid_from'=>(isset($_POST['sc_valid_from'])?$_POST['sc_valid_from']:''),'valid_until'=>(isset($_POST['sc_valid_until'])?$_POST['sc_valid_until']:''),'skip_dup'=>1,
     ));
     if ($r==='err') alert('이메일을 확인해 주세요.', INV_LIST);
     if ($r==='skip') alert('이미 활성 코드가 있는 이메일입니다.', INV_LIST);
@@ -129,7 +142,8 @@ if ($mode === 'csv') {
             'name'=>isset($row[1])?$row[1]:'', 'email'=>isset($row[2])?$row[2]:'',
             'phone'=>isset($row[3])?$row[3]:'', 'company'=>isset($row[4])?$row[4]:'',
             'lang'=>isset($row[5])?$row[5]:'ko', 'quota'=>isset($row[6])?$row[6]:2,
-            'discount'=>isset($row[7])?$row[7]:100, 'memo'=>isset($row[8])?$row[8]:'', 'skip_dup'=>1,
+            'discount'=>isset($row[7])?$row[7]:100, 'memo'=>isset($row[8])?$row[8]:'',
+            'valid_from'=>isset($row[9])?$row[9]:'', 'valid_until'=>isset($row[10])?$row[10]:'', 'skip_dup'=>1,
         ));
         if ($r==='ins') $ins++; elseif ($r==='skip') $skip++; else $err++;
     }
@@ -172,6 +186,18 @@ if ($mode === 'sendall') {
     $msg = '일괄 발송 완료 — 성공 '.$ok.'건 / 실패 '.$fail.'건';
     if ($fails) $msg .= ' · 실패예: '.implode(', ', $fails);
     alert($msg, INV_LIST);
+    exit;
+}
+
+// ── 전체 사용기간 일괄 설정 ──
+if ($mode === 'setperiod') {
+    check_admin_token();
+    $vf = inv_date(isset($_POST['sc_valid_from']) ? $_POST['sc_valid_from'] : '');
+    $vu = inv_date(isset($_POST['sc_valid_until']) ? $_POST['sc_valid_until'] : '');
+    $vf_sql = ($vf !== '') ? "'".$vf."'" : "NULL";
+    $vu_sql = ($vu !== '') ? "'".$vu."'" : "NULL";
+    sql_query("UPDATE cb_unreal_2026_speaker_code SET sc_valid_from=".$vf_sql.", sc_valid_until=".$vu_sql);
+    alert('전체 코드 사용기간을 설정했습니다. ('.($vf!==''?$vf:'제한없음').' ~ '.($vu!==''?$vu:'제한없음').')', INV_LIST);
     exit;
 }
 
@@ -237,11 +263,11 @@ if ($mode2 === 'export') {
     header('Content-Disposition: attachment; filename=ufs2026_invitation_codes.csv');
     echo "\xEF\xBB\xBF"; // BOM(엑셀 한글)
     $out = fopen('php://output', 'w');
-    fputcsv($out, array('코드','링크','초청인','대상명','이메일','연락처','소속','언어','할인율','매수','사용','활성','발송시각','메모','발급일'));
+    fputcsv($out, array('코드','링크','초청인','대상명','이메일','연락처','소속','언어','할인율','매수','사용','활성','발송시각','상태','사용시작','사용종료','메모','발급일'));
     if ($rs) while ($r = sql_fetch_array($rs)) {
         $link = INV_PUBLIC.'?code='.$r['sc_code'].'&lang='.$r['sc_lang'];
         fputcsv($out, array_map($csv_safe, array($r['sc_code'],$link,$r['sc_inviter'],$r['sc_name'],$r['sc_email'],$r['sc_phone'],$r['sc_company'],
-            $r['sc_lang'],$r['sc_discount'],$r['sc_quota'],$r['sc_used'],$r['sc_active'],$r['sc_sent_at'],$r['sc_memo'],$r['sc_reg_datetime'])));
+            $r['sc_lang'],$r['sc_discount'],$r['sc_quota'],$r['sc_used'],$r['sc_active'],$r['sc_sent_at'],$r['sc_status'],$r['sc_valid_from'],$r['sc_valid_until'],$r['sc_memo'],$r['sc_reg_datetime'])));
     }
     fclose($out);
     exit;

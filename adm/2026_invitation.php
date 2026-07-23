@@ -21,6 +21,8 @@ sql_query("CREATE TABLE IF NOT EXISTS cb_unreal_2026_speaker_code (
 @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_msg_id VARCHAR(80) DEFAULT ''");
 @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_status VARCHAR(20) DEFAULT ''");
 @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_status_at DATETIME DEFAULT NULL");
+@sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_valid_from DATE DEFAULT NULL");
+@sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_valid_until DATE DEFAULT NULL");
 
 $token = get_token();
 
@@ -97,6 +99,8 @@ include_once('./admin.head.php');
       <div class="fld"><label>할인율(%)</label><select name="sc_discount"><option>100</option><option>90</option><option>80</option><option>70</option><option>60</option><option>50</option></select></div>
       <div class="fld"><label>초청인</label><input type="text" name="sc_inviter" value="에픽게임즈" style="width:120px"></div>
       <div class="fld"><label>메모</label><input type="text" name="sc_memo" style="width:120px"></div>
+      <div class="fld"><label>사용 시작일</label><input type="date" name="sc_valid_from" style="width:140px"></div>
+      <div class="fld"><label>사용 종료일</label><input type="date" name="sc_valid_until" style="width:140px"></div>
       <button type="submit" class="btn btn-primary btn-sm">발급</button>
     </div>
     <p style="margin:.5rem 0 0;color:#9ca3af;font-size:11px">할인율 100=무료 즉시완료 · 50~99=카드결제. 매수=코드당 등록 가능 인원(대표+동반).</p>
@@ -127,8 +131,16 @@ include_once('./admin.head.php');
       <input type="hidden" name="mode" value="sendall">
       <button type="submit" class="btn btn-primary btn-sm"><i class="fa fa-paper-plane"></i> 미발송 일괄 발송</button>
     </form>
+    <form method="post" action="2026_invitation_proc.php" onsubmit="return confirm('전체 코드의 사용기간을 이 값으로 설정할까요? (빈칸=제한없음)')" style="align-self:flex-end;display:flex;gap:6px;align-items:flex-end">
+      <input type="hidden" name="token" value="<?php echo $token; ?>">
+      <input type="hidden" name="mode" value="setperiod">
+      <div class="fld"><label>전체 사용기간(시작~종료)</label><input type="date" name="sc_valid_from" style="width:140px"></div>
+      <span style="align-self:center;padding-bottom:6px">~</span>
+      <input type="date" name="sc_valid_until" style="width:140px;padding:6px 8px;border:1px solid #ccc;border-radius:4px">
+      <button type="submit" class="btn btn-default btn-sm">일괄 적용</button>
+    </form>
   </div>
-  <p style="margin:.5rem 0 0;color:#9ca3af;font-size:11px">CSV 헤더: 초청인,대상명,이메일,연락처,소속,언어,매수,할인율,메모 · 로스터 sync는 <b>내부(internal) 스피커만</b> 대상입니다(외부/키노트 제외).</p>
+  <p style="margin:.5rem 0 0;color:#9ca3af;font-size:11px">CSV 헤더: 초청인,대상명,이메일,연락처,소속,언어,매수,할인율,메모,<b>시작일,종료일</b>(YYYY-MM-DD, 선택) · 로스터 sync는 <b>내부(internal) 스피커만</b> 대상입니다(외부/키노트 제외). 사용기간 빈칸=제한없음.</p>
 </div>
 
 <!-- 검색 -->
@@ -155,7 +167,14 @@ include_once('./admin.head.php');
   ?>
     <tr<?php if(!$active) echo ' style="opacity:.5"'; ?>>
       <td><code class="copy" title="링크 복사" onclick="cpy('<?php echo htmlspecialchars($link, ENT_QUOTES); ?>')"><?php echo htmlspecialchars($r['sc_code']); ?></code>
-          <?php if ($r['sc_src']==='speaker'): ?><br><span class="label label-default">스피커</span><?php endif; ?></td>
+          <?php if ($r['sc_src']==='speaker'): ?><br><span class="label label-default">스피커</span><?php endif; ?>
+          <?php
+          $vf = isset($r['sc_valid_from']) ? $r['sc_valid_from'] : ''; $vu = isset($r['sc_valid_until']) ? $r['sc_valid_until'] : '';
+          if (($vf && $vf!=='0000-00-00') || ($vu && $vu!=='0000-00-00')) {
+              $expired = ($vu && $vu!=='0000-00-00' && date('Y-m-d') > substr($vu,0,10));
+              echo '<br><span style="font-size:10px;color:'.($expired?'#dc2626':'#6b7280').'">기간 '.htmlspecialchars($vf && $vf!=='0000-00-00'?substr($vf,0,10):'…').' ~ '.htmlspecialchars($vu && $vu!=='0000-00-00'?substr($vu,0,10):'…').($expired?' (만료)':'').'</span>';
+          }
+          ?></td>
       <td><b><?php echo htmlspecialchars($r['sc_name']); ?></b><br>
           <span style="color:#6b7280"><?php echo htmlspecialchars($r['sc_email']); ?></span><br>
           <span style="color:#9ca3af"><?php echo htmlspecialchars($r['sc_company']); ?></span></td>
@@ -208,7 +227,7 @@ function cpy(t){
   else { var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert('링크 복사됨:\n'+t); }
 }
 function dlTemplate(){
-  var csv='﻿초청인,대상명,이메일,연락처,소속,언어,매수,할인율,메모\n에픽게임즈,홍길동,hong@example.com,01012345678,에픽게임즈,ko,2,100,예시\n';
+  var csv='﻿초청인,대상명,이메일,연락처,소속,언어,매수,할인율,메모,시작일,종료일\n에픽게임즈,홍길동,hong@example.com,01012345678,에픽게임즈,ko,2,100,예시,2026-07-24,2026-08-19\n';
   var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
   a.download='초청리스트_template.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
