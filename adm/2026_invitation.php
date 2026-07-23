@@ -125,7 +125,7 @@ include_once('./admin.head.php');
       <button type="submit" class="btn btn-primary btn-sm"><i class="fa fa-paper-plane"></i> 미발송 일괄 발송</button>
     </form>
   </div>
-  <p style="margin:.5rem 0 0;color:#9ca3af;font-size:11px">CSV 헤더: 초청인,대상명,이메일,연락처,소속,언어,매수,할인율,메모 · 로스터 sync는 키노트 마커가 없어 전건 발급되니 키노트는 개별 비활성하세요.</p>
+  <p style="margin:.5rem 0 0;color:#9ca3af;font-size:11px">CSV 헤더: 초청인,대상명,이메일,연락처,소속,언어,매수,할인율,메모 · 로스터 sync는 <b>내부(internal) 스피커만</b> 대상입니다(외부/키노트 제외).</p>
 </div>
 
 <!-- 검색 -->

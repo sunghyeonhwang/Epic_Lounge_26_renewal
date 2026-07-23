@@ -131,11 +131,11 @@ if ($mode === 'csv') {
     exit;
 }
 
-// ── 스피커 로스터 자동 sync ── (cb_unreal_2026_speaker_apply, email 보유행. 키노트 마커 없음→전건, 키노트는 개별 비활성)
+// ── 스피커 로스터 자동 sync ── (cb_unreal_2026_speaker_apply, speaker_type='internal' + email 보유행만. 외부/키노트 제외)
 if ($mode === 'sync') {
     check_admin_token();
     $ins=0; $skip=0;
-    $rs = sql_query("SELECT id, speaker_name, speaker_email, speaker_ph, speaker_cp FROM cb_unreal_2026_speaker_apply WHERE speaker_email <> '' ORDER BY id");
+    $rs = sql_query("SELECT id, speaker_name, speaker_email, speaker_ph, speaker_cp FROM cb_unreal_2026_speaker_apply WHERE speaker_email <> '' AND speaker_type='internal' ORDER BY id");
     if ($rs) while ($sp = sql_fetch_array($rs)) {
         $r = inv_issue(array(
             'src'=>'speaker','ref_id'=>(int)$sp['id'],
