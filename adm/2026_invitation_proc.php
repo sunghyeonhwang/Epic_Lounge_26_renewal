@@ -36,6 +36,10 @@ function inv_schema() {
       PRIMARY KEY (sc_no),
       UNIQUE KEY uq_sc_code (sc_code)
     ) DEFAULT CHARSET=utf8");
+    // 발송/도달 이력(웹훅)
+    @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_msg_id VARCHAR(80) DEFAULT ''");
+    @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_status VARCHAR(20) DEFAULT ''");
+    @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_status_at DATETIME DEFAULT NULL");
 }
 
 function inv_lang($raw) { $l = strtolower(trim((string)$raw));
@@ -81,7 +85,10 @@ function inv_send_row($r) {
     if (trim($r['sc_email']) === '') return array('ok'=>false,'error'=>'이메일 없음');
     $m = ufs_invite_mail($r, ($r['sc_lang']==='en' ? 'en' : 'ko'));
     $res = ufs_resend_send($r['sc_email'], $m['subject'], $m['html'], '', $m['text']);
-    if (!empty($res['ok'])) sql_query("UPDATE cb_unreal_2026_speaker_code SET sc_sent_at=now() WHERE sc_no=".(int)$r['sc_no']);
+    if (!empty($res['ok'])) {
+        $mid = isset($res['id']) ? sql_real_escape_string($res['id']) : '';
+        sql_query("UPDATE cb_unreal_2026_speaker_code SET sc_sent_at=now(), sc_msg_id='".$mid."', sc_status='sent', sc_status_at=now() WHERE sc_no=".(int)$r['sc_no']);
+    }
     return $res;
 }
 

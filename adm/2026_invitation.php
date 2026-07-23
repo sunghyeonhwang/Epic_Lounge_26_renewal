@@ -18,6 +18,9 @@ sql_query("CREATE TABLE IF NOT EXISTS cb_unreal_2026_speaker_code (
   sc_inviter VARCHAR(100) NOT NULL DEFAULT '에픽게임즈', sc_active CHAR(1) NOT NULL DEFAULT 'Y', sc_sent_at DATETIME DEFAULT NULL,
   sc_memo VARCHAR(255) NOT NULL DEFAULT '', sc_reg_datetime DATETIME DEFAULT NULL,
   PRIMARY KEY (sc_no), UNIQUE KEY uq_sc_code (sc_code)) DEFAULT CHARSET=utf8");
+@sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_msg_id VARCHAR(80) DEFAULT ''");
+@sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_status VARCHAR(20) DEFAULT ''");
+@sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_status_at DATETIME DEFAULT NULL");
 
 $token = get_token();
 
@@ -168,7 +171,18 @@ include_once('./admin.head.php');
         <a href="2026_invitation_proc.php?mode2=send&no=<?php echo (int)$r['sc_no']; ?>&token=<?php echo $token; ?>" class="btn btn-<?php echo $r['sc_sent_at']?'default':'primary'; ?> btn-xs2" onclick="return confirm('<?php echo htmlspecialchars($r['sc_email'],ENT_QUOTES); ?> 로 초청장을 발송할까요?')"><?php echo $r['sc_sent_at']?'재발송':'발송'; ?></a>
         <?php else: ?><span class="badge-off">이메일없음</span><?php endif; ?>
         <a href="2026_invitation_proc.php?mode2=preview&no=<?php echo (int)$r['sc_no']; ?>" target="_blank" class="btn btn-default btn-xs2" title="발송되는 이메일 미리보기">미리보기</a><br>
-        <?php echo $r['sc_sent_at'] ? '<span style="color:#16a34a;font-size:11px">'.htmlspecialchars(substr($r['sc_sent_at'],0,16)).'</span>' : '<span class="badge-off">미발송</span>'; ?></td>
+        <?php
+        if ($r['sc_sent_at']) {
+            $stmap = array('sent'=>array('발송','#6b7280'),'delivered'=>array('도달','#16a34a'),'opened'=>array('열람','#2563eb'),'clicked'=>array('클릭','#7c3aed'),'delayed'=>array('지연','#d97706'),'bounced'=>array('반송','#dc2626'),'complained'=>array('스팸신고','#dc2626'));
+            $st = isset($r['sc_status']) ? $r['sc_status'] : '';
+            $lab = isset($stmap[$st]) ? $stmap[$st] : array(($st!==''?$st:'발송'),'#6b7280');
+            $at = ($r['sc_status_at'] ? $r['sc_status_at'] : $r['sc_sent_at']);
+            echo '<span style="color:'.$lab[1].';font-size:11px;font-weight:bold">● '.$lab[0].'</span>';
+            echo '<br><span style="color:#9ca3af;font-size:10px">'.htmlspecialchars(substr((string)$at,0,16)).'</span>';
+        } else {
+            echo '<span class="badge-off">미발송</span>';
+        }
+        ?></td>
       <td>
         <button type="button" class="btn btn-info btn-xs2" onclick="cpy('<?php echo htmlspecialchars($link, ENT_QUOTES); ?>')">링크복사</button>
         <?php if ((int)$r['sc_used']===0): ?>
