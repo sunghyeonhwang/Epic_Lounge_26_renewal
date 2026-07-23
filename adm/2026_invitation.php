@@ -166,7 +166,8 @@ include_once('./admin.head.php');
       <td>
         <?php if (trim($r['sc_email'])!==''): ?>
         <a href="2026_invitation_proc.php?mode2=send&no=<?php echo (int)$r['sc_no']; ?>&token=<?php echo $token; ?>" class="btn btn-<?php echo $r['sc_sent_at']?'default':'primary'; ?> btn-xs2" onclick="return confirm('<?php echo htmlspecialchars($r['sc_email'],ENT_QUOTES); ?> 로 초청장을 발송할까요?')"><?php echo $r['sc_sent_at']?'재발송':'발송'; ?></a>
-        <?php else: ?><span class="badge-off">이메일없음</span><?php endif; ?><br>
+        <?php else: ?><span class="badge-off">이메일없음</span><?php endif; ?>
+        <a href="2026_invitation_proc.php?mode2=preview&no=<?php echo (int)$r['sc_no']; ?>" target="_blank" class="btn btn-default btn-xs2" title="발송되는 이메일 미리보기">미리보기</a><br>
         <?php echo $r['sc_sent_at'] ? '<span style="color:#16a34a;font-size:11px">'.htmlspecialchars(substr($r['sc_sent_at'],0,16)).'</span>' : '<span class="badge-off">미발송</span>'; ?></td>
       <td>
         <button type="button" class="btn btn-info btn-xs2" onclick="cpy('<?php echo htmlspecialchars($link, ENT_QUOTES); ?>')">링크복사</button>

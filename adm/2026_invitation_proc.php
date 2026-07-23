@@ -203,6 +203,23 @@ if ($mode2 === 'del') {
     exit;
 }
 
+// ── 초청장 이메일 미리보기(발송되는 실제 HTML을 브라우저 렌더) ──
+if ($mode2 === 'preview') {
+    require_once __DIR__ . '/../unrealfest2026/_invite_mail.php';
+    $no = (int)$_GET['no'];
+    $r = sql_fetch("SELECT * FROM cb_unreal_2026_speaker_code WHERE sc_no=".$no);
+    if (!$r) { header('Content-Type: text/html; charset=UTF-8'); echo '코드를 찾을 수 없습니다.'; exit; }
+    $lang = isset($_GET['lang']) ? $_GET['lang'] : $r['sc_lang'];   // ?lang=en/ko 로 언어 강제 미리보기
+    $m = ufs_invite_mail($r, ($lang === 'en' ? 'en' : 'ko'));
+    header('Content-Type: text/html; charset=UTF-8');
+    echo '<div style="background:#e5e7eb;padding:8px 14px;font:12px/1.5 sans-serif;color:#374151;border-bottom:1px solid #d1d5db;">'
+        .'초청장 이메일 미리보기 — 코드 <b>'.htmlspecialchars($r['sc_code']).'</b> · 수신 '.htmlspecialchars($r['sc_email'])
+        .' · 제목: <b>'.htmlspecialchars($m['subject']).'</b> · '
+        .'<a href="?mode2=preview&no='.$no.'&lang=ko">KO</a> | <a href="?mode2=preview&no='.$no.'&lang=en">EN</a></div>';
+    echo $m['html'];
+    exit;
+}
+
 // ── 내보내기(CSV) ──
 if ($mode2 === 'export') {
     check_admin_token();
