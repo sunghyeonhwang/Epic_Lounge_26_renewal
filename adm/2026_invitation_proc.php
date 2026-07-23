@@ -255,7 +255,7 @@ if ($mode2 === 'preview') {
 
 // ── 내보내기(CSV) ──
 if ($mode2 === 'export') {
-    check_admin_token();
+    // 읽기전용 다운로드 — 권한 게이트(auth_check_menu)로 보호. 토큰 1회소진 방지 위해 check_admin_token 미적용.
     // CSV 수식 인젝션 방어: =,+,-,@,탭,개행으로 시작하는 셀 앞에 ' 부착
     $csv_safe = function($v){ $s=(string)$v; if ($s!=='' && strpos("=+-@\t\r", $s[0])!==false) return "'".$s; return $s; };
     $rs = sql_query("SELECT * FROM cb_unreal_2026_speaker_code ORDER BY sc_no DESC");

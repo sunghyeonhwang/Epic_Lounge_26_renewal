@@ -24,7 +24,7 @@ sql_query("CREATE TABLE IF NOT EXISTS cb_unreal_2026_speaker_code (
 @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_valid_from DATE DEFAULT NULL");
 @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_valid_until DATE DEFAULT NULL");
 
-$token = get_token();
+$token = get_admin_token();   // check_admin_token()이 ss_admin_token을 검사하므로 admin 토큰으로 발행(get_token=ss_token은 불일치)
 
 // 통계
 $st_total  = sql_fetch("SELECT COUNT(*) c, COALESCE(SUM(sc_quota),0) q, COALESCE(SUM(sc_used),0) u FROM cb_unreal_2026_speaker_code");
