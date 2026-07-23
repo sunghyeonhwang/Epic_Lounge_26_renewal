@@ -24,7 +24,16 @@ sql_query("CREATE TABLE IF NOT EXISTS cb_unreal_2026_speaker_code (
 @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_valid_from DATE DEFAULT NULL");
 @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_valid_until DATE DEFAULT NULL");
 
-$token = get_admin_token();   // check_admin_token()이 ss_admin_token을 검사하므로 admin 토큰으로 발행(get_token=ss_token은 불일치)
+/* 초청장 전용 세션 CSRF 토큰(proc의 inv_csrf_check와 짝). 그누보드 일회용 ss_admin_token 대신 세션 단위 재사용 토큰
+ * 을 써서, 액션 반복·다른 관리자 메뉴 이동·새 탭·뒤로가기에도 목록의 액션 링크 토큰이 무효화되지 않게 한다. */
+if (!function_exists('inv_csrf_token')) {
+function inv_csrf_token() {
+    $t = get_session('ss_ufs_inv_token');
+    if (!$t) { $t = md5(uniqid(mt_rand(), true)); set_session('ss_ufs_inv_token', $t); }
+    return $t;
+}
+}
+$token = inv_csrf_token();
 
 // 통계
 $st_total  = sql_fetch("SELECT COUNT(*) c, COALESCE(SUM(sc_quota),0) q, COALESCE(SUM(sc_used),0) u FROM cb_unreal_2026_speaker_code");

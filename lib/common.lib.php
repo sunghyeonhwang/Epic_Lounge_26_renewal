@@ -3730,11 +3730,20 @@ function get_real_client_ip()
 {
     $real_ip = $_SERVER['REMOTE_ADDR'];
 
-    if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && preg_match('/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/', $_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $real_ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    // Cloudflare 등 프록시 뒤: 실제 방문자 IP를 우선 사용.
+    // REMOTE_ADDR은 회전하는 CF 엣지 IP라 요청마다 바뀔 수 있어, 이를 세션키(ss_mb_key)에 쓰면
+    // 관리자가 수시로 강제 로그아웃("정상적으로 로그인하여 접근하시기 바랍니다.")된다. CF-Connecting-IP는
+    // 방문자당 고정된 단일 IP라 세션키가 안정된다. XFF는 다중값일 수 있어 첫 IP만 취한다.
+    if (isset($_SERVER['HTTP_CF_CONNECTING_IP']) && filter_var($_SERVER['HTTP_CF_CONNECTING_IP'], FILTER_VALIDATE_IP)) {
+        $real_ip = $_SERVER['HTTP_CF_CONNECTING_IP'];
+    } else if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $xff = trim(current(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])));
+        if (filter_var($xff, FILTER_VALIDATE_IP)) {
+            $real_ip = $xff;
+        }
     }
 
-    return preg_replace('/[^0-9.]/', '', $real_ip);
+    return preg_replace('/[^0-9a-fA-F:.]/', '', $real_ip);
 }
 
 function check_mail_bot($ip = '')

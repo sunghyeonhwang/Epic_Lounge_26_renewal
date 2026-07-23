@@ -7,12 +7,35 @@ include_once "./_common.php";
 
 if (!$member['mb_id']) { alert('로그인이 필요합니다.', G5_BBS_URL . '/login.php'); exit; }
 
-// ⚠️ 관리자 권한 게이트 — 로그인한 일반 회원 접근/ PII export 차단(페이지와 동일 메뉴 700370, 쓰기 권한)
+// ⚠️ 관리자 권한 게이트 — 로그인한 일반 회원 접근/ PII export 차단(페이지와 동일 메뉴 700370, 읽기 권한)
+// 페이지(2026_invitation.php)와 동일한 'r' 레벨: 목록을 볼 수 있는 관리자면 액션도 허용(최고관리자는 무조건 통과).
+// 'w'로 두면 700370에 쓰기 권한이 별도 부여되지 않은 서브관리자가 막힘 → 페이지는 보이는데 액션만 실패.
 $sub_menu = '700370';
-auth_check_menu($auth, $sub_menu, 'w');
+auth_check_menu($auth, $sub_menu, 'r');
 
 define('INV_PUBLIC', 'https://epiclounge.co.kr/v3/unrealfest2026/ticket-invite.php');
 define('INV_LIST',   '/v3/adm/2026_invitation.php');
+
+/* 초청장 전용 세션 CSRF 토큰 — 그누보드 일회용 ss_admin_token의 취약점 회피.
+ * ss_admin_token은 (1) check_admin_token()이 1회 검사 후 소비하고 (2) 모든 관리자 페이지의 get_admin_token()이
+ * 매 로드마다 덮어써서, 목록의 여러 액션 링크가 토큰 하나를 공유하면 액션 1회·다른 메뉴 이동·새 탭·뒤로가기 시
+ * 나머지 링크가 전부 무효화된다("토큰 정보가 올바르지 않습니다"). → 세션 단위 재사용 토큰으로 교체:
+ * 발급 후 유지, 검사 시 비소비, 독립 세션키(ss_ufs_inv_token)라 다른 관리자 페이지와 간섭 없음.
+ * CSRF 방어(세션당 비추측 비밀, referer 무관)는 그대로 유지된다. */
+if (!function_exists('inv_csrf_token')) {
+function inv_csrf_token() {
+    $t = get_session('ss_ufs_inv_token');
+    if (!$t) { $t = md5(uniqid(mt_rand(), true)); set_session('ss_ufs_inv_token', $t); }
+    return $t;
+}
+function inv_csrf_check() {
+    $t   = get_session('ss_ufs_inv_token');
+    $req = isset($_REQUEST['token']) ? $_REQUEST['token'] : '';
+    if (!$t || !$req || $t !== $req)
+        alert('토큰 정보가 올바르지 않습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.', '/v3/adm/2026_invitation.php');
+    return true;
+}
+}
 
 function inv_schema() {
     sql_query("CREATE TABLE IF NOT EXISTS cb_unreal_2026_speaker_code (
@@ -109,7 +132,7 @@ $mode2 = isset($_GET['mode2']) ? preg_replace('/[^a-z]/','',$_GET['mode2']) : ''
 
 // ── 수동 발급 ──
 if ($mode === 'issue') {
-    check_admin_token();
+    inv_csrf_check();
     $r = inv_issue(array(
         'src'=>'manual','ref_id'=>0,
         'name'=>$_POST['sc_name'],'email'=>$_POST['sc_email'],'phone'=>$_POST['sc_phone'],'company'=>$_POST['sc_company'],
@@ -125,7 +148,7 @@ if ($mode === 'issue') {
 
 // ── CSV 일괄 발급 ── (헤더: 초청인,대상명,이메일,연락처,소속,언어,매수,할인율,메모)
 if ($mode === 'csv') {
-    check_admin_token();
+    inv_csrf_check();
     if (!isset($_FILES['csv']) || $_FILES['csv']['error'] !== 0) alert('CSV 파일을 선택해 주세요.', INV_LIST);
     $fp = fopen($_FILES['csv']['tmp_name'], 'r');
     if (!$fp) alert('CSV 파일을 읽을 수 없습니다.', INV_LIST);
@@ -154,7 +177,7 @@ if ($mode === 'csv') {
 
 // ── 스피커 로스터 자동 sync ── (cb_unreal_2026_speaker_apply, speaker_type='internal' + email 보유행만. 외부/키노트 제외)
 if ($mode === 'sync') {
-    check_admin_token();
+    inv_csrf_check();
     $ins=0; $skip=0;
     $rs = sql_query("SELECT id, speaker_name, speaker_email, speaker_ph, speaker_cp FROM cb_unreal_2026_speaker_apply WHERE speaker_email <> '' AND speaker_type='internal' ORDER BY id");
     if ($rs) while ($sp = sql_fetch_array($rs)) {
@@ -171,7 +194,7 @@ if ($mode === 'sync') {
 
 // ── 미발송 일괄 발송 (Resend) ──
 if ($mode === 'sendall') {
-    check_admin_token();
+    inv_csrf_check();
     require_once __DIR__ . '/../unrealfest2026/_resend.php';
     require_once __DIR__ . '/../unrealfest2026/_invite_mail.php';
     @set_time_limit(0); @ignore_user_abort(true);   // 대량 발송 타임아웃 방지
@@ -191,7 +214,7 @@ if ($mode === 'sendall') {
 
 // ── 전체 사용기간 일괄 설정 ──
 if ($mode === 'setperiod') {
-    check_admin_token();
+    inv_csrf_check();
     $vf = inv_date(isset($_POST['sc_valid_from']) ? $_POST['sc_valid_from'] : '');
     $vu = inv_date(isset($_POST['sc_valid_until']) ? $_POST['sc_valid_until'] : '');
     $vf_sql = ($vf !== '') ? "'".$vf."'" : "NULL";
@@ -203,7 +226,7 @@ if ($mode === 'setperiod') {
 
 // ── 활성 토글 ──
 if ($mode2 === 'toggle') {
-    check_admin_token();
+    inv_csrf_check();
     $no = (int)$_GET['no'];
     $r = sql_fetch("SELECT sc_active FROM cb_unreal_2026_speaker_code WHERE sc_no=".$no);
     if ($r) { $nv = ($r['sc_active']==='Y') ? 'N' : 'Y'; sql_query("UPDATE cb_unreal_2026_speaker_code SET sc_active='".$nv."' WHERE sc_no=".$no); }
@@ -212,7 +235,7 @@ if ($mode2 === 'toggle') {
 
 // ── 초청장 개별 발송/재발송 (Resend) ──
 if ($mode2 === 'send') {
-    check_admin_token();
+    inv_csrf_check();
     require_once __DIR__ . '/../unrealfest2026/_resend.php';
     require_once __DIR__ . '/../unrealfest2026/_invite_mail.php';
     $no = (int)$_GET['no'];
@@ -226,7 +249,7 @@ if ($mode2 === 'send') {
 
 // ── 삭제(미사용 코드만) ──
 if ($mode2 === 'del') {
-    check_admin_token();
+    inv_csrf_check();
     $no = (int)$_GET['no'];
     $r = sql_fetch("SELECT sc_used FROM cb_unreal_2026_speaker_code WHERE sc_no=".$no);
     if (!$r) alert('코드를 찾을 수 없습니다.', INV_LIST);
@@ -255,7 +278,7 @@ if ($mode2 === 'preview') {
 
 // ── 내보내기(CSV) ──
 if ($mode2 === 'export') {
-    // 읽기전용 다운로드 — 권한 게이트(auth_check_menu)로 보호. 토큰 1회소진 방지 위해 check_admin_token 미적용.
+    inv_csrf_check();   // 재사용 토큰이라 1회소진 문제 없음 → PII 다운로드에도 CSRF 검사 적용
     // CSV 수식 인젝션 방어: =,+,-,@,탭,개행으로 시작하는 셀 앞에 ' 부착
     $csv_safe = function($v){ $s=(string)$v; if ($s!=='' && strpos("=+-@\t\r", $s[0])!==false) return "'".$s; return $s; };
     $rs = sql_query("SELECT * FROM cb_unreal_2026_speaker_code ORDER BY sc_no DESC");
