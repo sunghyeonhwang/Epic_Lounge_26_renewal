@@ -16,22 +16,22 @@ auth_check_menu($auth, $sub_menu, 'r');
 define('INV_PUBLIC', 'https://epiclounge.co.kr/v3/unrealfest2026/ticket-invite.php');
 define('INV_LIST',   '/v3/adm/2026_invitation.php');
 
-/* 초청장 전용 세션 CSRF 토큰 — 그누보드 일회용 ss_admin_token의 취약점 회피.
- * ss_admin_token은 (1) check_admin_token()이 1회 검사 후 소비하고 (2) 모든 관리자 페이지의 get_admin_token()이
- * 매 로드마다 덮어써서, 목록의 여러 액션 링크가 토큰 하나를 공유하면 액션 1회·다른 메뉴 이동·새 탭·뒤로가기 시
- * 나머지 링크가 전부 무효화된다("토큰 정보가 올바르지 않습니다"). → 세션 단위 재사용 토큰으로 교체:
- * 발급 후 유지, 검사 시 비소비, 독립 세션키(ss_ufs_inv_token)라 다른 관리자 페이지와 간섭 없음.
- * CSRF 방어(세션당 비추측 비밀, referer 무관)는 그대로 유지된다. */
+/* 초청장 전용 CSRF 토큰 — 그누보드 일회용 ss_admin_token의 취약점 회피.
+ * ss_admin_token은 (1) check_admin_token()이 1회 소비하고 (2) 모든 관리자 페이지의 get_admin_token()이 덮어써
+ * 목록의 여러 액션이 토큰 하나를 공유하면 액션1회·메뉴이동·새탭·뒤로가기 시 전부 무효화된다.
+ * 커스텀 세션키(set_session) 방식도 set_session()의 최초호출 session_regenerate_id 및 페이지 캐시 때문에
+ * 페이지↔proc 세션이 어긋날 수 있다. → 세션 쓰기 없이, 로그인 시 고정되는 ss_mb_key에서 파생한 토큰 사용:
+ * 페이지와 proc에서 동일하게 재계산되고(세션 저장 불필요), 값은 서버 세션 비밀의 해시라 공격자가 계산 불가(CSRF 방어 유지). */
 if (!function_exists('inv_csrf_token')) {
 function inv_csrf_token() {
-    $t = get_session('ss_ufs_inv_token');
-    if (!$t) { $t = md5(uniqid(mt_rand(), true)); set_session('ss_ufs_inv_token', $t); }
-    return $t;
+    global $member;
+    $base = get_session('ss_mb_key');   // 로그인 시 설정·매 요청 검증되는 값(부재 시 이미 로그아웃됨). IP/UA 기반이라 세션당 고정.
+    if (!$base) $base = (isset($member['mb_id'])?$member['mb_id']:'').(isset($member['mb_datetime'])?$member['mb_datetime']:'');
+    return md5('ufs_inv|'.$base);
 }
 function inv_csrf_check() {
-    $t   = get_session('ss_ufs_inv_token');
     $req = isset($_REQUEST['token']) ? $_REQUEST['token'] : '';
-    if (!$t || !$req || $t !== $req)
+    if (!$req || $req !== inv_csrf_token())
         alert('토큰 정보가 올바르지 않습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.', '/v3/adm/2026_invitation.php');
     return true;
 }

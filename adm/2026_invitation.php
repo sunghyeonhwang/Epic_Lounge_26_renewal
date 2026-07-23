@@ -24,13 +24,15 @@ sql_query("CREATE TABLE IF NOT EXISTS cb_unreal_2026_speaker_code (
 @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_valid_from DATE DEFAULT NULL");
 @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_valid_until DATE DEFAULT NULL");
 
-/* 초청장 전용 세션 CSRF 토큰(proc의 inv_csrf_check와 짝). 그누보드 일회용 ss_admin_token 대신 세션 단위 재사용 토큰
- * 을 써서, 액션 반복·다른 관리자 메뉴 이동·새 탭·뒤로가기에도 목록의 액션 링크 토큰이 무효화되지 않게 한다. */
+/* 초청장 전용 CSRF 토큰(proc의 inv_csrf_check와 짝). 그누보드 일회용 ss_admin_token 대신, 로그인 시 고정되는
+ * ss_mb_key에서 파생한 토큰을 써서 세션 쓰기 없이 페이지↔proc에서 동일 값이 재계산되게 한다(액션 반복·메뉴이동·
+ * 새 탭·뒤로가기·페이지 캐시에도 안정). 값은 서버 세션 비밀의 해시라 공격자가 계산 불가(CSRF 방어 유지). */
 if (!function_exists('inv_csrf_token')) {
 function inv_csrf_token() {
-    $t = get_session('ss_ufs_inv_token');
-    if (!$t) { $t = md5(uniqid(mt_rand(), true)); set_session('ss_ufs_inv_token', $t); }
-    return $t;
+    global $member;
+    $base = get_session('ss_mb_key');
+    if (!$base) $base = (isset($member['mb_id'])?$member['mb_id']:'').(isset($member['mb_datetime'])?$member['mb_datetime']:'');
+    return md5('ufs_inv|'.$base);
 }
 }
 $token = inv_csrf_token();
