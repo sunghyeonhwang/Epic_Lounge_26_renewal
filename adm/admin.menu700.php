@@ -12,7 +12,7 @@ $menu['menu700'] = array(
     array('700360', '결제 로그', '' . G5_ADMIN_URL . '/2026_event2_log.php', '2026_event2_log'),
     array('700362', '얼리버드 연장 설정', '' . G5_ADMIN_URL . '/2026_earlybird_config.php', '2026_earlybird_config'),
     array('700365', '단체 할인 설정', '' . G5_ADMIN_URL . '/2026_group_config.php', '2026_group_config'),
-    array('700366', '단체 쿠폰 관리', '' . G5_ADMIN_URL . '/2026_coupon.php', '2026_coupon'),
+    array('700366', '쿠폰 관리', '' . G5_ADMIN_URL . '/2026_coupon.php', '2026_coupon'),
     array('700367', '단체 등록 현황', '' . G5_ADMIN_URL . '/2026_group_list.php', '2026_group_list'),
     array('700370', '초청장 발송', '' . G5_ADMIN_URL . '/2026_invitation.php', '2026_invitation'),
 
