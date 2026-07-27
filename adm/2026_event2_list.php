@@ -80,8 +80,13 @@ if (isset($_POST['cancel_no'])) {
         if ($crow) {
             $paid_cancel = ($crow['free_yn']==='N' && $crow['apply_product_code']!=='ONLINE' && trim((string)$crow['pay_tid'])!=='');
             if ($paid_cancel) {
-                require_once(__DIR__.'/../unrealfest2026/_refund.php');
-                $rf = ufs_inicis_refund($crow['pay_tid'], isset($crow['pay_paymethod'])?$crow['pay_paymethod']:'', '관리자 취소', $cno);
+                if (isset($crow['pay_paymethod']) && $crow['pay_paymethod']==='dodo') {
+                    require_once(__DIR__.'/../unrealfest2026/_dodo.php');   // 해외 Dodo 결제 → Dodo 전액환불
+                    $rf = ufs_dodo_refund($crow['pay_tid'], '관리자 취소', $cno);
+                } else {
+                    require_once(__DIR__.'/../unrealfest2026/_refund.php');
+                    $rf = ufs_inicis_refund($crow['pay_tid'], isset($crow['pay_paymethod'])?$crow['pay_paymethod']:'', '관리자 취소', $cno);
+                }
                 // 환불 성공(ok) 또는 이미 환불됨(already=기 취소거래) → 취소 진행. 그 외만 실패 처리.
                 if (empty($rf['skipped']) && empty($rf['ok']) && empty($rf['already'])) { $refund_failed = true; }
             }
