@@ -80,8 +80,11 @@ if (isset($_POST['cancel_no'])) {
         if ($crow) {
             $paid_cancel = ($crow['free_yn']==='N' && $crow['apply_product_code']!=='ONLINE' && trim((string)$crow['pay_tid'])!=='');
             if ($paid_cancel) {
-                if (isset($crow['pay_paymethod']) && $crow['pay_paymethod']==='dodo') {
-                    require_once(__DIR__.'/../unrealfest2026/_dodo.php');   // 해외 Dodo 결제 → Dodo 전액환불
+                if (isset($crow['pay_paymethod']) && $crow['pay_paymethod']==='paypal') {
+                    require_once(__DIR__.'/../unrealfest2026/_paypal.php');   // 해외 PayPal 결제 → PayPal 전액환불
+                    $rf = ufs_pp_refund($crow['pay_tid'], '관리자 취소', $cno);
+                } else if (isset($crow['pay_paymethod']) && $crow['pay_paymethod']==='dodo') {
+                    require_once(__DIR__.'/../unrealfest2026/_dodo.php');
                     $rf = ufs_dodo_refund($crow['pay_tid'], '관리자 취소', $cno);
                 } else {
                     require_once(__DIR__.'/../unrealfest2026/_refund.php');
