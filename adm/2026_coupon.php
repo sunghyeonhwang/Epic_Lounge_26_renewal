@@ -27,6 +27,7 @@ sql_query("CREATE TABLE IF NOT EXISTS cb_unreal_2026_coupon (
 @sql_query("ALTER TABLE cb_unreal_2026_coupon ADD COLUMN IF NOT EXISTS cp_recipient_email VARCHAR(200) NOT NULL DEFAULT ''");
 @sql_query("ALTER TABLE cb_unreal_2026_coupon ADD COLUMN IF NOT EXISTS cp_sent_at DATETIME DEFAULT NULL");
 @sql_query("ALTER TABLE cb_unreal_2026_coupon ADD COLUMN IF NOT EXISTS cp_status VARCHAR(20) NOT NULL DEFAULT ''");
+@sql_query("ALTER TABLE cb_unreal_2026_coupon ADD COLUMN IF NOT EXISTS cp_lang VARCHAR(5) NOT NULL DEFAULT 'ko'");
 
 // 쿠폰 메일 발송 모듈(공개 repo 재사용) + Resend
 @include_once(__DIR__ . '/../unrealfest2026/_coupon_mail.php');
@@ -39,7 +40,7 @@ function cp_send_mail($cp_no) {
     if (!$r) return array('ok'=>false,'msg'=>'쿠폰을 찾을 수 없습니다.');
     $to = trim($r['cp_recipient_email']);
     if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) return array('ok'=>false,'msg'=>'수신자 이메일이 없거나 형식이 올바르지 않습니다.');
-    $m = ufs_coupon_mail($r, 'ko');
+    $m = ufs_coupon_mail($r, (isset($r['cp_lang']) && $r['cp_lang']==='en') ? 'en' : 'ko');
     $res = ufs_resend_send($to, $m['subject'], $m['html'], '', $m['text']);
     $ok = !empty($res['ok']);
     sql_query("UPDATE cb_unreal_2026_coupon SET cp_sent_at=now(), cp_status='".($ok?'sent':'fail')."' WHERE cp_no=".(int)$cp_no);
@@ -69,12 +70,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cp_code'])) {
     $memo = trim($_POST['cp_memo']);
     $rname  = isset($_POST['cp_recipient_name']) ? trim($_POST['cp_recipient_name']) : '';
     $remail = isset($_POST['cp_recipient_email']) ? trim($_POST['cp_recipient_email']) : '';
+    $rlang  = (isset($_POST['cp_lang']) && $_POST['cp_lang']==='en') ? 'en' : 'ko';
     if ($code === '' || $pct <= 0) {
         $msg = '쿠폰 코드와 1 이상의 할인율을 입력해 주세요.';
     } else {
         $expSql = ($exp !== '') ? "'".sql_real_escape_string($exp)."'" : "NULL";
-        $r = sql_query("INSERT INTO cb_unreal_2026_coupon (cp_code,cp_percent,cp_expire,cp_max,cp_memo,cp_recipient_name,cp_recipient_email,cp_reg)
-            VALUES ('".sql_real_escape_string($code)."', $pct, $expSql, $max, '".sql_real_escape_string($memo)."', '".sql_real_escape_string($rname)."', '".sql_real_escape_string($remail)."', now())");
+        $r = sql_query("INSERT INTO cb_unreal_2026_coupon (cp_code,cp_percent,cp_expire,cp_max,cp_memo,cp_recipient_name,cp_recipient_email,cp_lang,cp_reg)
+            VALUES ('".sql_real_escape_string($code)."', $pct, $expSql, $max, '".sql_real_escape_string($memo)."', '".sql_real_escape_string($rname)."', '".sql_real_escape_string($remail)."', '".$rlang."', now())");
         if ($r) {
             $msg = "쿠폰 '$code' ($pct%) 발급되었습니다.";
             // 발급 후 바로 발송
@@ -119,12 +121,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['csv_mode'])) {
                 $exp  = trim(isset($row[4]) ? $row[4] : '');
                 $max  = isset($row[5]) && trim($row[5])!=='' ? (int)$row[5] : 1;
                 $memo = trim(isset($row[6]) ? $row[6] : '');
+                $clang = (isset($row[7]) && strtolower(trim($row[7]))==='en') ? 'en' : 'ko';
                 if ($re === '' || !filter_var($re, FILTER_VALIDATE_EMAIL) || $pct < 1) { $err++; continue; }
                 if ($pct > 100) $pct = 100; if ($max < 0) $max = 0;
                 if ($code === '') $code = cp_gen_code();
                 $expSql = ($exp !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $exp)) ? "'".sql_real_escape_string($exp)."'" : "NULL";
-                $r = sql_query("INSERT INTO cb_unreal_2026_coupon (cp_code,cp_percent,cp_expire,cp_max,cp_memo,cp_recipient_name,cp_recipient_email,cp_reg)
-                    VALUES ('".sql_real_escape_string($code)."', $pct, $expSql, $max, '".sql_real_escape_string($memo)."', '".sql_real_escape_string($rn)."', '".sql_real_escape_string($re)."', now())");
+                $r = sql_query("INSERT INTO cb_unreal_2026_coupon (cp_code,cp_percent,cp_expire,cp_max,cp_memo,cp_recipient_name,cp_recipient_email,cp_lang,cp_reg)
+                    VALUES ('".sql_real_escape_string($code)."', $pct, $expSql, $max, '".sql_real_escape_string($memo)."', '".sql_real_escape_string($rn)."', '".sql_real_escape_string($re)."', '".$clang."', now())");
                 if (!$r) { $skip++; continue; }   // 중복 코드
                 $ins++;
                 if ($send_now) {
@@ -180,7 +183,7 @@ include_once('./admin.head.php');
     $indN = $inds ? $inds->num_rows : 0;
     $grps = $hasGrpU ? sql_query("SELECT * FROM cb_unreal_2026_group WHERE coupon_code='$uce' ORDER BY grp_no DESC") : null;
     $grpN = $grps ? $grps->num_rows : 0; ?>
-  <div class="cp-card" style="border-left:4px solid #2563eb">
+  <div class="cp-card">
     <h2>🔎 쿠폰 <?= cp_e($usageCode) ?> — 사용 등록 내역 <a href="2026_coupon.php" style="font-weight:400;font-size:12px;margin-left:8px;color:#888">✕ 닫기</a></h2>
     <h3 style="font-size:13px;color:#059669;margin:6px 0 6px">[개인] <?= $indN ?>건</h3>
     <?php if ($indN): ?>
@@ -209,7 +212,7 @@ include_once('./admin.head.php');
   </div>
   <?php endif; ?>
 
-  <div class="cp-card" style="border-left:4px solid <?= $indiv_on?'#1a9e54':'#c0392b' ?>">
+  <div class="cp-card">
     <h2 style="margin-bottom:8px">개인 등록 쿠폰 노출</h2>
     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <span style="font-size:15px">현재 상태:
@@ -242,6 +245,7 @@ include_once('./admin.head.php');
       <div><label>메모(선택)</label><input type="text" name="cp_memo" placeholder="설명" style="width:160px"></div>
       <div><label>수신자명(선택)</label><input type="text" name="cp_recipient_name" placeholder="홍길동" style="width:120px"></div>
       <div><label>수신자 이메일(선택)</label><input type="email" name="cp_recipient_email" placeholder="user@example.com" style="width:180px"></div>
+      <div><label>메일 언어</label><select name="cp_lang" style="padding:8px;border:1px solid #ccc;border-radius:4px"><option value="ko">한국어</option><option value="en">English</option></select></div>
       <div style="align-self:flex-end"><label style="font-weight:400;font-size:12px;cursor:pointer"><input type="checkbox" name="send_now" value="1"> 발급 후 바로 메일 발송</label></div>
       <button type="submit" class="cp-btn">발급</button>
     </div>
@@ -258,15 +262,15 @@ include_once('./admin.head.php');
     document.getElementById('cp_code').value='UECPN-'+rnd(4)+'-'+rnd(4);
   }
   function dlCouponTemplate(){
-    var csv='﻿코드(선택),수신자명,수신자이메일,할인율,만료일,한도,메모\n'
-          + ',홍길동,hong@example.com,30,2026-08-15,1,VIP 초청\n'
-          + ',김철수,kim@example.com,50,,1,파트너\n';
+    var csv='﻿코드(선택),수신자명,수신자이메일,할인율,만료일,한도,메모,언어(ko/en)\n'
+          + ',홍길동,hong@example.com,30,2026-08-15,1,VIP 초청,ko\n'
+          + ',John,john@example.com,50,,1,partner,en\n';
     var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
     a.download='쿠폰_일괄발급_양식.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
   }
   </script>
 
-  <div class="cp-card" style="border-left:4px solid #1a7f37">
+  <div class="cp-card">
     <h2>CSV 일괄 발급 · 메일 발송</h2>
     <form method="post" enctype="multipart/form-data" class="cp-form" onsubmit="return confirm('CSV의 각 행으로 쿠폰을 일괄 발급합니다.' + (document.getElementById('csv_send').checked ? '\n체크된 [발급 후 즉시 메일 발송]에 따라 각 수신자에게 실제 메일이 발송됩니다.' : '') + '\n계속할까요?');">
       <input type="hidden" name="csv_mode" value="1">
@@ -275,7 +279,7 @@ include_once('./admin.head.php');
       <button type="submit" class="cp-btn" style="background:#1a7f37">CSV 일괄 발급</button>
       <button type="button" onclick="dlCouponTemplate()" style="background:#e5e7eb;color:#111;border:0;padding:9px 16px;font-weight:700;border-radius:4px;cursor:pointer">양식 다운로드</button>
     </form>
-    <p style="color:#888;font-size:12px;margin:8px 0 0">열: <b>코드(선택·빈칸이면 자동생성)</b>, 수신자명, 수신자이메일, 할인율(1~100), 만료일(YYYY-MM-DD·선택), 한도(선택·기본1), 메모(선택). 첫 줄이 헤더면 자동 스킵. 이메일 누락/할인율 없음=오류 스킵, 코드 중복=skip.</p>
+    <p style="color:#888;font-size:12px;margin:8px 0 0">열: <b>코드(선택·빈칸이면 자동생성)</b>, 수신자명, 수신자이메일, 할인율(1~100), 만료일(YYYY-MM-DD·선택), 한도(선택·기본1), 메모(선택), <b>언어(ko/en·선택·기본ko)</b>. 첫 줄이 헤더면 자동 스킵. 이메일 누락/할인율 없음=오류 스킵, 코드 중복=skip.</p>
   </div>
 
   <div class="cp-card">
@@ -320,7 +324,7 @@ include_once('./admin.head.php');
           <td><?= cp_e($r['cp_memo']) ?></td>
           <td style="font-size:12px;text-align:left">
             <?php $rem = trim($r['cp_recipient_email']); if ($rem !== ''): $cst = isset($r['cp_status'])?$r['cp_status']:''; ?>
-              <?= cp_e($r['cp_recipient_name']!==''?$r['cp_recipient_name']:'(이름없음)') ?><br>
+              <?= cp_e($r['cp_recipient_name']!==''?$r['cp_recipient_name']:'(이름없음)') ?><?= (isset($r['cp_lang'])&&$r['cp_lang']==='en')?' <span style="background:#2563eb;color:#fff;font-size:10px;padding:0 4px;border-radius:3px">EN</span>':'' ?><br>
               <span style="color:#888"><?= cp_e($rem) ?></span><br>
               <?php if ($cst==='sent'): ?><span style="color:#1a9e54;font-weight:700">✔ 발송</span> <span style="color:#aaa"><?= cp_e(substr($r['cp_sent_at'],5,11)) ?></span>
               <?php elseif ($cst==='fail'): ?><span style="color:#c0392b;font-weight:700">✖ 실패</span>
