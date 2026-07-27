@@ -187,6 +187,47 @@ if ($exists && isset($_GET['delete_grp'])) {
     } else { $gl_msg = "취소('cancel') 상태인 단체건만 삭제할 수 있습니다."; }
 }
 
+// ── CSV(엑셀) 내보내기 — HTML 출력(admin.head) 전에 실행 ──
+if ($exists && isset($_GET['export'])) {
+    @include_once(__DIR__ . '/../unrealfest2026/_group_apply.php');
+    if (function_exists('ufs_group_apply_cols')) @ufs_group_apply_cols();   // gm_status 등 컬럼 보강
+    $ex  = $_GET['export'];
+    $gno = isset($_GET['grp']) ? (int)$_GET['grp'] : 0;
+    $csv_safe = function($v){ $s=(string)$v; if ($s!=='' && strpos("=+-@\t\r", $s[0])!==false) return "'".$s; return $s; };
+    header('Content-Type: text/csv; charset=utf-8');
+    $suf = date('Ymd');
+    $out = fopen('php://output', 'w');
+    echo "\xEF\xBB\xBF"; // BOM (엑셀 한글 깨짐 방지)
+    if ($ex === 'groups') {
+        header('Content-Disposition: attachment; filename="ufs2026_groups_'.$suf.'.csv"');
+        fputcsv($out, array('접수번호','대표자','대표참석','회사','사업자번호','이메일','연락처','인원','결제수단','할인율','총액','상태','접수일시','결제일'));
+        $rs = sql_query("SELECT * FROM cb_unreal_2026_group ORDER BY grp_no DESC");
+        if ($rs) while ($g = $rs->fetch_assoc()) {
+            fputcsv($out, array_map($csv_safe, array($g['grp_code'],$g['rep_name'],($g['rep_attend']==='Y'?'참석':'결제만'),$g['rep_company'],isset($g['rep_biznum'])?$g['rep_biznum']:'',$g['rep_email'],$g['rep_phone'],$g['headcount'],(isset($PAYNAME[$g['paymethod']])?$PAYNAME[$g['paymethod']]:$g['paymethod']),(int)$g['discount_pct'].'%',(int)$g['total_amount'],(isset($STNAME[$g['pay_status']])?$STNAME[$g['pay_status']]:$g['pay_status']),$g['reg'],isset($g['paid_at'])?$g['paid_at']:'')));
+        }
+    } else {   // members (기본)
+        header('Content-Disposition: attachment; filename="'.($gno?('ufs2026_group_'.$gno.'_members_'):'ufs2026_group_members_').$suf.'.csv"');
+        fputcsv($out, array('접수번호','회사','구분','이름','이메일','연락처','부서','직무','관심분야','티켓','Day1','Day2','티셔츠','금액','결제수단','단체상태','문자상태','문자시각','접수일시'));
+        $gw = $gno ? (" WHERE m.grp_no=".$gno) : "";
+        $rs = sql_query("SELECT m.*, g.grp_code gcode, g.rep_company, g.paymethod, g.pay_status gstatus, g.reg greg FROM cb_unreal_2026_group_member m LEFT JOIN cb_unreal_2026_group g ON g.grp_no=m.grp_no".$gw." ORDER BY m.grp_no DESC, m.gm_no ASC");
+        if ($rs) while ($m = $rs->fetch_assoc()) {
+            $sst = isset($m['gm_sms_status']) ? $m['gm_sms_status'] : '';
+            $sstl = ($sst==='sent'?'성공':($sst==='fail'?'실패':($sst==='test'?'테스트':'미확인')));
+            $cancelled = (isset($m['gm_status']) && $m['gm_status']==='C');
+            fputcsv($out, array_map($csv_safe, array(
+                $m['gcode'], $m['rep_company'], (($m['role']==='rep'?'대표자':'멤버').($cancelled?'(취소)':'')),
+                $m['name'],$m['email'],$m['phone'],$m['depart'],$m['grade'],$m['ex1'],
+                (isset($PRODNAME[$m['ticket']])?$PRODNAME[$m['ticket']]:$m['ticket']),$m['day1'],$m['day2'],$m['tshirt'],(int)$m['price'],
+                (isset($PAYNAME[$m['paymethod']])?$PAYNAME[$m['paymethod']]:$m['paymethod']),
+                (isset($STNAME[$m['gstatus']])?$STNAME[$m['gstatus']]:$m['gstatus']),
+                $sstl, isset($m['gm_sms_at'])?$m['gm_sms_at']:'', $m['greg']
+            )));
+        }
+    }
+    fclose($out);
+    exit;
+}
+
 include_once('./admin.head.php');
 if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D5;color:#007a89;padding:10px 14px;border-radius:4px;margin:10px 0;max-width:1100px">'.gl_e($gl_msg).'</div>';
 ?>
@@ -228,6 +269,7 @@ if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D
   <?php endif; ?>
   <?php if ($g['pay_status']==='paid'): ?>
     <a href="?grp=<?= (int)$detail ?>&send_all_sms=<?= (int)$detail ?>" onclick="return confirm('구성원 전원에게 QR 포함 등록확인 문자를 발송/재발송할까요?\n(수신번호 앞자리 0 자동 보정 · 실제 발송)')" style="display:inline-block;background:#2d7ff9;color:#fff;padding:7px 16px;border-radius:4px;text-decoration:none;font-weight:700;margin-bottom:12px;margin-left:6px">📨 전체 QR 문자 발송/재발송</a>
+    <a href="?export=members&grp=<?= (int)$detail ?>" style="display:inline-block;background:#1a7f37;color:#fff;padding:7px 16px;border-radius:4px;text-decoration:none;font-weight:700;margin-bottom:12px;margin-left:6px">⬇ 이 단체 구성원 CSV</a>
   <?php endif; ?>
   <?php if (isset($g['tax_request']) && $g['tax_request']==='Y'): ?>
     <div style="font-size:13px;color:#444;margin-bottom:12px;padding:10px;background:#fafafa;border:1px solid #eee;border-radius:4px">
@@ -328,6 +370,11 @@ if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D
   </table>
   <?php endif; ?>
 <?php else: ?>
+  <div style="margin:0 0 12px;display:flex;gap:8px;flex-wrap:wrap">
+    <a href="?export=members" style="display:inline-block;background:#1a7f37;color:#fff;padding:7px 16px;border-radius:4px;text-decoration:none;font-weight:700">⬇ 구성원 전체 CSV</a>
+    <a href="?export=groups" style="display:inline-block;background:#2d7ff9;color:#fff;padding:7px 16px;border-radius:4px;text-decoration:none;font-weight:700">⬇ 단체 목록 CSV</a>
+    <span style="color:#999;font-size:12px;align-self:center">※ CSV(엑셀) · UTF-8 BOM(한글 정상)</span>
+  </div>
   <table>
     <thead><tr><th>접수번호</th><th>대표자</th><th>회사</th><th>인원</th><th>결제</th><th>할인</th><th class="r">총액</th><th>상태</th><th>접수일시</th><th>상세</th></tr></thead>
     <tbody>
