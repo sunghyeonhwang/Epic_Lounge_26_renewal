@@ -46,6 +46,18 @@ function cp_send_mail($cp_no) {
     return array('ok'=>$ok, 'to'=>$to, 'msg'=>($ok ? ('발송 성공 ('.$to.')') : ('발송 실패: '.(isset($res['error'])?$res['error']:'오류'))));
 }
 
+/* 서버측 난수 쿠폰코드 생성(UECPN-XXXX-XXXX, 혼동문자 제외, 중복검사). CSV 일괄발급용. */
+function cp_gen_code() {
+    $alpha = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    do {
+        $s = '';
+        for ($i = 0; $i < 8; $i++) $s .= $alpha[mt_rand(0, 31)];
+        $c = 'UECPN-'.substr($s,0,4).'-'.substr($s,4,4);
+        $ex = sql_fetch("SELECT cp_no FROM cb_unreal_2026_coupon WHERE cp_code='".sql_real_escape_string($c)."'");
+    } while ($ex);
+    return $c;
+}
+
 function cp_e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 $msg = '';
 
@@ -81,6 +93,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cp_code'])) {
 if (isset($_GET['send_mail'])) {
     $sm = cp_send_mail((int)$_GET['send_mail']);
     $msg = '쿠폰 메일: '.$sm['msg'];
+}
+
+// ── CSV 일괄 발급 (+ 옵션: 즉시 메일 발송) ──
+// 헤더/열: 코드(선택·빈칸이면 자동생성), 수신자명, 수신자이메일, 할인율, 만료일(YYYY-MM-DD·선택), 한도(선택·기본1), 메모(선택)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['csv_mode'])) {
+    if (!isset($_FILES['csv']) || $_FILES['csv']['error'] !== 0) {
+        $msg = 'CSV 파일을 선택해 주세요.';
+    } else {
+        $fp = fopen($_FILES['csv']['tmp_name'], 'r');
+        if (!$fp) { $msg = 'CSV 파일을 읽을 수 없습니다.'; }
+        else {
+            $send_now = isset($_POST['csv_send']);
+            $ins=0; $skip=0; $err=0; $sent=0; $sfail=0; $rowi=0;
+            while (($row = fgetcsv($fp)) !== false) {
+                $rowi++;
+                $joined = implode(',', $row);
+                if (trim($joined) === '') continue;
+                // 헤더행 스킵(첫 줄에 '이메일' 또는 '할인' 포함)
+                if ($rowi === 1 && (mb_strpos($joined,'이메일')!==false || mb_strpos($joined,'할인')!==false || mb_strpos($joined,'코드')!==false)) continue;
+                $code = strtoupper(trim(isset($row[0]) ? $row[0] : ''));
+                $rn   = trim(isset($row[1]) ? $row[1] : '');
+                $re   = trim(isset($row[2]) ? $row[2] : '');
+                $pct  = (int)(isset($row[3]) ? $row[3] : 0);
+                $exp  = trim(isset($row[4]) ? $row[4] : '');
+                $max  = isset($row[5]) && trim($row[5])!=='' ? (int)$row[5] : 1;
+                $memo = trim(isset($row[6]) ? $row[6] : '');
+                if ($re === '' || !filter_var($re, FILTER_VALIDATE_EMAIL) || $pct < 1) { $err++; continue; }
+                if ($pct > 100) $pct = 100; if ($max < 0) $max = 0;
+                if ($code === '') $code = cp_gen_code();
+                $expSql = ($exp !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $exp)) ? "'".sql_real_escape_string($exp)."'" : "NULL";
+                $r = sql_query("INSERT INTO cb_unreal_2026_coupon (cp_code,cp_percent,cp_expire,cp_max,cp_memo,cp_recipient_name,cp_recipient_email,cp_reg)
+                    VALUES ('".sql_real_escape_string($code)."', $pct, $expSql, $max, '".sql_real_escape_string($memo)."', '".sql_real_escape_string($rn)."', '".sql_real_escape_string($re)."', now())");
+                if (!$r) { $skip++; continue; }   // 중복 코드
+                $ins++;
+                if ($send_now) {
+                    $nid = sql_fetch("SELECT LAST_INSERT_ID() id"); $nid = $nid ? (int)$nid['id'] : 0;
+                    if ($nid) { $sm = cp_send_mail($nid); if (!empty($sm['ok'])) $sent++; else $sfail++; }
+                }
+            }
+            fclose($fp);
+            $msg = "CSV 발급 완료 — 신규 {$ins}건 · 중복skip {$skip}건 · 오류 {$err}건".($send_now ? " · 메일 성공 {$sent}건 · 실패 {$sfail}건" : "");
+        }
+    }
 }
 if (isset($_GET['toggle'])) { $no=(int)$_GET['toggle']; sql_query("UPDATE cb_unreal_2026_coupon SET cp_active = IF(cp_active='Y','N','Y') WHERE cp_no=$no"); $msg='상태를 변경했습니다.'; }
 if (isset($_GET['del']))    { $no=(int)$_GET['del']; sql_query("DELETE FROM cb_unreal_2026_coupon WHERE cp_no=$no"); $msg='삭제했습니다.'; }
@@ -202,7 +257,26 @@ include_once('./admin.head.php');
       return out; }
     document.getElementById('cp_code').value='UECPN-'+rnd(4)+'-'+rnd(4);
   }
+  function dlCouponTemplate(){
+    var csv='﻿코드(선택),수신자명,수신자이메일,할인율,만료일,한도,메모\n'
+          + ',홍길동,hong@example.com,30,2026-08-15,1,VIP 초청\n'
+          + ',김철수,kim@example.com,50,,1,파트너\n';
+    var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+    a.download='쿠폰_일괄발급_양식.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
   </script>
+
+  <div class="cp-card" style="border-left:4px solid #1a7f37">
+    <h2>CSV 일괄 발급 · 메일 발송</h2>
+    <form method="post" enctype="multipart/form-data" class="cp-form" onsubmit="return confirm('CSV의 각 행으로 쿠폰을 일괄 발급합니다.' + (document.getElementById('csv_send').checked ? '\n체크된 [발급 후 즉시 메일 발송]에 따라 각 수신자에게 실제 메일이 발송됩니다.' : '') + '\n계속할까요?');">
+      <input type="hidden" name="csv_mode" value="1">
+      <div><label>CSV 파일</label><input type="file" name="csv" accept=".csv" required></div>
+      <div style="align-self:flex-end"><label style="font-weight:400;font-size:12px;cursor:pointer"><input type="checkbox" id="csv_send" name="csv_send" value="1"> 발급 후 즉시 메일 발송</label></div>
+      <button type="submit" class="cp-btn" style="background:#1a7f37">CSV 일괄 발급</button>
+      <button type="button" onclick="dlCouponTemplate()" style="background:#e5e7eb;color:#111;border:0;padding:9px 16px;font-weight:700;border-radius:4px;cursor:pointer">양식 다운로드</button>
+    </form>
+    <p style="color:#888;font-size:12px;margin:8px 0 0">열: <b>코드(선택·빈칸이면 자동생성)</b>, 수신자명, 수신자이메일, 할인율(1~100), 만료일(YYYY-MM-DD·선택), 한도(선택·기본1), 메모(선택). 첫 줄이 헤더면 자동 스킵. 이메일 누락/할인율 없음=오류 스킵, 코드 중복=skip.</p>
+  </div>
 
   <div class="cp-card">
     <h2>발급 쿠폰 목록</h2>
