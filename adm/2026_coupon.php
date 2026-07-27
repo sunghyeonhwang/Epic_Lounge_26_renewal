@@ -71,15 +71,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cp_code'])) {
     $rname  = isset($_POST['cp_recipient_name']) ? trim($_POST['cp_recipient_name']) : '';
     $remail = isset($_POST['cp_recipient_email']) ? trim($_POST['cp_recipient_email']) : '';
     $rlang  = (isset($_POST['cp_lang']) && $_POST['cp_lang']==='en') ? 'en' : 'ko';
-    if ($code === '' || $pct <= 0) {
-        $msg = '쿠폰 코드와 1 이상의 할인율을 입력해 주세요.';
+    $qty    = isset($_POST['cp_qty']) ? (int)$_POST['cp_qty'] : 1; if ($qty < 1) $qty = 1; if ($qty > 200) $qty = 200;
+    $expSql = ($exp !== '') ? "'".sql_real_escape_string($exp)."'" : "NULL";
+    if ($pct <= 0) {
+        $msg = '1 이상의 할인율을 입력해 주세요.';
+    } else if ($qty > 1) {
+        // ── 다수 발급: 각각 난수 코드 자동생성 (수신자/즉시발송 미적용 — 특정 수신자 발송은 CSV 사용) ──
+        $made = 0; $fail = 0;
+        for ($i = 0; $i < $qty; $i++) {
+            $c = cp_gen_code();
+            $r = sql_query("INSERT INTO cb_unreal_2026_coupon (cp_code,cp_percent,cp_expire,cp_max,cp_memo,cp_recipient_name,cp_recipient_email,cp_lang,cp_reg)
+                VALUES ('".$c."', $pct, $expSql, $max, '".sql_real_escape_string($memo)."', '', '', '".$rlang."', now())");
+            if ($r) $made++; else $fail++;
+        }
+        $msg = "쿠폰 {$made}개를 일괄 발급했습니다 ({$pct}%".($max>0?" · 한도 {$max}":"").").".($fail?" (실패 {$fail})":"")." · 특정 수신자 지정 발송은 [CSV 일괄 발급]을 이용하세요.";
     } else {
-        $expSql = ($exp !== '') ? "'".sql_real_escape_string($exp)."'" : "NULL";
+        // ── 단일 발급: 코드 빈칸이면 자동생성 + 수신자/즉시발송 ──
+        if ($code === '') $code = cp_gen_code();
         $r = sql_query("INSERT INTO cb_unreal_2026_coupon (cp_code,cp_percent,cp_expire,cp_max,cp_memo,cp_recipient_name,cp_recipient_email,cp_lang,cp_reg)
             VALUES ('".sql_real_escape_string($code)."', $pct, $expSql, $max, '".sql_real_escape_string($memo)."', '".sql_real_escape_string($rname)."', '".sql_real_escape_string($remail)."', '".$rlang."', now())");
         if ($r) {
             $msg = "쿠폰 '$code' ($pct%) 발급되었습니다.";
-            // 발급 후 바로 발송
             if (isset($_POST['send_now']) && $remail !== '') {
                 $nid = sql_fetch("SELECT LAST_INSERT_ID() id"); $nid = $nid ? (int)$nid['id'] : 0;
                 if ($nid) { $sm = cp_send_mail($nid); $msg .= ' · 메일 '.$sm['msg']; }
@@ -236,12 +248,13 @@ include_once('./admin.head.php');
     <h2>쿠폰 발급</h2>
     <div class="cp-form">
       <div><label>쿠폰 코드</label>
-        <input type="text" name="cp_code" id="cp_code" placeholder="자동생성 권장" style="width:160px;text-transform:uppercase" required>
+        <input type="text" name="cp_code" id="cp_code" placeholder="빈칸이면 자동생성" style="width:160px;text-transform:uppercase">
         <button type="button" onclick="genCoupon()" title="추측 불가한 난수 코드 생성(권장)" style="padding:6px 10px;margin-left:4px;background:#334155;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px">🎲 자동생성</button>
       </div>
       <div><label>할인율(%)</label><input type="number" name="cp_percent" min="1" max="100" style="width:90px" required></div>
       <div><label>만료일(선택)</label><input type="date" name="cp_expire"></div>
       <div><label>사용 한도(0=무제한)</label><input type="number" name="cp_max" min="0" value="1" style="width:120px"></div>
+      <div><label>발급 수량</label><input type="number" name="cp_qty" value="1" min="1" max="200" style="width:80px" title="2 이상이면 난수 코드로 여러 개 일괄 발급"></div>
       <div><label>메모(선택)</label><input type="text" name="cp_memo" placeholder="설명" style="width:160px"></div>
       <div><label>수신자명(선택)</label><input type="text" name="cp_recipient_name" placeholder="홍길동" style="width:120px"></div>
       <div><label>수신자 이메일(선택)</label><input type="email" name="cp_recipient_email" placeholder="user@example.com" style="width:180px"></div>
@@ -249,7 +262,7 @@ include_once('./admin.head.php');
       <div style="align-self:flex-end"><label style="font-weight:400;font-size:12px;cursor:pointer"><input type="checkbox" name="send_now" value="1"> 발급 후 바로 메일 발송</label></div>
       <button type="submit" class="cp-btn">발급</button>
     </div>
-    <p style="color:#888;font-size:12px;margin:6px 0 0">※ 수신자 이메일을 넣으면 [발급 후 바로 발송] 또는 목록의 [메일 발송] 버튼으로 <b>등록 링크+쿠폰</b> 메일을 보냅니다. 등록은 개인(카드·본인인증) 페이지에서 쿠폰 자동 적용. <b>개인 쿠폰 노출 ON</b> 상태여야 실제 사용 가능(정상가 전환 후).</p>
+    <p style="color:#888;font-size:12px;margin:6px 0 0">※ <b>발급 수량 2 이상</b>이면 코드가 각각 <b>난수로 자동생성</b>되어 여러 개 일괄 발급됩니다(수신자·즉시발송 미적용 — 특정 수신자 발송은 아래 CSV). 수량 1이면 코드 직접 입력·수신자 지정·즉시 발송 가능.<br>※ 수신자 이메일을 넣으면 [발급 후 바로 발송] 또는 목록의 [메일 발송] 버튼으로 <b>등록 링크+쿠폰</b> 메일을 보냅니다. 등록은 개인(카드·본인인증) 페이지에서 쿠폰 자동 적용. <b>개인 쿠폰 노출 ON</b> 상태여야 실제 사용 가능(정상가 전환 후).</p>
   </form>
   <script>
   /* 쿠폰 코드 난수 생성 — 암호학적 난수(crypto) 우선, 혼동문자(O,0,I,1) 제외한 32자 알파벳. 형식 UECPN-XXXX-XXXX (32^8≈1.1조). */
