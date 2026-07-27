@@ -393,6 +393,30 @@ if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D
   </table>
   <?php endif; ?>
 <?php else: ?>
+  <?php
+    // 전체 단체 참석 구성 합계 — 취소 단체(pay_status='cancel')·취소 구성원(gm_status='C') 제외.
+    @include_once(__DIR__ . '/../unrealfest2026/_group_apply.php'); if (function_exists('ufs_group_apply_cols')) @ufs_group_apply_cols();
+    $t_all=0; $t_d1=0; $t_d2=0; $t_active=0; $t_grp=0; $t_paid=0;
+    $ts = sql_query("SELECT m.ticket, m.gm_status, g.pay_status FROM cb_unreal_2026_group_member m LEFT JOIN cb_unreal_2026_group g ON g.grp_no=m.grp_no WHERE g.pay_status<>'cancel'");
+    if ($ts) while ($c=$ts->fetch_assoc()) {
+      if (isset($c['gm_status']) && $c['gm_status']==='C') continue;
+      $t_active++;
+      if ($c['ticket']==='NORMAL_ALL') $t_all++;
+      else if ($c['ticket']==='NORMAL_20') $t_d1++;
+      else if ($c['ticket']==='NORMAL_21') $t_d2++;
+    }
+    $gs = sql_query("SELECT pay_status, COUNT(*) c FROM cb_unreal_2026_group WHERE pay_status<>'cancel' GROUP BY pay_status");
+    if ($gs) while ($gr=$gs->fetch_assoc()) { $t_grp += (int)$gr['c']; if ($gr['pay_status']==='paid') $t_paid=(int)$gr['c']; }
+    $t_day1 = $t_all + $t_d1; $t_day2 = $t_all + $t_d2;
+  ?>
+  <div style="max-width:820px;margin:0 0 12px;padding:10px 14px;background:#f7fbfc;border:1px solid #cbe9ee;border-radius:6px;font-size:13px;color:#333">
+    <b>전체 참석 구성</b> (취소 제외) ·
+    양일권 <b><?= $t_all ?></b>명 ·
+    1일권(8월 20일) <b><?= $t_d1 ?></b>명 ·
+    1일권(8월 21일) <b><?= $t_d2 ?></b>명
+    <span style="color:#888"> · 유효 <?= $t_active ?>명 / 단체 <?= $t_grp ?>건(결제완료 <?= $t_paid ?>)</span>
+    <br><span style="color:#666;font-size:12px">일자별 실참석(양일권 포함) — 8월 20일 <b><?= $t_day1 ?></b>명 · 8월 21일 <b><?= $t_day2 ?></b>명</span>
+  </div>
   <div style="margin:0 0 12px;display:flex;gap:8px;flex-wrap:wrap">
     <a href="?export=members" style="display:inline-block;background:#1a7f37;color:#fff;padding:7px 16px;border-radius:4px;text-decoration:none;font-weight:700">⬇ 구성원 전체 CSV</a>
     <a href="?export=groups" style="display:inline-block;background:#2d7ff9;color:#fff;padding:7px 16px;border-radius:4px;text-decoration:none;font-weight:700">⬇ 단체 목록 CSV</a>
