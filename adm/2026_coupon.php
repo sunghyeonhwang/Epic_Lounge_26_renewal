@@ -167,6 +167,34 @@ if (isset($_GET['feature'])) {
 $__ic = sql_fetch("SELECT cfg_val FROM cb_unreal_2026_config WHERE cfg_key='indiv_coupon'");
 $indiv_on = ($__ic && trim((string)$__ic['cfg_val']) === 'on');
 
+// ── 쿠폰 목록 CSV(엑셀) 다운로드 — HTML 출력 전 스트리밍 ──
+if (isset($_GET['export'])) {
+    $csv_safe = function($v){ $s=(string)$v; if ($s!=='' && strpos("=+-@\t\r", $s[0])!==false) return "'".$s; return $s; };
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="ufs2026_coupons_'.date('Ymd').'.csv"');
+    $out = fopen('php://output', 'w');
+    echo "\xEF\xBB\xBF"; // BOM(엑셀 한글)
+    fputcsv($out, array('코드','할인율','만료일','한도','사용','상태','메모','수신자명','수신자이메일','언어','발송상태','발송시각','등록링크','발급일'));
+    $rs = sql_query("SELECT * FROM cb_unreal_2026_coupon ORDER BY cp_no DESC");
+    if ($rs) while ($c = $rs->fetch_assoc()) {
+        $link = 'https://epiclounge.co.kr/unrealfest2026/ticket-all.php?coupon='.$c['cp_code'];
+        $sst = isset($c['cp_status']) ? $c['cp_status'] : '';
+        $sstl = ($sst==='sent'?'성공':($sst==='fail'?'실패':''));
+        fputcsv($out, array_map($csv_safe, array(
+            $c['cp_code'], (int)$c['cp_percent'].'%',
+            ($c['cp_expire'] && $c['cp_expire']!=='0000-00-00' ? $c['cp_expire'] : ''),
+            ((int)$c['cp_max']>0 ? (int)$c['cp_max'] : '무제한'), (int)$c['cp_used'],
+            ($c['cp_active']==='Y'?'사용':'중지'), $c['cp_memo'],
+            (isset($c['cp_recipient_name'])?$c['cp_recipient_name']:''),
+            (isset($c['cp_recipient_email'])?$c['cp_recipient_email']:''),
+            (isset($c['cp_lang'])?$c['cp_lang']:'ko'), $sstl,
+            (isset($c['cp_sent_at'])?$c['cp_sent_at']:''), $link, $c['cp_reg']
+        )));
+    }
+    fclose($out);
+    exit;
+}
+
 include_once('./admin.head.php');
 ?>
 <style>
@@ -281,6 +309,13 @@ include_once('./admin.head.php');
     var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
     a.download='쿠폰_일괄발급_양식.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
   }
+  function cpCopyFallback(text){ var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){} document.body.removeChild(ta); }
+  function cpCopy(btn, text){
+    var o=btn.textContent;
+    function done(){ btn.textContent='복사됨'; btn.style.background='#d4f4dd'; setTimeout(function(){ btn.textContent=o; btn.style.background='#f5f5f5'; }, 1200); }
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done, function(){ cpCopyFallback(text); done(); }); }
+    else { cpCopyFallback(text); done(); }
+  }
   </script>
 
   <div class="cp-card">
@@ -296,7 +331,7 @@ include_once('./admin.head.php');
   </div>
 
   <div class="cp-card">
-    <h2>발급 쿠폰 목록</h2>
+    <h2>발급 쿠폰 목록 <a href="?export=1" style="font-size:12px;font-weight:700;background:#1a7f37;color:#fff;padding:5px 12px;border-radius:4px;text-decoration:none;margin-left:8px">⬇ CSV 다운로드</a></h2>
     <table class="cp-tbl">
       <thead><tr><th>코드</th><th>할인율</th><th>만료일</th><th>사용/한도</th><th>사용 내역</th><th>상태</th><th>메모</th><th>수신/발송</th><th>관리</th></tr></thead>
       <tbody>
@@ -328,7 +363,8 @@ include_once('./admin.head.php');
         }
         $usedGroups = $usedList ? implode('<br>', $usedList) : '-'; ?>
         <tr class="<?= $off?'cp-off':'' ?>">
-          <td><b><a href="?usage=<?= rawurlencode($r['cp_code']) ?>" title="이 쿠폰 사용 등록 내역 보기"><?= cp_e($r['cp_code']) ?></a></b></td>
+          <td style="white-space:nowrap"><b><a href="?usage=<?= rawurlencode($r['cp_code']) ?>" title="이 쿠폰 사용 등록 내역 보기"><?= cp_e($r['cp_code']) ?></a></b>
+            <button type="button" onclick="cpCopy(this,'<?= cp_e($r['cp_code']) ?>')" title="쿠폰 코드 복사" style="margin-left:6px;padding:2px 7px;font-size:11px;border:1px solid #ccc;background:#f5f5f5;border-radius:3px;cursor:pointer">복사</button></td>
           <td><?= (int)$r['cp_percent'] ?>%</td>
           <td><?= cp_e($r['cp_expire'] && $r['cp_expire']!=='0000-00-00' ? $r['cp_expire'] : '-') ?></td>
           <td><?= (int)$r['cp_used'] ?> / <?= ((int)$r['cp_max']>0 ? (int)$r['cp_max'] : '무제한') ?></td>
