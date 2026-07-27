@@ -315,6 +315,29 @@ if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D
     <div style="max-width:700px;margin:0 0 14px;padding:10px 14px;background:#fff8e1;border:1px solid #f0c000;border-radius:6px;font-size:13px">현재 판매 단계와 맞지 않아 변경할 수 없습니다. (얼리버드 신청 단체는 얼리버드 기간에만, 일반판매분은 종료 후에만 변경 가능)</div>
     <?php endif; ?>
   <?php endif; ?>
+  <?php
+    // 참석일 구성 집계 — 양일권/1일권(Day1·Day2). 취소 구성원 제외.
+    $cnt_all=0; $cnt_d1=0; $cnt_d2=0; $cnt_active=0; $cnt_cancel=0;
+    $cs = sql_query("SELECT ticket, gm_status FROM cb_unreal_2026_group_member WHERE grp_no=".$detail);
+    if ($cs) while ($c=$cs->fetch_assoc()) {
+      if (isset($c['gm_status']) && $c['gm_status']==='C') { $cnt_cancel++; continue; }
+      $cnt_active++;
+      if ($c['ticket']==='NORMAL_ALL') $cnt_all++;
+      else if ($c['ticket']==='NORMAL_20') $cnt_d1++;
+      else if ($c['ticket']==='NORMAL_21') $cnt_d2++;
+    }
+    // 일자별 실참석 인원(양일권은 양일 모두 참석)
+    $day1_att = $cnt_all + $cnt_d1;
+    $day2_att = $cnt_all + $cnt_d2;
+  ?>
+  <div style="max-width:820px;margin:0 0 12px;padding:10px 14px;background:#f7fbfc;border:1px solid #cbe9ee;border-radius:6px;font-size:13px;color:#333">
+    <b>참석 구성</b> ·
+    양일권 <b><?= $cnt_all ?></b>명 ·
+    1일권(8월 20일) <b><?= $cnt_d1 ?></b>명 ·
+    1일권(8월 21일) <b><?= $cnt_d2 ?></b>명
+    <span style="color:#888"> · 유효 <?= $cnt_active ?>명<?= $cnt_cancel?' (취소 '.$cnt_cancel.'명 제외)':'' ?></span>
+    <br><span style="color:#666;font-size:12px">일자별 실참석(양일권 포함) — 8월 20일 <b><?= $day1_att ?></b>명 · 8월 21일 <b><?= $day2_att ?></b>명</span>
+  </div>
   <table>
     <thead><tr><th>#</th><th>구분</th><th>이름</th><th>이메일</th><th>연락처</th><th>부서</th><th>직무</th><th>관심분야</th><th>티켓</th><th>Day1</th><th>Day2</th><th>티셔츠</th><th class="r">금액</th><th>문자(QR)</th><th>관리</th></tr></thead>
     <tbody>
