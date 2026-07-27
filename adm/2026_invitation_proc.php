@@ -1,5 +1,5 @@
 <?php
-/* Unreal Fest Seoul 2026 — 초청장 발송 처리 (2026_invitation_proc.php) [M5]
+/* Unreal Fest Seoul 2026 — 초대장 발송 처리 (2026_invitation_proc.php) [M5]
  * 코드 발급(수동/CSV/로스터 sync)·활성토글·삭제·내보내기. cb_unreal_2026_speaker_code.
  * 공개 등록: /v3/unrealfest2026/ticket-invite.php?code=. PHP 7.0 / Gnuboard.
  */
@@ -16,7 +16,7 @@ auth_check_menu($auth, $sub_menu, 'r');
 define('INV_PUBLIC', 'https://epiclounge.co.kr/v3/unrealfest2026/ticket-invite.php');
 define('INV_LIST',   '/v3/adm/2026_invitation.php');
 
-/* 초청장 전용 CSRF 토큰 — 그누보드 일회용 ss_admin_token의 취약점 회피.
+/* 초대장 전용 CSRF 토큰 — 그누보드 일회용 ss_admin_token의 취약점 회피.
  * ss_admin_token은 (1) check_admin_token()이 1회 소비하고 (2) 모든 관리자 페이지의 get_admin_token()이 덮어써
  * 목록의 여러 액션이 토큰 하나를 공유하면 액션1회·메뉴이동·새탭·뒤로가기 시 전부 무효화된다.
  * 커스텀 세션키(set_session) 방식도 set_session()의 최초호출 session_regenerate_id 및 페이지 캐시 때문에
@@ -114,7 +114,7 @@ function inv_issue($d) {
 
 inv_schema();
 
-// 초청장 메일 1건 발송 + sc_sent_at 기록(공개 repo 헬퍼 재사용). 반환: array('ok'|'error')
+// 초대장 메일 1건 발송 + sc_sent_at 기록(공개 repo 헬퍼 재사용). 반환: array('ok'|'error')
 function inv_send_row($r) {
     if (!function_exists('ufs_invite_mail') || !function_exists('ufs_resend_send')) return array('ok'=>false,'error'=>'메일 모듈 미로드');
     if (trim($r['sc_email']) === '') return array('ok'=>false,'error'=>'이메일 없음');
@@ -142,11 +142,11 @@ if ($mode === 'issue') {
     ));
     if ($r==='err') alert('이메일을 확인해 주세요.', INV_LIST);
     if ($r==='skip') alert('이미 활성 코드가 있는 이메일입니다.', INV_LIST);
-    alert('초청 코드를 발급했습니다.', INV_LIST);
+    alert('초대 코드를 발급했습니다.', INV_LIST);
     exit;
 }
 
-// ── CSV 일괄 발급 ── (헤더: 초청인,대상명,이메일,연락처,소속,언어,매수,할인율,메모)
+// ── CSV 일괄 발급 ── (헤더: 초대인,대상명,이메일,연락처,소속,언어,매수,할인율,메모)
 if ($mode === 'csv') {
     inv_csrf_check();
     if (!isset($_FILES['csv']) || $_FILES['csv']['error'] !== 0) alert('CSV 파일을 선택해 주세요.', INV_LIST);
@@ -233,7 +233,7 @@ if ($mode2 === 'toggle') {
     goto_url(INV_LIST);
 }
 
-// ── 초청장 개별 발송/재발송 (Resend) ──
+// ── 초대장 개별 발송/재발송 (Resend) ──
 if ($mode2 === 'send') {
     inv_csrf_check();
     require_once __DIR__ . '/../unrealfest2026/_resend.php';
@@ -243,7 +243,7 @@ if ($mode2 === 'send') {
     if (!$r) alert('코드를 찾을 수 없습니다.', INV_LIST);
     if ($r['sc_active'] !== 'Y') alert('비활성 코드는 발송할 수 없습니다. 먼저 활성화하세요.', INV_LIST);
     $res = inv_send_row($r);
-    if (!empty($res['ok'])) alert('초청장을 발송했습니다. ('.$r['sc_email'].')', INV_LIST);
+    if (!empty($res['ok'])) alert('초대장을 발송했습니다. ('.$r['sc_email'].')', INV_LIST);
     alert('발송 실패: '.(isset($res['error']) ? $res['error'] : '오류'), INV_LIST);
 }
 
@@ -259,7 +259,7 @@ if ($mode2 === 'del') {
     exit;
 }
 
-// ── 초청장 이메일 미리보기(발송되는 실제 HTML을 브라우저 렌더) ──
+// ── 초대장 이메일 미리보기(발송되는 실제 HTML을 브라우저 렌더) ──
 if ($mode2 === 'preview') {
     require_once __DIR__ . '/../unrealfest2026/_invite_mail.php';
     $no = (int)$_GET['no'];
@@ -269,7 +269,7 @@ if ($mode2 === 'preview') {
     $m = ufs_invite_mail($r, ($lang === 'en' ? 'en' : 'ko'));
     header('Content-Type: text/html; charset=UTF-8');
     echo '<div style="background:#e5e7eb;padding:8px 14px;font:12px/1.5 sans-serif;color:#374151;border-bottom:1px solid #d1d5db;">'
-        .'초청장 이메일 미리보기 — 코드 <b>'.htmlspecialchars($r['sc_code']).'</b> · 수신 '.htmlspecialchars($r['sc_email'])
+        .'초대장 이메일 미리보기 — 코드 <b>'.htmlspecialchars($r['sc_code']).'</b> · 수신 '.htmlspecialchars($r['sc_email'])
         .' · 제목: <b>'.htmlspecialchars($m['subject']).'</b> · '
         .'<a href="?mode2=preview&no='.$no.'&lang=ko">KO</a> | <a href="?mode2=preview&no='.$no.'&lang=en">EN</a></div>';
     echo $m['html'];
@@ -286,7 +286,7 @@ if ($mode2 === 'export') {
     header('Content-Disposition: attachment; filename=ufs2026_invitation_codes.csv');
     echo "\xEF\xBB\xBF"; // BOM(엑셀 한글)
     $out = fopen('php://output', 'w');
-    fputcsv($out, array('코드','링크','초청인','대상명','이메일','연락처','소속','언어','할인율','매수','사용','활성','발송시각','상태','사용시작','사용종료','메모','발급일'));
+    fputcsv($out, array('코드','링크','초대인','대상명','이메일','연락처','소속','언어','할인율','매수','사용','활성','발송시각','상태','사용시작','사용종료','메모','발급일'));
     if ($rs) while ($r = sql_fetch_array($rs)) {
         $link = INV_PUBLIC.'?code='.$r['sc_code'].'&lang='.$r['sc_lang'];
         fputcsv($out, array_map($csv_safe, array($r['sc_code'],$link,$r['sc_inviter'],$r['sc_name'],$r['sc_email'],$r['sc_phone'],$r['sc_company'],

@@ -1,6 +1,6 @@
 <?php
-/* Unreal Fest Seoul 2026 — 초청장 발송 (2026_invitation.php) [M5]
- * 초청 코드 발급(수동/CSV/로스터 sync)·현황·활성/삭제. 처리=2026_invitation_proc.php.
+/* Unreal Fest Seoul 2026 — 초대장 발송 (2026_invitation.php) [M5]
+ * 초대 코드 발급(수동/CSV/로스터 sync)·현황·활성/삭제. 처리=2026_invitation_proc.php.
  * 공개 등록: /v3/unrealfest2026/ticket-invite.php?code=. 이메일 실발송(Resend)은 M6.
  */
 $sub_menu = "700370";
@@ -24,7 +24,7 @@ sql_query("CREATE TABLE IF NOT EXISTS cb_unreal_2026_speaker_code (
 @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_valid_from DATE DEFAULT NULL");
 @sql_query("ALTER TABLE cb_unreal_2026_speaker_code ADD COLUMN sc_valid_until DATE DEFAULT NULL");
 
-/* 초청장 전용 CSRF 토큰(proc의 inv_csrf_check와 짝). 그누보드 일회용 ss_admin_token 대신, 로그인 시 고정되는
+/* 초대장 전용 CSRF 토큰(proc의 inv_csrf_check와 짝). 그누보드 일회용 ss_admin_token 대신, 로그인 시 고정되는
  * ss_mb_key에서 파생한 토큰을 써서 세션 쓰기 없이 페이지↔proc에서 동일 값이 재계산되게 한다(액션 반복·메뉴이동·
  * 새 탭·뒤로가기·페이지 캐시에도 안정). 값은 서버 세션 비밀의 해시라 공격자가 계산 불가(CSRF 방어 유지). */
 if (!function_exists('inv_csrf_token')) {
@@ -62,7 +62,7 @@ $cntMap = array();
 $cr = sql_query("SELECT apply_speaker_code c, COUNT(*) n FROM cb_unreal_2026_event2_apply WHERE apply_speaker_code<>'' AND apply_pay_status<>0 GROUP BY apply_speaker_code");
 if ($cr) while ($x = sql_fetch_array($cr)) $cntMap[$x['c']] = (int)$x['n'];
 
-$g5['title'] = '2026 초청장 발송';
+$g5['title'] = '2026 초대장 발송';
 include_once('./admin.head.php');
 ?>
 <link rel="stylesheet" type="text/css" href="https://epiclounge.co.kr/cib/assets/css/bootstrap.min.css" />
@@ -85,8 +85,8 @@ include_once('./admin.head.php');
   code.copy{cursor:pointer}
 </style>
 
-<h1>2026 초청장 발송</h1>
-<p style="color:#6b7280">초청 코드를 발급하면 <b>공개 등록 링크</b>(<?php echo INV_PUBLIC; ?>?code=코드)로 스피커·스폰서·VIP가 무인증 등록합니다. 무료(100%)는 즉시완료, 부분할인(50~99%)은 카드결제. 초청장 이메일은 <b>Resend</b>로 발송(from noreply@update.epiclounge.co.kr).</p>
+<h1>2026 초대장 발송</h1>
+<p style="color:#6b7280">초대 코드를 발급하면 <b>공개 등록 링크</b>(<?php echo INV_PUBLIC; ?>?code=코드)로 스피커·스폰서·VIP가 무인증 등록합니다. 무료(100%)는 즉시완료, 부분할인(50~99%)은 카드결제. 초대장 이메일은 <b>Resend</b>로 발송(from noreply@update.epiclounge.co.kr).</p>
 
 <div class="vm-summary">
   <div class="vm-summary-item"><h3>전체 코드</h3><p class="vm-summary-number"><?php echo number_format((int)$st_total['c']); ?></p></div>
@@ -108,7 +108,7 @@ include_once('./admin.head.php');
       <div class="fld"><label>언어</label><select name="sc_lang"><option value="ko">한국어</option><option value="en">English</option></select></div>
       <div class="fld"><label>매수</label><input type="number" name="sc_quota" value="2" min="1" max="10" style="width:60px"></div>
       <div class="fld"><label>할인율(%)</label><select name="sc_discount"><option>100</option><option>90</option><option>80</option><option>70</option><option>60</option><option>50</option></select></div>
-      <div class="fld"><label>초청인</label><input type="text" name="sc_inviter" value="에픽게임즈" style="width:120px"></div>
+      <div class="fld"><label>초대인</label><input type="text" name="sc_inviter" value="에픽게임즈" style="width:120px"></div>
       <div class="fld"><label>메모</label><input type="text" name="sc_memo" style="width:120px"></div>
       <div class="fld"><label>사용 시작일</label><input type="date" name="sc_valid_from" style="width:140px"></div>
       <div class="fld"><label>사용 종료일</label><input type="date" name="sc_valid_until" style="width:140px"></div>
@@ -137,7 +137,7 @@ include_once('./admin.head.php');
     <div style="align-self:flex-end">
       <a href="2026_invitation_proc.php?mode2=export&token=<?php echo $token; ?>" class="btn btn-info btn-sm"><i class="fa fa-download"></i> 코드 내보내기(CSV)</a>
     </div>
-    <form method="post" action="2026_invitation_proc.php" onsubmit="return confirm('미발송 상태인 활성 코드 전체에 초청장을 발송할까요?')" style="align-self:flex-end">
+    <form method="post" action="2026_invitation_proc.php" onsubmit="return confirm('미발송 상태인 활성 코드 전체에 초대장을 발송할까요?')" style="align-self:flex-end">
       <input type="hidden" name="token" value="<?php echo $token; ?>">
       <input type="hidden" name="mode" value="sendall">
       <button type="submit" class="btn btn-primary btn-sm"><i class="fa fa-paper-plane"></i> 미발송 일괄 발송</button>
@@ -151,12 +151,12 @@ include_once('./admin.head.php');
       <button type="submit" class="btn btn-default btn-sm">일괄 적용</button>
     </form>
   </div>
-  <p style="margin:.5rem 0 0;color:#9ca3af;font-size:11px">CSV 헤더: 초청인,대상명,이메일,연락처,소속,언어,매수,할인율,메모,<b>시작일,종료일</b>(YYYY-MM-DD, 선택) · 로스터 sync는 <b>내부(internal) 스피커만</b> 대상입니다(외부/키노트 제외). 사용기간 빈칸=제한없음.</p>
+  <p style="margin:.5rem 0 0;color:#9ca3af;font-size:11px">CSV 헤더: 초대인,대상명,이메일,연락처,소속,언어,매수,할인율,메모,<b>시작일,종료일</b>(YYYY-MM-DD, 선택) · 로스터 sync는 <b>내부(internal) 스피커만</b> 대상입니다(외부/키노트 제외). 사용기간 빈칸=제한없음.</p>
 </div>
 
 <!-- 검색 -->
 <form name="fsearch" method="get" class="inv-panel" style="display:flex;gap:.5rem;align-items:center">
-  <input type="text" name="stx" value="<?php echo htmlspecialchars($stx); ?>" placeholder="코드·이름·이메일·소속·초청인" style="padding:6px 8px;border:1px solid #ccc;border-radius:4px;width:280px">
+  <input type="text" name="stx" value="<?php echo htmlspecialchars($stx); ?>" placeholder="코드·이름·이메일·소속·초대인" style="padding:6px 8px;border:1px solid #ccc;border-radius:4px;width:280px">
   <input type="submit" value="검색" class="btn btn-default btn-sm">
   <a href="2026_invitation.php" class="btn btn-default btn-sm">전체</a>
   <span style="color:#6b7280">검색결과 <?php echo number_format($total_count); ?>건</span>
@@ -164,10 +164,10 @@ include_once('./admin.head.php');
 
 <div class="tbl_head01 tbl_wrap">
 <table class="table table-bordered table-hover" style="background:#fff">
-  <caption>초청 코드 목록</caption>
+  <caption>초대 코드 목록</caption>
   <thead>
     <tr style="background:#f8f9fa">
-      <th>코드</th><th>대상</th><th>언어</th><th>할인</th><th>매수<br>(사용/전체)</th><th>등록자</th><th>초청인</th><th>상태</th><th>발송</th><th>관리</th>
+      <th>코드</th><th>대상</th><th>언어</th><th>할인</th><th>매수<br>(사용/전체)</th><th>등록자</th><th>초대인</th><th>상태</th><th>발송</th><th>관리</th>
     </tr>
   </thead>
   <tbody>
@@ -198,7 +198,7 @@ include_once('./admin.head.php');
           <a href="2026_invitation_proc.php?mode2=toggle&no=<?php echo (int)$r['sc_no']; ?>&token=<?php echo $token; ?>" class="btn btn-default btn-xs2"><?php echo $active?'중지':'활성'; ?></a></td>
       <td>
         <?php if (trim($r['sc_email'])!==''): ?>
-        <a href="2026_invitation_proc.php?mode2=send&no=<?php echo (int)$r['sc_no']; ?>&token=<?php echo $token; ?>" class="btn btn-<?php echo $r['sc_sent_at']?'default':'primary'; ?> btn-xs2" onclick="return confirm('<?php echo htmlspecialchars($r['sc_email'],ENT_QUOTES); ?> 로 초청장을 발송할까요?')"><?php echo $r['sc_sent_at']?'재발송':'발송'; ?></a>
+        <a href="2026_invitation_proc.php?mode2=send&no=<?php echo (int)$r['sc_no']; ?>&token=<?php echo $token; ?>" class="btn btn-<?php echo $r['sc_sent_at']?'default':'primary'; ?> btn-xs2" onclick="return confirm('<?php echo htmlspecialchars($r['sc_email'],ENT_QUOTES); ?> 로 초대장을 발송할까요?')"><?php echo $r['sc_sent_at']?'재발송':'발송'; ?></a>
         <?php else: ?><span class="badge-off">이메일없음</span><?php endif; ?>
         <a href="2026_invitation_proc.php?mode2=preview&no=<?php echo (int)$r['sc_no']; ?>" target="_blank" class="btn btn-default btn-xs2" title="발송되는 이메일 미리보기">미리보기</a><br>
         <?php
@@ -238,9 +238,9 @@ function cpy(t){
   else { var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert('링크 복사됨:\n'+t); }
 }
 function dlTemplate(){
-  var csv='﻿초청인,대상명,이메일,연락처,소속,언어,매수,할인율,메모,시작일,종료일\n에픽게임즈,홍길동,hong@example.com,01012345678,에픽게임즈,ko,2,100,예시,2026-07-24,2026-08-19\n';
+  var csv='﻿초대인,대상명,이메일,연락처,소속,언어,매수,할인율,메모,시작일,종료일\n에픽게임즈,홍길동,hong@example.com,01012345678,에픽게임즈,ko,2,100,예시,2026-07-24,2026-08-19\n';
   var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download='초청리스트_template.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  a.download='초대리스트_template.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 </script>
 

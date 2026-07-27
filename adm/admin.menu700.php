@@ -14,7 +14,7 @@ $menu['menu700'] = array(
     array('700365', '단체 할인 설정', '' . G5_ADMIN_URL . '/2026_group_config.php', '2026_group_config'),
     array('700366', '쿠폰 관리', '' . G5_ADMIN_URL . '/2026_coupon.php', '2026_coupon'),
     array('700367', '단체 등록 현황', '' . G5_ADMIN_URL . '/2026_group_list.php', '2026_group_list'),
-    array('700370', '초청장 발송', '' . G5_ADMIN_URL . '/2026_invitation.php', '2026_invitation'),
+    array('700370', '초대장 발송', '' . G5_ADMIN_URL . '/2026_invitation.php', '2026_invitation'),
 
     // 시작해요 언리얼 26
     array('700400', '시작해요 언리얼 26', '' . G5_ADMIN_URL . '/2026_start_unreal_register_list.php', '2026_start_unreal_register_list', 1),
