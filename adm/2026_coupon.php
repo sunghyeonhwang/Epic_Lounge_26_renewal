@@ -22,6 +22,29 @@ sql_query("CREATE TABLE IF NOT EXISTS cb_unreal_2026_coupon (
   cp_reg DATETIME DEFAULT NULL,
   PRIMARY KEY (cp_no), UNIQUE KEY uq_code (cp_code)
 ) DEFAULT CHARSET=utf8");
+// 수신자/발송 이력 컬럼 보강 (쿠폰 메일 발송용)
+@sql_query("ALTER TABLE cb_unreal_2026_coupon ADD COLUMN IF NOT EXISTS cp_recipient_name VARCHAR(100) NOT NULL DEFAULT ''");
+@sql_query("ALTER TABLE cb_unreal_2026_coupon ADD COLUMN IF NOT EXISTS cp_recipient_email VARCHAR(200) NOT NULL DEFAULT ''");
+@sql_query("ALTER TABLE cb_unreal_2026_coupon ADD COLUMN IF NOT EXISTS cp_sent_at DATETIME DEFAULT NULL");
+@sql_query("ALTER TABLE cb_unreal_2026_coupon ADD COLUMN IF NOT EXISTS cp_status VARCHAR(20) NOT NULL DEFAULT ''");
+
+// 쿠폰 메일 발송 모듈(공개 repo 재사용) + Resend
+@include_once(__DIR__ . '/../unrealfest2026/_coupon_mail.php');
+@include_once(__DIR__ . '/../unrealfest2026/_resend.php');
+
+/* 쿠폰 1건 메일 발송 + 발송상태 기록. 반환 array(ok,msg,to). */
+function cp_send_mail($cp_no) {
+    if (!function_exists('ufs_coupon_mail') || !function_exists('ufs_resend_send')) return array('ok'=>false,'msg'=>'메일 모듈 미로드');
+    $r = sql_fetch("SELECT * FROM cb_unreal_2026_coupon WHERE cp_no=".(int)$cp_no);
+    if (!$r) return array('ok'=>false,'msg'=>'쿠폰을 찾을 수 없습니다.');
+    $to = trim($r['cp_recipient_email']);
+    if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) return array('ok'=>false,'msg'=>'수신자 이메일이 없거나 형식이 올바르지 않습니다.');
+    $m = ufs_coupon_mail($r, 'ko');
+    $res = ufs_resend_send($to, $m['subject'], $m['html'], '', $m['text']);
+    $ok = !empty($res['ok']);
+    sql_query("UPDATE cb_unreal_2026_coupon SET cp_sent_at=now(), cp_status='".($ok?'sent':'fail')."' WHERE cp_no=".(int)$cp_no);
+    return array('ok'=>$ok, 'to'=>$to, 'msg'=>($ok ? ('발송 성공 ('.$to.')') : ('발송 실패: '.(isset($res['error'])?$res['error']:'오류'))));
+}
 
 function cp_e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 $msg = '';
@@ -32,14 +55,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cp_code'])) {
     $exp  = trim($_POST['cp_expire']);
     $max  = (int)$_POST['cp_max']; if ($max < 0) $max = 0;
     $memo = trim($_POST['cp_memo']);
+    $rname  = isset($_POST['cp_recipient_name']) ? trim($_POST['cp_recipient_name']) : '';
+    $remail = isset($_POST['cp_recipient_email']) ? trim($_POST['cp_recipient_email']) : '';
     if ($code === '' || $pct <= 0) {
         $msg = '쿠폰 코드와 1 이상의 할인율을 입력해 주세요.';
     } else {
         $expSql = ($exp !== '') ? "'".sql_real_escape_string($exp)."'" : "NULL";
-        $r = sql_query("INSERT INTO cb_unreal_2026_coupon (cp_code,cp_percent,cp_expire,cp_max,cp_memo,cp_reg)
-            VALUES ('".sql_real_escape_string($code)."', $pct, $expSql, $max, '".sql_real_escape_string($memo)."', now())");
-        $msg = $r ? "쿠폰 '$code' ($pct%) 발급되었습니다." : '발급 실패(중복 코드일 수 있음).';
+        $r = sql_query("INSERT INTO cb_unreal_2026_coupon (cp_code,cp_percent,cp_expire,cp_max,cp_memo,cp_recipient_name,cp_recipient_email,cp_reg)
+            VALUES ('".sql_real_escape_string($code)."', $pct, $expSql, $max, '".sql_real_escape_string($memo)."', '".sql_real_escape_string($rname)."', '".sql_real_escape_string($remail)."', now())");
+        if ($r) {
+            $msg = "쿠폰 '$code' ($pct%) 발급되었습니다.";
+            // 발급 후 바로 발송
+            if (isset($_POST['send_now']) && $remail !== '') {
+                $nid = sql_fetch("SELECT LAST_INSERT_ID() id"); $nid = $nid ? (int)$nid['id'] : 0;
+                if ($nid) { $sm = cp_send_mail($nid); $msg .= ' · 메일 '.$sm['msg']; }
+            } else if ($remail === '' && isset($_POST['send_now'])) {
+                $msg .= ' · (수신자 이메일이 없어 발송 생략)';
+            }
+        } else {
+            $msg = '발급 실패(중복 코드일 수 있음).';
+        }
     }
+}
+// ── 쿠폰 메일 발송/재발송 ──
+if (isset($_GET['send_mail'])) {
+    $sm = cp_send_mail((int)$_GET['send_mail']);
+    $msg = '쿠폰 메일: '.$sm['msg'];
 }
 if (isset($_GET['toggle'])) { $no=(int)$_GET['toggle']; sql_query("UPDATE cb_unreal_2026_coupon SET cp_active = IF(cp_active='Y','N','Y') WHERE cp_no=$no"); $msg='상태를 변경했습니다.'; }
 if (isset($_GET['del']))    { $no=(int)$_GET['del']; sql_query("DELETE FROM cb_unreal_2026_coupon WHERE cp_no=$no"); $msg='삭제했습니다.'; }
@@ -144,8 +185,12 @@ include_once('./admin.head.php');
       <div><label>만료일(선택)</label><input type="date" name="cp_expire"></div>
       <div><label>사용 한도(0=무제한)</label><input type="number" name="cp_max" min="0" value="1" style="width:120px"></div>
       <div><label>메모(선택)</label><input type="text" name="cp_memo" placeholder="설명" style="width:160px"></div>
+      <div><label>수신자명(선택)</label><input type="text" name="cp_recipient_name" placeholder="홍길동" style="width:120px"></div>
+      <div><label>수신자 이메일(선택)</label><input type="email" name="cp_recipient_email" placeholder="user@example.com" style="width:180px"></div>
+      <div style="align-self:flex-end"><label style="font-weight:400;font-size:12px;cursor:pointer"><input type="checkbox" name="send_now" value="1"> 발급 후 바로 메일 발송</label></div>
       <button type="submit" class="cp-btn">발급</button>
     </div>
+    <p style="color:#888;font-size:12px;margin:6px 0 0">※ 수신자 이메일을 넣으면 [발급 후 바로 발송] 또는 목록의 [메일 발송] 버튼으로 <b>등록 링크+쿠폰</b> 메일을 보냅니다. 등록은 개인(카드·본인인증) 페이지에서 쿠폰 자동 적용. <b>개인 쿠폰 노출 ON</b> 상태여야 실제 사용 가능(정상가 전환 후).</p>
   </form>
   <script>
   /* 쿠폰 코드 난수 생성 — 암호학적 난수(crypto) 우선, 혼동문자(O,0,I,1) 제외한 32자 알파벳. 형식 UECPN-XXXX-XXXX (32^8≈1.1조). */
@@ -162,7 +207,7 @@ include_once('./admin.head.php');
   <div class="cp-card">
     <h2>발급 쿠폰 목록</h2>
     <table class="cp-tbl">
-      <thead><tr><th>코드</th><th>할인율</th><th>만료일</th><th>사용/한도</th><th>사용 내역</th><th>상태</th><th>메모</th><th>관리</th></tr></thead>
+      <thead><tr><th>코드</th><th>할인율</th><th>만료일</th><th>사용/한도</th><th>사용 내역</th><th>상태</th><th>메모</th><th>수신/발송</th><th>관리</th></tr></thead>
       <tbody>
       <?php
       $grpChk = @sql_query("SHOW TABLES LIKE 'cb_unreal_2026_group'"); $hasGrp = ($grpChk && $grpChk->num_rows);
@@ -199,13 +244,23 @@ include_once('./admin.head.php');
           <td style="text-align:left;font-size:12px"><?= $usedGroups ?></td>
           <td><?= $off ? '중지' : '사용' ?></td>
           <td><?= cp_e($r['cp_memo']) ?></td>
+          <td style="font-size:12px;text-align:left">
+            <?php $rem = trim($r['cp_recipient_email']); if ($rem !== ''): $cst = isset($r['cp_status'])?$r['cp_status']:''; ?>
+              <?= cp_e($r['cp_recipient_name']!==''?$r['cp_recipient_name']:'(이름없음)') ?><br>
+              <span style="color:#888"><?= cp_e($rem) ?></span><br>
+              <?php if ($cst==='sent'): ?><span style="color:#1a9e54;font-weight:700">✔ 발송</span> <span style="color:#aaa"><?= cp_e(substr($r['cp_sent_at'],5,11)) ?></span>
+              <?php elseif ($cst==='fail'): ?><span style="color:#c0392b;font-weight:700">✖ 실패</span>
+              <?php else: ?><span style="color:#999">미발송</span><?php endif; ?><br>
+              <a href="?send_mail=<?= (int)$r['cp_no'] ?>" onclick="return confirm('<?= cp_e($rem) ?> 로 쿠폰 등록 안내 메일을 발송할까요?')" style="display:inline-block;margin-top:3px;background:#1a7f37;color:#fff;padding:2px 8px;border-radius:3px;text-decoration:none"><?= $cst==='sent'?'재발송':'메일 발송' ?></a>
+            <?php else: ?><span style="color:#ccc">수신자 없음</span><?php endif; ?>
+          </td>
           <td>
             <a class="cp-a" href="?toggle=<?= (int)$r['cp_no'] ?>"><?= $off?'재개':'중지' ?></a> ·
             <a class="cp-d" href="?del=<?= (int)$r['cp_no'] ?>" onclick="return confirm('삭제하시겠습니까?')">삭제</a>
           </td>
         </tr>
       <?php endwhile; } else { ?>
-        <tr><td colspan="8" style="color:#999;padding:18px">발급된 쿠폰이 없습니다.</td></tr>
+        <tr><td colspan="9" style="color:#999;padding:18px">발급된 쿠폰이 없습니다.</td></tr>
       <?php } ?>
       </tbody>
     </table>
