@@ -363,8 +363,10 @@ include_once('./admin.head.php');
         }
         $usedGroups = $usedList ? implode('<br>', $usedList) : '-'; ?>
         <tr class="<?= $off?'cp-off':'' ?>">
-          <td style="white-space:nowrap"><b><a href="?usage=<?= rawurlencode($r['cp_code']) ?>" title="이 쿠폰 사용 등록 내역 보기"><?= cp_e($r['cp_code']) ?></a></b>
-            <button type="button" onclick="cpCopy(this,'<?= cp_e($r['cp_code']) ?>')" title="쿠폰 코드 복사" style="margin-left:6px;padding:2px 7px;font-size:11px;border:1px solid #ccc;background:#f5f5f5;border-radius:3px;cursor:pointer">복사</button></td>
+          <?php $cpLink = 'https://epiclounge.co.kr/unrealfest2026/'.((isset($r['cp_lang'])&&$r['cp_lang']==='en')?'ticket-coupon-en.php':'ticket-coupon.php').'?coupon='.rawurlencode($r['cp_code']); ?>
+          <td style="white-space:nowrap"><b><a href="?usage=<?= rawurlencode($r['cp_code']) ?>" title="이 쿠폰 사용 등록 내역 보기"><?= cp_e($r['cp_code']) ?></a></b><br>
+            <button type="button" onclick="cpCopy(this,'<?= cp_e($r['cp_code']) ?>')" title="쿠폰 코드 복사" style="margin-top:4px;padding:2px 7px;font-size:11px;border:1px solid #ccc;background:#f5f5f5;border-radius:3px;cursor:pointer">코드</button>
+            <button type="button" onclick="cpCopy(this,'<?= cp_e($cpLink) ?>')" title="등록 링크 복사(<?= (isset($r['cp_lang'])&&$r['cp_lang']==='en')?'EN 무료전용':'KO 본인인증' ?>)" style="margin-top:4px;padding:2px 7px;font-size:11px;border:1px solid #2563eb;background:#eff4ff;color:#2563eb;border-radius:3px;cursor:pointer">링크복사</button></td>
           <td><?= (int)$r['cp_percent'] ?>%</td>
           <td><?= cp_e($r['cp_expire'] && $r['cp_expire']!=='0000-00-00' ? $r['cp_expire'] : '-') ?></td>
           <td><?= (int)$r['cp_used'] ?> / <?= ((int)$r['cp_max']>0 ? (int)$r['cp_max'] : '무제한') ?></td>
