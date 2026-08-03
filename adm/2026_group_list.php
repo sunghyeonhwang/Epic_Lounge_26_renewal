@@ -242,6 +242,7 @@ if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D
 .b-pending{background:#fff3cd;color:#856404}.b-paid{background:#d4edda;color:#155724}.b-cancel{background:#f8d7da;color:#721c24}
 </style>
 <div class="gl">
+<div style="margin:4px 0 12px"><a href="2026_coupon_status.php" style="display:inline-block;background:#0f172a;color:#fff;padding:9px 18px;border-radius:5px;text-decoration:none;font-weight:700;font-size:13px">📋 쿠폰 등록 현황 (구글시트 붙여넣기) →</a></div>
 <?php if (!$exists): ?>
   <p style="color:#999;padding:20px">아직 단체 등록 데이터가 없습니다. (첫 등록 시 테이블이 생성됩니다.)</p>
 <?php elseif ($detail): ?>
