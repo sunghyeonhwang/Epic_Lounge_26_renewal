@@ -12,7 +12,7 @@ function gl_e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 
 $PRODNAME = array('NORMAL_ALL'=>'양일권','NORMAL_20'=>'1일권(Day1)','NORMAL_21'=>'1일권(Day2)');
 $PAYNAME  = array('card'=>'신용카드','bank'=>'무통장');
-$STNAME   = array('pending'=>'결제대기','paid'=>'결제완료','cancel'=>'취소');
+$STNAME   = array('pending'=>'결제대기','paid'=>'결제완료','defer'=>'후불','cancel'=>'취소');
 
 // 참석일 변경 허용 여부 — "등록 단계 == 현재 판매 단계". 얼리버드 신청 단체는 얼리버드 기간에만 / 일반판매 단체는 얼리버드 종료 후에만.
 // (그룹은 얼리버드 '가격'이 없어 등록시각 reg 를 얼리버드 마감시각과 비교해 단계 판별.)
@@ -36,7 +36,7 @@ $gl_msg = '';
 if ($exists && isset($_GET['confirm_pay'])) {
     $no = (int)$_GET['confirm_pay'];
     $g = sql_fetch("SELECT * FROM cb_unreal_2026_group WHERE grp_no=".$no);
-    if ($g && $g['pay_status'] !== 'paid') {
+    if ($g && $g['pay_status'] !== 'paid' && $g['pay_status'] !== 'defer') {
         sql_query("UPDATE cb_unreal_2026_group SET pay_status='paid', paid_at=now() WHERE grp_no=".$no);
         if ($g['coupon_code'] !== '' && (int)$g['discount_pct'] > 0) @sql_query("UPDATE cb_unreal_2026_coupon SET cp_used=cp_used+1 WHERE cp_code='".sql_real_escape_string($g['coupon_code'])."'"); // 실제 할인건만 증가
         @include_once(__DIR__ . '/../unrealfest2026/_group_apply.php'); // 등록현황(apply) 반영 + QR
@@ -65,6 +65,49 @@ if ($exists) {
     @sql_query("ALTER TABLE cb_unreal_2026_group_member ADD COLUMN IF NOT EXISTS gm_sms_at DATETIME DEFAULT NULL");
     @sql_query("ALTER TABLE cb_unreal_2026_group_member ADD COLUMN IF NOT EXISTS gm_sms_phone VARCHAR(20) NOT NULL DEFAULT ''");
     @sql_query("ALTER TABLE cb_unreal_2026_group_member ADD COLUMN IF NOT EXISTS gm_sms_msg VARCHAR(200) NOT NULL DEFAULT ''");
+    // 후불(약속) — 세금계산서 발행일 · 후불 처리시각
+    @sql_query("ALTER TABLE cb_unreal_2026_group ADD COLUMN IF NOT EXISTS tax_issue_date DATE DEFAULT NULL");
+    @sql_query("ALTER TABLE cb_unreal_2026_group ADD COLUMN IF NOT EXISTS defer_at DATETIME DEFAULT NULL");
+}
+
+// ── 후불(약속) 처리: 입금 전 QR 발행 + 등록리스트 반영 + 세금계산서 발행일 기록(상태=defer) ──
+if ($exists && isset($_POST['defer_promise'])) {
+    $no = (int)$_POST['defer_promise'];
+    $tdate = trim(isset($_POST['tax_issue_date']) ? $_POST['tax_issue_date'] : '');
+    $tdSql = preg_match('/^\d{4}-\d{2}-\d{2}$/', $tdate) ? "'".sql_real_escape_string($tdate)."'" : "NULL";
+    $g = sql_fetch("SELECT * FROM cb_unreal_2026_group WHERE grp_no=".$no);
+    if (!$g) { $gl_msg = '대상 단체를 찾을 수 없습니다.'; }
+    else if ($g['pay_status'] !== 'pending') { $gl_msg = '결제대기(미입금) 단체만 후불 처리할 수 있습니다. (현재: '.gl_e(isset($STNAME[$g['pay_status']])?$STNAME[$g['pay_status']]:$g['pay_status']).')'; }
+    else {
+        sql_query("UPDATE cb_unreal_2026_group SET pay_status='defer', tax_issue_date=".$tdSql.", defer_at=now() WHERE grp_no=".$no);
+        if ($g['coupon_code'] !== '' && (int)$g['discount_pct'] > 0) @sql_query("UPDATE cb_unreal_2026_coupon SET cp_used=cp_used+1 WHERE cp_code='".sql_real_escape_string($g['coupon_code'])."'");
+        @include_once(__DIR__ . '/../unrealfest2026/_group_apply.php'); // 등록현황(apply) 반영 + QR (중복반영 방지 내장)
+        if (function_exists('ufs_group_reflect')) @ufs_group_reflect($no);
+        $sent = 0;
+        if (function_exists('ufs_group_send_member')) {
+            $ms = sql_query("SELECT * FROM cb_unreal_2026_group_member WHERE grp_no=".$no);
+            while ($m = $ms->fetch_assoc()) {
+                if (trim($m['phone']) === '') continue;
+                if ((int)$m['apply_no'] > 0) {
+                    @ufs_group_send_member($m, $g['rep_company']); // 개인 QR 첨부 MMS (0보정+상태기록)
+                } else if (function_exists('ufs_send_text_sms')) {
+                    $msg = "[언리얼 페스트 서울 2026] 단체 등록이 완료되었습니다.\n".$m['name']."님, 8월 20일(목)~21일(금) 행사 참가 등록이 확정되었습니다.\n단체 대표: ".$g['rep_company']."\n문의: 02-326-3701";
+                    @ufs_send_text_sms($m['name'], $m['phone'], '언리얼 페스트 서울 2026', $msg, 'group-defer');
+                }
+                $sent++;
+            }
+        }
+        $gl_msg = '후불 처리 완료 — 등록리스트 반영·QR '.$sent.'명 발송'.($tdSql!=='NULL' ? (' · 세금계산서 발행일 '.$tdate) : '').'. 실입금 확인 시 [결제완료 전환]을 눌러 주세요.';
+    }
+}
+// ── 후불 → 결제완료 전환(실입금 확인). 등록·QR은 후불 처리시 이미 발행 → 상태·결제일만 갱신 ──
+if ($exists && isset($_GET['defer_paid'])) {
+    $no = (int)$_GET['defer_paid'];
+    $g = sql_fetch("SELECT * FROM cb_unreal_2026_group WHERE grp_no=".$no);
+    if ($g && $g['pay_status']==='defer') {
+        sql_query("UPDATE cb_unreal_2026_group SET pay_status='paid', paid_at=now() WHERE grp_no=".$no);
+        $gl_msg = '후불 건을 결제완료로 전환했습니다. (등록·QR은 이미 발행됨)';
+    } else { $gl_msg = '후불 상태의 단체만 결제완료로 전환할 수 있습니다.'; }
 }
 
 // ── 단체 QR 문자 전체 발송/재발송 (수신번호 0 보정 + 성공/실패 기록) ──
@@ -101,6 +144,8 @@ if ($exists && isset($_GET['cancel_grp'])) {
     if ($g && $g['pay_status'] !== 'paid' && $g['pay_status'] !== 'cancel') {
         @include_once(__DIR__ . '/../unrealfest2026/_group_apply.php');
         $rel = function_exists('ufs_group_release') ? (int)ufs_group_release($no) : 0;
+        // 후불(defer)은 쿠폰 사용을 이미 반영했으므로 취소 시 복원(pending은 미반영이라 무영향)
+        if ($g['pay_status']==='defer' && $g['coupon_code']!=='' && (int)$g['discount_pct']>0) @sql_query("UPDATE cb_unreal_2026_coupon SET cp_used=GREATEST(cp_used-1,0) WHERE cp_code='".sql_real_escape_string($g['coupon_code'])."'");
         sql_query("UPDATE cb_unreal_2026_group SET pay_status='cancel' WHERE grp_no=".$no);
         $gl_msg = '단체 등록을 취소했습니다 — 홀드 좌석 '.$rel.'석을 정원으로 반환했습니다.';
     } else { $gl_msg = '결제완료/이미 취소된 건은 이 버튼으로 취소할 수 없습니다.'; }
@@ -173,6 +218,43 @@ if ($exists && isset($_POST['save_member_day'])) {
     }
 }
 
+// 참석자 교체 — 구성원 1명을 다른 사람으로(정보 일괄 교체 + QR 재발급 + 문자 재발송). 티켓/참석일/가격 동일 유지. POST.
+if ($exists && isset($_POST['swap_member'])) {
+    $ano = (int)$_POST['swap_member'];
+    $gno = (int)(isset($_POST['grp']) ? $_POST['grp'] : 0);
+    $g   = $gno ? sql_fetch("SELECT * FROM cb_unreal_2026_group WHERE grp_no=".$gno) : null;
+    $m   = $g ? sql_fetch("SELECT * FROM cb_unreal_2026_group_member WHERE grp_no=".$gno." AND apply_no=".$ano." LIMIT 1") : null;
+    $a   = $ano ? sql_fetch("SELECT apply_pay_status FROM cb_unreal_2026_event2_apply WHERE apply_no=".$ano." LIMIT 1") : null;
+    $nname  = trim(isset($_POST['sw_name'])   ? $_POST['sw_name']   : '');
+    $nemail = trim(isset($_POST['sw_email'])  ? $_POST['sw_email']  : '');
+    $nphone = trim(isset($_POST['sw_phone'])  ? $_POST['sw_phone']  : '');
+    $ncomp  = trim(isset($_POST['sw_company'])? $_POST['sw_company']: '');
+    $ndep   = trim(isset($_POST['sw_depart']) ? $_POST['sw_depart'] : '');
+    $ngrade = trim(isset($_POST['sw_grade'])  ? $_POST['sw_grade']  : '');
+    if (!$g || !$m) { $gl_msg = '구성원을 찾을 수 없습니다.'; }
+    else if ((isset($m['gm_status']) && $m['gm_status']==='C') || ($a && (int)$a['apply_pay_status']===0)) { $gl_msg = '취소된 구성원은 교체할 수 없습니다.'; }
+    else if ($nname==='' || !filter_var($nemail, FILTER_VALIDATE_EMAIL)) { $gl_msg = '새 참석자의 이름과 올바른 이메일을 입력해 주세요.'; }
+    else {
+        $old = $m['name'];
+        $f = function($v){ return sql_real_escape_string(strip_tags((string)$v)); };
+        $pw = md5(str_replace("'","\\'", $nemail)); // QR/마이티켓 비밀번호 = md5(이메일)
+        sql_query("UPDATE cb_unreal_2026_group_member SET name='".$f($nname)."', email='".$f($nemail)."', phone='".$f($nphone)."', company='".$f($ncomp)."', depart='".$f($ndep)."', grade='".$f($ngrade)."' WHERE gm_no=".(int)$m['gm_no']);
+        if ($ano > 0) {
+            sql_query("UPDATE cb_unreal_2026_event2_apply SET apply_user_name='".$f($nname)."', apply_user_email='".$f($nemail)."', apply_user_phone='".$f($nphone)."', apply_user_company='".$f($ncomp)."', apply_user_depart='".$f($ndep)."', apply_user_grade='".$f($ngrade)."', apply_password='".sql_real_escape_string($pw)."' WHERE apply_no=".$ano." AND apply_pay_status<>0");
+            @include_once(__DIR__ . '/../unrealfest2026/_group_apply.php');
+            if (function_exists('ufs_group_make_qr')) @ufs_group_make_qr($ano, $pw); // 이메일 변경 → QR 재생성
+            $mnew = sql_fetch("SELECT * FROM cb_unreal_2026_group_member WHERE gm_no=".(int)$m['gm_no']);
+            if ($mnew && function_exists('ufs_group_send_member') && trim($mnew['phone'])!=='') {
+                $r = @ufs_group_send_member($mnew, $g['rep_company']);
+                $sentmsg = ($r && isset($r['ok']) && $r['ok']===true) ? ' · 새 참석자에게 QR 문자 재발송 성공' : ' · QR 문자 재발송 실패(수동 [문자발송] 필요)';
+            } else { $sentmsg = ' · (연락처 없음 — 문자 미발송)'; }
+            $gl_msg = '참석자를 「'.gl_e($old).'」 → 「'.gl_e($nname).'」(으)로 교체했습니다. QR 재발급 완료'.$sentmsg.'.';
+        } else {
+            $gl_msg = '참석자를 「'.gl_e($old).'」 → 「'.gl_e($nname).'」(으)로 교체했습니다. (미결제 상태 — QR은 후불/입금확인 시 발급)';
+        }
+    }
+}
+
 // 취소된 단체 삭제 (완전 삭제 — 'cancel' 상태만 허용). 취소상태(status=0) apply 레코드도 정리(활성건 미영향).
 if ($exists && isset($_GET['delete_grp'])) {
     $no = (int)$_GET['delete_grp'];
@@ -232,17 +314,20 @@ include_once('./admin.head.php');
 if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D5;color:#007a89;padding:10px 14px;border-radius:4px;margin:10px 0;max-width:1100px">'.gl_e($gl_msg).'</div>';
 ?>
 <style>
-.gl{max-width:1100px;margin:14px 0}
+.gl{max-width:100%;margin:14px 0}
 .gl table{width:100%;border-collapse:collapse;font-size:13px}
 .gl th,.gl td{border:1px solid #e5e5e5;padding:7px 9px;text-align:center}
 .gl thead th{background:#fafafa}
 .gl a{color:#0a7;text-decoration:underline}
 .gl .r{text-align:right}.gl .l{text-align:left}
 .badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700}
-.b-pending{background:#fff3cd;color:#856404}.b-paid{background:#d4edda;color:#155724}.b-cancel{background:#f8d7da;color:#721c24}
+.b-pending{background:#fff3cd;color:#856404}.b-paid{background:#d4edda;color:#155724}.b-cancel{background:#f8d7da;color:#721c24}.b-defer{background:#ede9fe;color:#5b21b6}
 </style>
 <div class="gl">
-<div style="margin:4px 0 12px"><a href="2026_coupon_status.php" style="display:inline-block;background:#0f172a;color:#fff;padding:9px 18px;border-radius:5px;text-decoration:none;font-weight:700;font-size:13px">📋 쿠폰 등록 현황 (구글시트 붙여넣기) →</a></div>
+<div style="margin:4px 0 12px;display:flex;gap:8px;flex-wrap:wrap">
+  <a href="2026_coupon_status.php" style="display:inline-block;background:#0f172a;color:#fff;padding:9px 18px;border-radius:5px;text-decoration:none;font-weight:700;font-size:13px">📋 쿠폰 등록 현황 (구글시트 붙여넣기) →</a>
+  <a href="../unrealfest2026/group-quote.php" target="_blank" style="display:inline-block;background:#1a7f37;color:#fff;padding:9px 18px;border-radius:5px;text-decoration:none;font-weight:700;font-size:13px">🧾 견적서 작성 (수량 입력) →</a>
+</div>
 <?php if (!$exists): ?>
   <p style="color:#999;padding:20px">아직 단체 등록 데이터가 없습니다. (첫 등록 시 테이블이 생성됩니다.)</p>
 <?php elseif ($detail): ?>
@@ -255,12 +340,24 @@ if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D
   <p style="font-size:13px;color:#555;margin-bottom:10px">
     연락처 <?= gl_e($g['rep_phone']) ?> · 이메일 <?= gl_e($g['rep_email']) ?> · 사업자번호 <?= gl_e(isset($g['rep_biznum'])?$g['rep_biznum']:'') ?> · 대표자참석 <?= $g['rep_attend']==='Y'?'예':'아니오(결제만)' ?><br>
     결제 <?= gl_e(isset($PAYNAME[$g['paymethod']])?$PAYNAME[$g['paymethod']]:$g['paymethod']) ?> · 할인 <?= (int)$g['discount_pct'] ?>%<?= $g['coupon_code']!==''?' (쿠폰 '.gl_e($g['coupon_code']).')':'' ?> · 총액 <b>₩<?= number_format((int)$g['total_amount']) ?></b> · 상태 <?= gl_e(isset($STNAME[$g['pay_status']])?$STNAME[$g['pay_status']]:$g['pay_status']) ?> · 접수 <?= gl_e($g['reg']) ?>
+    <?php if ($g['pay_status']==='defer'): ?><br><span style="color:#7c3aed;font-weight:700">후불(약속)</span> · 세금계산서 발행일 <b><?= gl_e(!empty($g['tax_issue_date']) && $g['tax_issue_date']!=='0000-00-00' ? $g['tax_issue_date'] : '미지정') ?></b> · 후불처리 <?= gl_e(isset($g['defer_at'])?$g['defer_at']:'') ?><?php endif; ?>
   </p>
-  <?php if ($g['paymethod']==='bank' && $g['pay_status']!=='paid' && $g['pay_status']!=='cancel'): ?>
+  <?php if ($g['paymethod']==='bank' && $g['pay_status']!=='paid' && $g['pay_status']!=='cancel' && $g['pay_status']!=='defer'): ?>
     <a href="?grp=<?= (int)$detail ?>&confirm_pay=<?= (int)$detail ?>" onclick="return confirm('입금 확인 처리하고 등록자에게 안내 문자를 발송할까요?')" style="display:inline-block;background:#00C1D5;color:#fff;padding:7px 16px;border-radius:4px;text-decoration:none;font-weight:700;margin-bottom:12px">입금 확인 + 등록자 문자 발송</a>
   <?php endif; ?>
   <?php if ($g['pay_status']!=='paid' && $g['pay_status']!=='cancel'): ?>
     <a href="?grp=<?= (int)$detail ?>&cancel_grp=<?= (int)$detail ?>" onclick="return confirm('이 단체 등록을 취소하고 홀드된 좌석을 정원으로 반환할까요? (미입금 노쇼 처리)')" style="display:inline-block;background:#e0492f;color:#fff;padding:7px 16px;border-radius:4px;text-decoration:none;font-weight:700;margin-bottom:12px;margin-left:6px">단체 취소 (좌석 해제)</a>
+  <?php endif; ?>
+  <?php if ($g['pay_status']!=='paid' && $g['pay_status']!=='cancel' && $g['pay_status']!=='defer'): ?>
+    <form method="post" action="2026_group_list.php?grp=<?= (int)$detail ?>" onsubmit="return confirm('입금 전 [후불(약속)]으로 처리합니다.\n· 등록리스트에 반영되고 전원에게 QR 문자가 실제 발송됩니다.\n· 상태가 후불로 바뀝니다. 계속할까요?')" style="display:inline-flex;gap:8px;align-items:center;margin:0 6px 12px 0;padding:8px 12px;background:#f5f3ff;border:1px solid #c7b8f5;border-radius:6px;vertical-align:top">
+      <input type="hidden" name="defer_promise" value="<?= (int)$detail ?>">
+      <span style="font-size:12px;color:#5b21b6;font-weight:700">후불 약속</span>
+      <label style="font-size:12px;color:#5b21b6">세금계산서 발행일 <input type="date" name="tax_issue_date" style="padding:4px;margin-left:2px;border:1px solid #c7b8f5;border-radius:3px"></label>
+      <button type="submit" style="background:#7c3aed;color:#fff;border:0;padding:6px 14px;border-radius:4px;font-weight:700;cursor:pointer">후불 처리 (QR 발행)</button>
+    </form>
+  <?php endif; ?>
+  <?php if ($g['pay_status']==='defer'): ?>
+    <a href="?grp=<?= (int)$detail ?>&defer_paid=<?= (int)$detail ?>" onclick="return confirm('후불 건의 실입금을 확인하고 결제완료로 전환할까요?\n(등록·QR은 이미 발행되어 있습니다)')" style="display:inline-block;background:#059669;color:#fff;padding:7px 16px;border-radius:4px;text-decoration:none;font-weight:700;margin-bottom:12px;margin-left:6px">💳 입금확인 → 결제완료 전환</a>
   <?php endif; ?>
   <?php if ($g['paymethod']==='card' && $g['pay_status']==='paid'): ?>
     <a href="?grp=<?= (int)$detail ?>&refund_grp=<?= (int)$detail ?>" onclick="return confirm('이 단체의 신용카드 결제를 전액 환불하고 등록을 취소할까요?\n⚠ 실제 환불(실거래)이 진행되며 되돌릴 수 없습니다.')" style="display:inline-block;background:#c0392b;color:#fff;padding:7px 16px;border-radius:4px;text-decoration:none;font-weight:700;margin-bottom:12px;margin-left:6px">전액 환불 + 등록 취소</a>
@@ -268,7 +365,7 @@ if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D
   <?php if ($g['pay_status']==='cancel'): ?>
     <a href="?delete_grp=<?= (int)$detail ?>" onclick="return confirm('이 취소된 단체 등록을 완전히 삭제할까요?\n단체·멤버·취소된 개인등록 레코드가 삭제되며 되돌릴 수 없습니다.')" style="display:inline-block;background:#6b7280;color:#fff;padding:7px 16px;border-radius:4px;text-decoration:none;font-weight:700;margin-bottom:12px;margin-left:6px">취소건 삭제</a>
   <?php endif; ?>
-  <?php if ($g['pay_status']==='paid'): ?>
+  <?php if ($g['pay_status']==='paid' || $g['pay_status']==='defer'): ?>
     <a href="?grp=<?= (int)$detail ?>&send_all_sms=<?= (int)$detail ?>" onclick="return confirm('구성원 전원에게 QR 포함 등록확인 문자를 발송/재발송할까요?\n(수신번호 앞자리 0 자동 보정 · 실제 발송)')" style="display:inline-block;background:#2d7ff9;color:#fff;padding:7px 16px;border-radius:4px;text-decoration:none;font-weight:700;margin-bottom:12px;margin-left:6px">📨 전체 QR 문자 발송/재발송</a>
     <a href="?export=members&grp=<?= (int)$detail ?>" style="display:inline-block;background:#1a7f37;color:#fff;padding:7px 16px;border-radius:4px;text-decoration:none;font-weight:700;margin-bottom:12px;margin-left:6px">⬇ 이 단체 구성원 CSV</a>
   <?php endif; ?>
@@ -339,6 +436,29 @@ if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D
     <span style="color:#888"> · 유효 <?= $cnt_active ?>명<?= $cnt_cancel?' (취소 '.$cnt_cancel.'명 제외)':'' ?></span>
     <br><span style="color:#666;font-size:12px">일자별 실참석(양일권 포함) — 8월 20일 <b><?= $day1_att ?></b>명 · 8월 21일 <b><?= $day2_att ?></b>명</span>
   </div>
+  <?php if (!empty($_GET['swap'])):
+    $sano = (int)$_GET['swap'];
+    $sm = sql_fetch("SELECT * FROM cb_unreal_2026_group_member WHERE grp_no=".$detail." AND apply_no=".$sano." LIMIT 1");
+    if ($sm && !(isset($sm['gm_status']) && $sm['gm_status']==='C')): ?>
+  <div style="max-width:760px;margin:0 0 14px;padding:14px 16px;background:#f5f3ff;border:1px solid #7c3aed;border-radius:6px">
+    <b>참석자 교체</b> <span style="color:#888;font-size:12px">· 「<?= gl_e($sm['name']) ?>」 → 새 참석자 · 티켓/참석일/가격 동일 · QR 재발급 + 문자 재발송</span>
+    <form method="post" action="2026_group_list.php?grp=<?= (int)$detail ?>" style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px" onsubmit="return confirm('참석자를 새 정보로 교체하고, 새 참석자에게 QR 문자를 실제 발송합니다.\n(기존 참석자의 QR/로그인은 무효화됩니다) 계속할까요?')">
+      <input type="hidden" name="swap_member" value="<?= $sano ?>">
+      <input type="hidden" name="grp" value="<?= (int)$detail ?>">
+      <label style="font-size:12px;color:#5b21b6">이름 *<input type="text" name="sw_name" value="<?= gl_e($sm['name']) ?>" required style="width:100%;padding:6px;border:1px solid #c7b8f5;border-radius:3px;box-sizing:border-box"></label>
+      <label style="font-size:12px;color:#5b21b6">이메일 *<input type="email" name="sw_email" value="<?= gl_e($sm['email']) ?>" required style="width:100%;padding:6px;border:1px solid #c7b8f5;border-radius:3px;box-sizing:border-box"></label>
+      <label style="font-size:12px;color:#5b21b6">연락처<input type="text" name="sw_phone" value="<?= gl_e($sm['phone']) ?>" style="width:100%;padding:6px;border:1px solid #c7b8f5;border-radius:3px;box-sizing:border-box"></label>
+      <label style="font-size:12px;color:#5b21b6">회사<input type="text" name="sw_company" value="<?= gl_e($sm['company']) ?>" style="width:100%;padding:6px;border:1px solid #c7b8f5;border-radius:3px;box-sizing:border-box"></label>
+      <label style="font-size:12px;color:#5b21b6">부서<input type="text" name="sw_depart" value="<?= gl_e($sm['depart']) ?>" style="width:100%;padding:6px;border:1px solid #c7b8f5;border-radius:3px;box-sizing:border-box"></label>
+      <label style="font-size:12px;color:#5b21b6">직무<input type="text" name="sw_grade" value="<?= gl_e($sm['grade']) ?>" style="width:100%;padding:6px;border:1px solid #c7b8f5;border-radius:3px;box-sizing:border-box"></label>
+      <div style="grid-column:1/-1;display:flex;gap:12px;align-items:center;margin-top:4px;flex-wrap:wrap">
+        <button type="submit" style="background:#7c3aed;color:#fff;border:0;padding:7px 16px;border-radius:4px;font-weight:700;cursor:pointer">교체 + QR 재발급</button>
+        <a href="?grp=<?= (int)$detail ?>" style="color:#888">취소</a>
+        <span style="color:#c0392b;font-size:12px">⚠ 새 이메일 기준으로 QR·마이티켓 로그인이 재발급되며, 기존 참석자 QR은 무효화됩니다.</span>
+      </div>
+    </form>
+  </div>
+  <?php endif; endif; ?>
   <table>
     <thead><tr><th>#</th><th>구분</th><th>이름</th><th>이메일</th><th>연락처</th><th>부서</th><th>직무</th><th>관심분야</th><th>티켓</th><th>Day1</th><th>Day2</th><th>티셔츠</th><th class="r">금액</th><th>문자(QR)</th><th>관리</th></tr></thead>
     <tbody>
@@ -375,6 +495,7 @@ if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D
             ? ('이 구성원 1명을 취소하고 ₩'.number_format((int)$m['price']).'을 부분환불할까요?\n⚠ 실제 환불(실거래)이 진행됩니다.')
             : ('이 구성원 1명의 좌석을 반환할까요?\n무통장이므로 ₩'.number_format((int)$m['price']).' 계좌 환불은 수동으로 진행해야 합니다.');
           $is1day = ($m['ticket']==='NORMAL_20' || $m['ticket']==='NORMAL_21'); ?>
+          <a href="?grp=<?= (int)$detail ?>&swap=<?= (int)$m['apply_no'] ?>" style="color:#fff;background:#7c3aed;padding:3px 9px;border-radius:3px;text-decoration:none;font-size:12px">교체</a>
           <?php if ($g['pay_status']==='paid'): ?>
           <a href="?grp=<?= (int)$detail ?>&send_member=<?= (int)$m['apply_no'] ?>" onclick="return confirm('<?= gl_e($m['name']) ?>님(<?= gl_e($normp) ?>)에게 QR 문자를 발송할까요?\n(실제 발송)')" style="color:#fff;background:#2d7ff9;padding:3px 9px;border-radius:3px;text-decoration:none;font-size:12px"><?= $sst==='sent'?'재발송':'문자발송' ?></a>
           <a href="?grp=<?= (int)$detail ?>&cancel_member=<?= (int)$m['apply_no'] ?>" onclick="return confirm('<?= $mcf ?>')" style="color:#fff;background:#c0392b;padding:3px 9px;border-radius:3px;text-decoration:none;font-size:12px">개별취소</a>
@@ -397,7 +518,7 @@ if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D
   <?php
     // 전체 단체 참석 구성 합계 — 취소 단체(pay_status='cancel')·취소 구성원(gm_status='C') 제외.
     @include_once(__DIR__ . '/../unrealfest2026/_group_apply.php'); if (function_exists('ufs_group_apply_cols')) @ufs_group_apply_cols();
-    $t_all=0; $t_d1=0; $t_d2=0; $t_active=0; $t_grp=0; $t_paid=0;
+    $t_all=0; $t_d1=0; $t_d2=0; $t_active=0; $t_grp=0; $t_paid=0; $t_defer=0;
     $ts = sql_query("SELECT m.ticket, m.gm_status, g.pay_status FROM cb_unreal_2026_group_member m LEFT JOIN cb_unreal_2026_group g ON g.grp_no=m.grp_no WHERE g.pay_status<>'cancel'");
     if ($ts) while ($c=$ts->fetch_assoc()) {
       if (isset($c['gm_status']) && $c['gm_status']==='C') continue;
@@ -407,7 +528,7 @@ if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D
       else if ($c['ticket']==='NORMAL_21') $t_d2++;
     }
     $gs = sql_query("SELECT pay_status, COUNT(*) c FROM cb_unreal_2026_group WHERE pay_status<>'cancel' GROUP BY pay_status");
-    if ($gs) while ($gr=$gs->fetch_assoc()) { $t_grp += (int)$gr['c']; if ($gr['pay_status']==='paid') $t_paid=(int)$gr['c']; }
+    if ($gs) while ($gr=$gs->fetch_assoc()) { $t_grp += (int)$gr['c']; if ($gr['pay_status']==='paid') $t_paid=(int)$gr['c']; if ($gr['pay_status']==='defer') $t_defer=(int)$gr['c']; }
     $t_day1 = $t_all + $t_d1; $t_day2 = $t_all + $t_d2;
   ?>
   <div style="max-width:820px;margin:0 0 12px;padding:10px 14px;background:#f7fbfc;border:1px solid #cbe9ee;border-radius:6px;font-size:13px;color:#333">
@@ -415,7 +536,7 @@ if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D
     양일권 <b><?= $t_all ?></b>명 ·
     1일권(8월 20일) <b><?= $t_d1 ?></b>명 ·
     1일권(8월 21일) <b><?= $t_d2 ?></b>명
-    <span style="color:#888"> · 유효 <?= $t_active ?>명 / 단체 <?= $t_grp ?>건(결제완료 <?= $t_paid ?>)</span>
+    <span style="color:#888"> · 유효 <?= $t_active ?>명 / 단체 <?= $t_grp ?>건(결제완료 <?= $t_paid ?><?= $t_defer?' · 후불 '.$t_defer:'' ?>)</span>
     <br><span style="color:#666;font-size:12px">일자별 실참석(양일권 포함) — 8월 20일 <b><?= $t_day1 ?></b>명 · 8월 21일 <b><?= $t_day2 ?></b>명</span>
   </div>
   <div style="margin:0 0 12px;display:flex;gap:8px;flex-wrap:wrap">
@@ -428,7 +549,7 @@ if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D
     <tbody>
     <?php $res=sql_query("SELECT * FROM cb_unreal_2026_group ORDER BY grp_no DESC");
     if ($res && $res->num_rows){ while($g=$res->fetch_assoc()):
-      $st=$g['pay_status']; $bcls=$st==='paid'?'b-paid':($st==='cancel'?'b-cancel':'b-pending'); ?>
+      $st=$g['pay_status']; $bcls=$st==='paid'?'b-paid':($st==='cancel'?'b-cancel':($st==='defer'?'b-defer':'b-pending')); ?>
       <tr>
         <td><?= gl_e($g['grp_code']) ?></td>
         <td><?= gl_e($g['rep_name']) ?><?= $g['rep_attend']!=='Y'?' <span style="color:#999">(결제만)</span>':'' ?></td>
