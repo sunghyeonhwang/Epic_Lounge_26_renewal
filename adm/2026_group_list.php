@@ -328,6 +328,7 @@ if ($gl_msg !== '') echo '<div style="background:#e8fbfd;border:1px solid #00C1D
   <a href="2026_coupon_status.php" style="display:inline-block;background:#0f172a;color:#fff;padding:9px 18px;border-radius:5px;text-decoration:none;font-weight:700;font-size:13px">📋 쿠폰 등록 현황 (구글시트 붙여넣기) →</a>
   <a href="../unrealfest2026/group-quote.php" target="_blank" style="display:inline-block;background:#1a7f37;color:#fff;padding:9px 18px;border-radius:5px;text-decoration:none;font-weight:700;font-size:13px">🧾 견적서 작성 (수량 입력) →</a>
   <a href="../unrealfest2026/ticket-group-admin.php" target="_blank" style="display:inline-block;background:#7c3aed;color:#fff;padding:9px 18px;border-radius:5px;text-decoration:none;font-weight:700;font-size:13px">🔐 본인인증 제외 관리자등록 →</a>
+  <a href="2026_misc_pay.php" style="display:inline-block;background:#0369a1;color:#fff;padding:9px 18px;border-radius:5px;text-decoration:none;font-weight:700;font-size:13px">💳 부스 결제 로그</a>
 </div>
 <?php if (!$exists): ?>
   <p style="color:#999;padding:20px">아직 단체 등록 데이터가 없습니다. (첫 등록 시 테이블이 생성됩니다.)</p>
