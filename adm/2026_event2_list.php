@@ -46,7 +46,7 @@ if ($st === 'allday')     $where .= " AND apply_pay_status=10 AND apply_product_
 elseif ($st === 'day1')   $where .= " AND apply_pay_status=10 AND apply_product_code='NORMAL_20'";
 elseif ($st === 'day2')   $where .= " AND apply_pay_status=10 AND apply_product_code='NORMAL_21'";
 elseif ($st === 'offline')$where .= " AND apply_pay_status=10 AND apply_product_code IN ('NORMAL_ALL','NORMAL_20','NORMAL_21')";
-elseif ($st === 'online') $where .= " AND apply_pay_status<>0 AND (free_yn='Y' OR apply_product_code='ONLINE')";
+elseif ($st === 'online') $where .= " AND apply_pay_status<>0 AND apply_product_code='ONLINE'";
 elseif ($st === 'group')  $where .= $has_gcol ? " AND apply_group_code<>''" : " AND 0";
 elseif ($st === 'cancel') $where .= " AND apply_pay_status=0";
 else                      $where .= " AND apply_pay_status<>0"; // 'all'(전체) 기본 뷰: 취소건 숨김 — 취소는 '취소' 탭에서만 표시
@@ -57,14 +57,15 @@ if (isset($_GET['export'])) {
     header('Content-Disposition: attachment; filename="ufs2026_apply_'.date('Ymd').'.csv"');
     echo "\xEF\xBB\xBF";
     $out = fopen('php://output', 'w');
-    fputcsv($out, array('번호','이름','이메일','연락처','직업','회사','직무','산업','광고동의','유형','단체접수','상품','얼리버드','금액','트랙','티셔츠','상태','TID','등록일'));
+    fputcsv($out, array('번호','이름','이메일','연락처','직업','회사','직무','산업','광고동의','유형','분류','단체접수','상품','얼리버드','금액','트랙','티셔츠','상태','TID','등록일'));
     $res = sql_query("SELECT * FROM cb_unreal_2026_event2_apply WHERE $where ORDER BY apply_no DESC");
     if ($res) { while ($r = $res->fetch_assoc()) {
-        $type = ($r['free_yn']==='Y'||$r['apply_product_code']==='ONLINE') ? '온라인' : '오프라인';
+        $type = ($r['apply_product_code']==='ONLINE') ? '온라인' : '오프라인';
         $stt = ((int)$r['apply_pay_status']===10)?'완료':(((int)$r['apply_pay_status']===1)?'입금대기':'취소');
         $ad = ($r['apply_user_event_agree']==='1')?'동의':'미동의';
         $gcode = !empty($r['apply_group_code']) ? $r['apply_group_code'] : '';
-        fputcsv($out, array($r['apply_no'],$r['apply_user_name'],$r['apply_user_email'],$r['apply_user_phone'],$r['apply_user_job'],$r['apply_user_company'],$r['apply_user_grade'],$r['apply_user_ex1'],$ad,$type,$gcode,$r['apply_product_name'],(adm_is_eb($r)?'E':''),$r['apply_product_price'],$r['apply_track'],$r['apply_tshirt'],$stt,$r['pay_tid'],$r['apply_reg_datetime']));
+        $__b = adm_reg_badge($r);
+        fputcsv($out, array($r['apply_no'],$r['apply_user_name'],$r['apply_user_email'],$r['apply_user_phone'],$r['apply_user_job'],$r['apply_user_company'],$r['apply_user_grade'],$r['apply_user_ex1'],$ad,$type,($__b?$__b[0]:''),$gcode,$r['apply_product_name'],(adm_is_eb($r)?'E':''),$r['apply_product_price'],$r['apply_track'],$r['apply_tshirt'],$stt,$r['pay_tid'],$r['apply_reg_datetime']));
     }}
     fclose($out); exit;
 }
@@ -134,7 +135,7 @@ if (isset($_POST['delete_ids']) && is_array($_POST['delete_ids'])) {
 }
 
 // 개인(비단체) 오프라인 1일권 참석일 변경 — 8.20(NORMAL_20) ↔ 8.21(NORMAL_21). 같은 가격 → 결제 무영향, 상품코드·상품명·트랙만.
-// 얼리버드 게이팅: 등록 단계 == 현재 판매 단계(얼리버드 신청은 얼리버드 기간에만 / 일반판매분은 종료 후에만).
+// NORMAL_20/NORMAL_21은 얼리버드·정가 모두 동일 가격이라 날짜 스왑은 항상 가격 중립 → 얼리버드/정가 단계와 무관하게 허용(CS 참석일 변경 대응).
 if (isset($_POST['change_day'])) {
     $ano = (int)$_POST['change_no'];
     $newday   = ((isset($_POST['newday']) ? $_POST['newday'] : '') === '2') ? 2 : 1;
@@ -145,13 +146,28 @@ if (isset($_POST['change_day'])) {
         || ($r['apply_product_code']!=='NORMAL_20' && $r['apply_product_code']!=='NORMAL_21')
         || (int)$r['apply_pay_status']===0 || !in_array($newtrack, $validTr, true)) {
         $done = 'daychange_err';
-    } else if (function_exists('ufs_is_earlybird') && (adm_is_eb($r) !== ufs_is_earlybird())) {
-        $done = 'daychange_ebblock';
     } else {
         $newticket = ($newday===1) ? 'NORMAL_20' : 'NORMAL_21';
         $newname   = ($newday===1) ? '언리얼 페스트 서울 2026 1일권(8월 20일)' : '언리얼 페스트 서울 2026 1일권(8월 21일)';
         sql_query("UPDATE cb_unreal_2026_event2_apply SET apply_product_code='".$newticket."', apply_product_name='".sql_real_escape_string($newname)."', apply_track='".sql_real_escape_string($newtrack)."' WHERE apply_no='".$ano."' AND apply_temp_yn='N' AND apply_pay_status<>0");
         $done = 'daychange';
+    }
+    $rp = isset($_GET['p']) ? max(1,(int)$_GET['p']) : 1;
+    header('Location: 2026_event2_list.php?'.http_build_query(array('q'=>$q,'ds'=>$ds,'de'=>$de,'st'=>$st,'p'=>$rp,'done'=>$done)));
+    exit;
+}
+
+// 개인 QR 안내문자 재발송 — 현재 티켓/참석일 기준으로 기존 QR(jpg) 첨부 MMS 재발송(개인 오프라인 결제완료만). 참석일 변경 후 안내용.
+if (isset($_GET['resend'])) {
+    @require_once(__DIR__ . '/../unrealfest2026/_sms.php');
+    $ano = (int)$_GET['resend'];
+    $r = $ano ? sql_fetch("SELECT * FROM cb_unreal_2026_event2_apply WHERE apply_no='".$ano."' AND apply_temp_yn='N'") : null;
+    $done = 'resend_err';
+    if ($r && (int)$r['apply_pay_status']===10 && empty($r['apply_group_code'])
+        && in_array($r['apply_product_code'], array('NORMAL_ALL','NORMAL_20','NORMAL_21'), true)
+        && function_exists('ufs_send_qr_mms') && trim((string)$r['apply_user_phone'])!=='') {
+        $ok = @ufs_send_qr_mms($r['apply_user_name'], $r['apply_user_phone'], $ano, $r['apply_product_code']);
+        $done = $ok ? 'resend' : 'resend_fail';
     }
     $rp = isset($_GET['p']) ? max(1,(int)$_GET['p']) : 1;
     header('Location: 2026_event2_list.php?'.http_build_query(array('q'=>$q,'ds'=>$ds,'de'=>$de,'st'=>$st,'p'=>$rp,'done'=>$done)));
@@ -180,13 +196,38 @@ function adm_grp_no($code){
     if (!isset($c[$code])) { $g = sql_fetch("SELECT grp_no FROM cb_unreal_2026_group WHERE grp_code='".sql_real_escape_string($code)."' LIMIT 1"); $c[$code] = $g ? (int)$g['grp_no'] : 0; }
     return $c[$code];
 }
+// ── 등록 분류 뱃지 (I=국내초청 / IO=해외초청 / C=해외쿠폰 / O=해외결제 / 나머지=배지없음) ──
+// 근거: apply_speaker_code(초청) + 초청코드 언어(sc_lang) / apply_ci=''(무인증=해외) / apply_coupon_code(쿠폰)
+function adm_invite_lang($code){
+    static $c = array();
+    if ($code === '' || $code === null) return 'ko';
+    if (!isset($c[$code])) { $g = sql_fetch("SELECT sc_lang FROM cb_unreal_2026_speaker_code WHERE sc_code='".sql_real_escape_string($code)."' LIMIT 1"); $c[$code] = ($g && !empty($g['sc_lang'])) ? $g['sc_lang'] : 'ko'; }
+    return $c[$code];
+}
+function adm_reg_badge($r){   // 반환 array(코드,툴팁,색) 또는 null
+    if (!empty($r['apply_speaker_code'])) {
+        return (adm_invite_lang($r['apply_speaker_code'])==='en')
+            ? array('IO','해외초청','#7c3aed') : array('I','국내초청','#307FE2');
+    }
+    // 쿠폰 사용 = 초청 (단체 제외). 국내(인증)=국내초청(I) / 해외(무인증)=해외쿠폰(C)
+    if (!empty($r['apply_coupon_code']) && empty($r['apply_group_code'])) {
+        return empty($r['apply_ci'])
+            ? array('C','해외쿠폰(100%포함)','#00897B')
+            : array('I','국내초청','#307FE2');
+    }
+    if (empty($r['apply_ci']) && empty($r['apply_group_code'])) {   // 무인증·비초청·비단체 = 해외
+        if ($r['apply_product_code'] !== 'ONLINE' && (!isset($r['free_yn']) || $r['free_yn'] !== 'Y'))
+            return array('O','해외결제','#FF8F1C');
+    }
+    return null;
+}
 $stat = array(
   'total'  => cnt2("apply_temp_yn='N'"),
   'allday' => cnt2("apply_temp_yn='N' AND apply_pay_status=10 AND apply_product_code='NORMAL_ALL'"),
   'day1'   => cnt2("apply_temp_yn='N' AND apply_pay_status=10 AND apply_product_code='NORMAL_20'"),
   'day2'   => cnt2("apply_temp_yn='N' AND apply_pay_status=10 AND apply_product_code='NORMAL_21'"),
   'offline'=> cnt2("apply_temp_yn='N' AND apply_pay_status=10 AND apply_product_code IN ('NORMAL_ALL','NORMAL_20','NORMAL_21')"),
-  'online' => cnt2("apply_temp_yn='N' AND apply_pay_status<>0 AND (free_yn='Y' OR apply_product_code='ONLINE')"),
+  'online' => cnt2("apply_temp_yn='N' AND apply_pay_status<>0 AND apply_product_code='ONLINE'"),
   'cancel' => cnt2("apply_temp_yn='N' AND apply_pay_status=0"),
   'group'  => $has_gcol ? cnt2("apply_temp_yn='N' AND apply_pay_status<>0 AND apply_group_code<>''") : 0,
 );
@@ -325,7 +366,7 @@ include_once('./admin.head.php');   // ← 왼쪽 관리자 메뉴 + 상단 chro
       $eno = (int)$_GET['edit_day'];
       $er = sql_fetch("SELECT * FROM cb_unreal_2026_event2_apply WHERE apply_no='".$eno."' AND apply_temp_yn='N'");
       $er_1day = ($er && empty($er['apply_group_code']) && ($er['apply_product_code']==='NORMAL_20' || $er['apply_product_code']==='NORMAL_21'));
-      $er_ebok = ($er && (!function_exists('ufs_is_earlybird') || (adm_is_eb($er) === ufs_is_earlybird())));
+      $er_ebok = ($er ? true : false);   // 날짜 스왑은 가격 중립 → 얼리버드/정가 단계 게이팅 제거
       if ($er_1day && (int)$er['apply_pay_status']!==0 && $er_ebok):
         $ecurday = ($er['apply_product_code']==='NORMAL_20') ? 1 : 2;
         $ecurtrack = trim($er['apply_track']); ?>
@@ -373,14 +414,28 @@ include_once('./admin.head.php');   // ← 왼쪽 관리자 메뉴 + 상단 chro
     <div style="background:rgba(255,143,28,.12);border:1px solid rgba(255,143,28,.4);color:#FF8F1C;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px">현재 판매 단계와 맞지 않아 참석일을 변경할 수 없습니다. (얼리버드 신청은 얼리버드 기간에만, 일반판매분은 종료 후에만)</div>
     <?php elseif (isset($_GET['done']) && $_GET['done']==='daychange_err'): ?>
     <div style="background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);color:#ff6b6b;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px">참석일 변경에 실패했습니다. (개인 오프라인 1일권만 가능)</div>
+    <?php elseif (isset($_GET['done']) && $_GET['done']==='resend'): ?>
+    <div style="background:rgba(57,217,138,.1);border:1px solid rgba(57,217,138,.3);color:#39d98a;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px">QR 안내 문자를 재발송했습니다. (현재 티켓·참석일 기준, QR 첨부)</div>
+    <?php elseif (isset($_GET['done']) && $_GET['done']==='resend_fail'): ?>
+    <div style="background:rgba(255,143,28,.12);border:1px solid rgba(255,143,28,.4);color:#FF8F1C;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px">문자 발송에 실패했습니다. 잠시 후 다시 시도하거나 연락처를 확인해 주세요.</div>
+    <?php elseif (isset($_GET['done']) && $_GET['done']==='resend_err'): ?>
+    <div style="background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);color:#ff6b6b;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px">문자 재발송 대상이 아닙니다. (개인 오프라인 결제완료 · 연락처 있는 건만 가능)</div>
     <?php endif; ?>
 
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;font-size:12px;color:#8a90a2">
+      <span style="font-weight:700;color:#6b7280">분류:</span>
+      <span><span style="display:inline-block;background:#FF8F1C;color:#fff;font-weight:800;font-size:10px;border-radius:3px;padding:0 4px">O</span> 해외결제</span>
+      <span><span style="display:inline-block;background:#00897B;color:#fff;font-weight:800;font-size:10px;border-radius:3px;padding:0 4px">C</span> 해외쿠폰(100%포함)</span>
+      <span><span style="display:inline-block;background:#7c3aed;color:#fff;font-weight:800;font-size:10px;border-radius:3px;padding:0 4px">IO</span> 해외초청</span>
+      <span><span style="display:inline-block;background:#307FE2;color:#fff;font-weight:800;font-size:10px;border-radius:3px;padding:0 4px">I</span> 국내초청</span>
+      <span style="color:#b6bcc9">· 그 외(국내결제/단체/온라인)는 배지 없음</span>
+    </div>
     <div style="overflow-x:auto">
     <table>
       <thead><tr><th style="width:28px"><input type="checkbox" id="chkAll" onclick="ufsChkAll(this)" title="전체 선택"></th><th>이름</th><th>이메일</th><th>연락처</th><th>회사</th><th>유형</th><th>상품</th><th>트랙</th><th>광고</th><th>상태</th><th>결제수단</th><th>등록일</th><th>취소</th><th>삭제</th></tr></thead>
       <tbody>
       <?php if ($list && $list->num_rows): while ($r = $list->fetch_assoc()):
-        $type = ($r['free_yn']==='Y'||$r['apply_product_code']==='ONLINE') ? '온라인' : '오프라인';
+        $type = ($r['apply_product_code']==='ONLINE') ? '온라인' : '오프라인';
         $ps = (int)$r['apply_pay_status'];
         $stt = $ps===10?'완료':($ps===1?'입금대기':'취소');
         $stc = $ps===10?'#00C1D5':($ps===1?'#FF8F1C':'#9aa0af');
@@ -391,7 +446,7 @@ include_once('./admin.head.php');   // ← 왼쪽 관리자 메뉴 + 상단 chro
           <td style="color:#6b7280"><?= e2($r['apply_user_email']) ?></td>
           <td style="color:#6b7280"><?= e2($r['apply_user_phone']) ?></td>
           <td style="color:#9aa0af;font-size:12px"><?= e2($r['apply_user_company']) ?></td>
-          <td><?= e2($type) ?><?php if (!empty($r['apply_group_code'])): ?> <span title="단체 등록 (<?= e2($r['apply_group_code']) ?>)" style="display:inline-block;background:#7c3aed;color:#fff;font-weight:800;font-size:10px;line-height:1.2;border-radius:3px;padding:0 4px;margin-left:2px">단체</span><?php endif; ?></td>
+          <td><?= e2($type) ?><?php if (!empty($r['apply_group_code'])): ?> <span title="단체 등록 (<?= e2($r['apply_group_code']) ?>)" style="display:inline-block;background:#7c3aed;color:#fff;font-weight:800;font-size:10px;line-height:1.2;border-radius:3px;padding:0 4px;margin-left:2px">단체</span><?php endif; ?><?php if ($bdg = adm_reg_badge($r)): ?> <span title="<?= e2($bdg[1]) ?>" style="display:inline-block;background:<?= $bdg[2] ?>;color:#fff;font-weight:800;font-size:10px;line-height:1.2;border-radius:3px;padding:0 4px;margin-left:2px"><?= e2($bdg[0]) ?></span><?php endif; ?></td>
           <td><?= e2(trim(str_replace('언리얼 페스트 서울 2026', '', $r['apply_product_name']))) ?><?php if (adm_is_eb($r)): ?> <span title="얼리버드 구매" style="display:inline-block;background:#00C1D5;color:#062a2f;font-weight:800;font-size:10px;line-height:1.2;border-radius:3px;padding:0 4px;margin-left:2px">E</span><?php endif; ?></td>
           <td style="color:#9aa0af;font-size:12px"><?= e2($r['apply_track']) ?></td>
           <td class="badge" style="color:<?= $ad?'#39d98a':'#9aa0af' ?>"><?= $ad?'동의':'미동의' ?></td>
@@ -409,10 +464,12 @@ include_once('./admin.head.php');   // ← 왼쪽 관리자 메뉴 + 상단 chro
               <?php
               $day_ok = empty($r['apply_group_code'])
                         && ($r['apply_product_code']==='NORMAL_20' || $r['apply_product_code']==='NORMAL_21')
-                        && $ps===10
-                        && (!function_exists('ufs_is_earlybird') || (adm_is_eb($r) === ufs_is_earlybird()));
+                        && $ps===10;
               if ($day_ok): ?>
               <a href="2026_event2_list.php?<?= e2(http_build_query(array('q'=>$q,'ds'=>$ds,'de'=>$de,'st'=>$st,'p'=>$page,'edit_day'=>$r['apply_no']))) ?>" class="btn" style="border-color:rgba(10,170,120,.5);color:#0aa;padding:4px 10px;font-size:12px;margin-left:4px">날짜변경</a>
+              <?php endif; ?>
+              <?php if ($type==='오프라인' && $ps===10): ?>
+              <a href="2026_event2_list.php?<?= e2(http_build_query(array('q'=>$q,'ds'=>$ds,'de'=>$de,'st'=>$st,'p'=>$page,'resend'=>$r['apply_no']))) ?>" onclick="return confirm('[<?= e2($r['apply_user_name']) ?>] 님에게 QR 안내 문자를 재발송할까요?\n현재 티켓/참석일 기준으로 발송됩니다. (실제 발송)')" class="btn" style="border-color:rgba(0,193,213,.5);color:#00C1D5;padding:4px 10px;font-size:12px;margin-left:4px">문자재발송</a>
               <?php endif; ?>
             <?php else: ?>
               <span style="color:#9aa0af;font-size:12px">취소됨</span>
