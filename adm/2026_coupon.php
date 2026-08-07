@@ -400,9 +400,9 @@ include_once('./admin.head.php');
   if ($usageCode !== ''): $uce = sql_real_escape_string($usageCode);
     $hasGrpU = ($t=@sql_query("SHOW TABLES LIKE 'cb_unreal_2026_group'")) && $t->num_rows;
     $hasIndCol = ($c=@sql_query("SHOW COLUMNS FROM cb_unreal_2026_event2_apply LIKE 'apply_coupon_code'")) && $c->num_rows;
-    $inds = $hasIndCol ? sql_query("SELECT * FROM cb_unreal_2026_event2_apply WHERE apply_coupon_code='$uce' AND (apply_group_code IS NULL OR apply_group_code='') ORDER BY apply_no DESC") : null;
+    $inds = $hasIndCol ? sql_query("SELECT * FROM cb_unreal_2026_event2_apply WHERE apply_coupon_code='$uce' AND (apply_group_code IS NULL OR apply_group_code='') AND apply_pay_status <> 0 ORDER BY apply_no DESC") : null;
     $indN = $inds ? $inds->num_rows : 0;
-    $grps = $hasGrpU ? sql_query("SELECT * FROM cb_unreal_2026_group WHERE coupon_code='$uce' ORDER BY grp_no DESC") : null;
+    $grps = $hasGrpU ? sql_query("SELECT * FROM cb_unreal_2026_group WHERE coupon_code='$uce' AND pay_status <> 'cancel' ORDER BY grp_no DESC") : null;
     $grpN = $grps ? $grps->num_rows : 0; ?>
   <div class="cp-card">
     <h2>🔎 쿠폰 <?= cp_e($usageCode) ?> — 사용 등록 내역 <a href="2026_coupon.php" style="font-weight:400;font-size:12px;margin-left:8px;color:#888">✕ 닫기</a></h2>
