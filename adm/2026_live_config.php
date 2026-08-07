@@ -11,6 +11,13 @@ if (!function_exists('is_admin') || !is_admin($member['mb_id'])) {
 $g5['title'] = '온라인 라이브 설정';
 function lc_e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 
+// datetime-local(YYYY-MM-DDTHH:MM) → 'YYYY-MM-DD HH:MM' 정규화(빈값/형식오류=빈문자)
+function lc_dt($s){
+    $s = trim((string)$s);
+    if ($s === '') return '';
+    if (preg_match('/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/', $s, $m)) return $m[1].'-'.$m[2].'-'.$m[3].' '.$m[4].':'.$m[5];
+    return '';
+}
 // YouTube ID 추출(전체 URL/임베드/라이브/공유링크/원본 ID 모두 허용) → 11자 ID
 function lc_ytid($s){
     $s = trim((string)$s);
@@ -42,12 +49,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $raw = isset($_POST['yt_'.$k]) ? trim($_POST['yt_'.$k]) : '';
         lc_set('live_yt_'.$k, lc_ytid($raw));
     }
+    lc_set('live_banner_start', lc_dt(isset($_POST['banner_start'])?$_POST['banner_start']:''));
+    lc_set('live_banner_end',   lc_dt(isset($_POST['banner_end'])?$_POST['banner_end']:''));
     $msg = '저장했습니다.';
 }
 
 $active = (lc_get('live_active') === '1');
 $notice = lc_get('live_notice');
 $vals = array(); foreach ($CH as $k=>$l) $vals[$k] = lc_get('live_yt_'.$k);
+$bstart = lc_get('live_banner_start'); $bend = lc_get('live_banner_end');
+// 'Y-m-d H:i' → datetime-local value 'Y-m-dTH:i'
+$bstart_in = ($bstart!=='') ? str_replace(' ','T',$bstart) : '';
+$bend_in   = ($bend!=='')   ? str_replace(' ','T',$bend)   : '';
+$now_str = date('Y-m-d H:i');
+$banner_live = ($bstart!=='' && $bend!=='' && $now_str >= $bstart && $now_str <= $bend);
 
 include_once('./admin.head.php');
 ?>
@@ -78,6 +93,21 @@ include_once('./admin.head.php');
       <label>공지 문구(선택)</label>
       <input type="text" name="live_notice" value="<?= lc_e($notice) ?>" placeholder="예: 세션 사이 쉬는 시간에는 대기 화면이 표시됩니다.">
     </div>
+  </div>
+  <div class="lc-card">
+    <h2 style="font-size:15px;margin:0 0 4px">index 배너 노출 기간
+      <span class="on-badge" style="background:<?= $banner_live?'#d4edda':'#f8f9fa' ?>;color:<?= $banner_live?'#155724':'#888' ?>;margin-left:8px;border:1px solid #eee"><?= $banner_live?'현재 노출 중':'현재 미노출' ?></span>
+    </h2>
+    <p style="color:#888;font-size:12px;margin:0 0 10px">홈(index) 상단 <b>“지금 온라인 라이브 진행 중 — 시청하기”</b> 배너를 <b>이 기간에만</b> 노출합니다. (라이브 활성화 토글과 무관 · 시작/종료 둘 다 있어야 동작 · 서버 시각 기준)</p>
+    <div class="lc-row">
+      <label>노출 시작 일시</label>
+      <input type="datetime-local" name="banner_start" value="<?= lc_e($bstart_in) ?>" style="padding:8px;border:1px solid #ccc;border-radius:4px">
+    </div>
+    <div class="lc-row">
+      <label>노출 종료 일시</label>
+      <input type="datetime-local" name="banner_end" value="<?= lc_e($bend_in) ?>" style="padding:8px;border:1px solid #ccc;border-radius:4px">
+    </div>
+    <p style="color:#aaa;font-size:11px;margin:8px 0 0">비우면 배너가 노출되지 않습니다. 현재 서버 시각: <?= lc_e($now_str) ?></p>
   </div>
   <div class="lc-card">
     <h2 style="font-size:15px;margin:0 0 4px">채널별 YouTube (ID 또는 전체 URL 붙여넣기)</h2>
