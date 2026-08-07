@@ -51,6 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     lc_set('live_banner_start', lc_dt(isset($_POST['banner_start'])?$_POST['banner_start']:''));
     lc_set('live_banner_end',   lc_dt(isset($_POST['banner_end'])?$_POST['banner_end']:''));
+    lc_set('live_start', lc_dt(isset($_POST['live_start'])?$_POST['live_start']:''));
+    lc_set('live_end',   lc_dt(isset($_POST['live_end'])?$_POST['live_end']:''));
     $msg = '저장했습니다.';
 }
 
@@ -63,6 +65,12 @@ $bstart_in = ($bstart!=='') ? str_replace(' ','T',$bstart) : '';
 $bend_in   = ($bend!=='')   ? str_replace(' ','T',$bend)   : '';
 $now_str = date('Y-m-d H:i');
 $banner_live = ($bstart!=='' && $bend!=='' && $now_str >= $bstart && $now_str <= $bend);
+// 라이브 활성 = 수동 토글 ON 또는 예약 기간 내
+$lstart = lc_get('live_start'); $lend = lc_get('live_end');
+$lstart_in = ($lstart!=='') ? str_replace(' ','T',$lstart) : '';
+$lend_in   = ($lend!=='')   ? str_replace(' ','T',$lend)   : '';
+$sched_on = ($lstart!=='' && $lend!=='' && $now_str >= $lstart && $now_str <= $lend);
+$eff_active = ($active || $sched_on);
 
 include_once('./admin.head.php');
 ?>
@@ -82,12 +90,22 @@ include_once('./admin.head.php');
   <form method="post">
   <div class="lc-card">
     <h2 style="font-size:16px;margin:0 0 6px">📺 온라인 라이브 설정
-      <span class="on-badge" style="background:<?= $active?'#d4edda':'#f8d7da' ?>;color:<?= $active?'#155724':'#721c24' ?>;margin-left:8px"><?= $active?'ON — 시청 가능':'OFF — 준비중' ?></span>
+      <span class="on-badge" style="background:<?= $eff_active?'#d4edda':'#f8d7da' ?>;color:<?= $eff_active?'#155724':'#721c24' ?>;margin-left:8px"><?= $eff_active?'ON — 시청 가능':'OFF — 준비중' ?></span>
+      <?php if ($sched_on && !$active): ?><span class="on-badge" style="background:#e0f2fe;color:#075985;margin-left:4px">예약 기간 자동 ON</span><?php endif; ?>
     </h2>
-    <p style="color:#888;font-size:12px;margin:0 0 12px">공개 시청 페이지: <a href="../unrealfest2026/live.php" target="_blank">/unrealfest2026/live.php</a> · 등록자(온라인 결제완료) 이메일 확인 후 시청. index 배너는 8/20~21 자동 노출.</p>
+    <p style="color:#888;font-size:12px;margin:0 0 12px">공개 시청 페이지: <a href="../unrealfest2026/live.php" target="_blank">/unrealfest2026/live.php</a> · 등록자(온라인 결제완료) 이메일 확인 후 시청.</p>
+    <div class="lc-row">
+      <label>라이브 활성화(수동)</label>
+      <label style="width:auto;font-weight:400;cursor:pointer"><input type="checkbox" name="live_active" value="1" <?= $active?'checked':'' ?>> 즉시 ON (체크 시 기간과 무관하게 바로 노출)</label>
+    </div>
+    <div class="lc-row">
+      <label>자동 활성 시작 일시</label>
+      <input type="datetime-local" name="live_start" value="<?= lc_e($lstart_in) ?>" style="padding:8px;border:1px solid #ccc;border-radius:4px">
+    </div>
     <div class="lc-row" style="border-bottom:2px solid #eee">
-      <label>라이브 활성화</label>
-      <label style="width:auto;font-weight:400;cursor:pointer"><input type="checkbox" name="live_active" value="1" <?= $active?'checked':'' ?>> ON (체크 시 시청자에게 영상 노출. OFF면 "곧 시작합니다" 안내)</label>
+      <label>자동 활성 종료 일시</label>
+      <input type="datetime-local" name="live_end" value="<?= lc_e($lend_in) ?>" style="padding:8px;border:1px solid #ccc;border-radius:4px">
+      <span style="font-size:11px;color:#aaa">이 기간엔 자동 ON(수동 체크 OFF여도). 비우면 수동 토글만.</span>
     </div>
     <div class="lc-row">
       <label>공지 문구(선택)</label>
