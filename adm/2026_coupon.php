@@ -393,7 +393,7 @@ include_once('./admin.head.php');
 .cp-a{color:#0a7;text-decoration:underline;cursor:pointer}.cp-d{color:#c33;text-decoration:underline;cursor:pointer}
 </style>
 <div class="cp-wrap">
-  <div style="margin-bottom:12px"><a href="2026_coupon_status.php" style="display:inline-block;background:#0f172a;color:#fff;padding:9px 18px;border-radius:5px;text-decoration:none;font-weight:700;font-size:13px">📋 쿠폰 등록 현황 (구글시트 붙여넣기) →</a></div>
+  <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap"><a href="2026_coupon_status.php" style="display:inline-block;background:#0f172a;color:#fff;padding:9px 18px;border-radius:5px;text-decoration:none;font-weight:700;font-size:13px">📋 쿠폰 등록 현황 (구글시트 붙여넣기) →</a><a href="2026_coupon_status_invite.php" style="display:inline-block;background:#00849a;color:#fff;padding:9px 18px;border-radius:5px;text-decoration:none;font-weight:700;font-size:13px">🎟️ 초대 쿠폰 등록현황 →</a></div>
   <?php if ($msg): ?><div class="cp-msg"><?= cp_e($msg) ?></div><?php endif; ?>
 
   <?php $usageCode = isset($_GET['usage']) ? strtoupper(trim($_GET['usage'])) : '';
