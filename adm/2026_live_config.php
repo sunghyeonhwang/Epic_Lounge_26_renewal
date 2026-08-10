@@ -3,7 +3,7 @@
  * 공개 시청페이지 live.php가 읽는 설정. cb_unreal_2026_config(키-값) 재사용.
  * 키: live_active(0/1) · live_notice · live_yt_d1t1..d1t4 · live_yt_d2t1..d2t4 (YouTube ID/URL). PHP 7.0 호환.
  */
-$sub_menu = '700367';
+$sub_menu = '700368';
 include_once('./_common.php');
 if (!function_exists('is_admin') || !is_admin($member['mb_id'])) {
     alert('관리자 로그인이 필요합니다.', G5_ADMIN_URL);
@@ -44,6 +44,7 @@ $CH = array(
 $msg = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     lc_set('live_active', (isset($_POST['live_active']) && $_POST['live_active']==='1') ? '1' : '0');
+    lc_set('live_ended',  (isset($_POST['live_ended'])  && $_POST['live_ended']==='1')  ? '1' : '0');
     lc_set('live_notice', isset($_POST['live_notice']) ? trim($_POST['live_notice']) : '');
     foreach ($CH as $k=>$label) {
         $raw = isset($_POST['yt_'.$k]) ? trim($_POST['yt_'.$k]) : '';
@@ -57,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $active = (lc_get('live_active') === '1');
+$ended  = (lc_get('live_ended') === '1');
 $notice = lc_get('live_notice');
 $vals = array(); foreach ($CH as $k=>$l) $vals[$k] = lc_get('live_yt_'.$k);
 $bstart = lc_get('live_banner_start'); $bend = lc_get('live_banner_end');
@@ -97,6 +99,10 @@ include_once('./admin.head.php');
     <div class="lc-row">
       <label>라이브 활성화(수동)</label>
       <label style="width:auto;font-weight:400;cursor:pointer"><input type="checkbox" name="live_active" value="1" <?= $active?'checked':'' ?>> 즉시 ON (체크 시 기간과 무관하게 바로 노출)</label>
+    </div>
+    <div class="lc-row" style="background:<?= $ended?'#fdf2f2':'transparent' ?>">
+      <label style="color:<?= $ended?'#c0392b':'#444' ?>">🛑 라이브 종료<?php if ($ended): ?> <span class="on-badge" style="background:#f8d7da;color:#721c24">종료됨</span><?php endif; ?></label>
+      <label style="width:auto;font-weight:400;cursor:pointer"><input type="checkbox" name="live_ended" value="1" <?= $ended?'checked':'' ?>> 체크 시 <b>영상·채팅을 내리고</b> "온라인 라이브가 종료되었습니다. 다시보기는 곧 오픈될 예정입니다." + 홈버튼만 표시(<b>모든 설정보다 우선</b>). 이벤트 종료 후 켜세요.</label>
     </div>
     <div class="lc-row">
       <label>자동 활성 시작 일시</label>
