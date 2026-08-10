@@ -465,7 +465,7 @@ include_once('./admin.head.php');
       <div><label>사용 한도(0=무제한)</label><input type="number" name="cp_max" min="0" value="1" style="width:120px"></div>
       <div><label>발급 수량</label><input type="number" name="cp_qty" value="1" min="1" max="200" style="width:80px" title="2 이상이면 난수 코드로 여러 개 일괄 발급"></div>
       <div><label>메모(선택)</label><input type="text" name="cp_memo" placeholder="설명" style="width:160px"></div>
-      <div><label>분류(메일양식)</label><select name="cp_category" style="padding:8px;border:1px solid #ccc;border-radius:4px"><option value="">선택안함</option><option value="스폰서">스폰서</option><option value="스피커">스피커</option><option value="기타">기타</option></select></div>
+      <div><label>분류(메일양식)</label><select name="cp_category" style="padding:8px;border:1px solid #ccc;border-radius:4px"><option value="">선택안함</option><option value="스폰서">스폰서</option><option value="스피커">스피커</option><option value="기타">기타</option><option value="초대">초대</option></select></div>
       <div><label>업체/스피커(선택)</label><input type="text" name="cp_company" placeholder="회사명 또는 스피커명" style="width:150px"></div>
       <div><label>수신자명(선택)</label><input type="text" name="cp_recipient_name" placeholder="홍길동" style="width:120px"></div>
       <div><label>수신자 이메일(선택)</label><input type="email" name="cp_recipient_email" placeholder="user@example.com" style="width:180px"></div>
